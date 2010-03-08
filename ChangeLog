@@ -1,0 +1,8 @@
+2010-03-08 Bjoern Bornkamp
+    * 1st Release as version 0.1. Improvements over MCPMod package:
+      - Extended and improved version of MCPMod (allowing for covariates
+        and robustified self-developed optimizer)
+      - Functions for MCP (MCPtest) and Modelling (fitDRModel) part
+        now available to the user
+      - New functions (eg. bootMCPMod, powerScenario)
+      - Functions for calculating optimal designs
