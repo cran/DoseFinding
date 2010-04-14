@@ -112,6 +112,7 @@ checkDoseModArgs <- function(model, doses, pars, clinRel, off, scal, type){
 ## calculate gradient of model (in correct formatting) and bvec
 calcGradBvec <- function(fullModels, doses, clinRel, off, scal, type){
   gradarray <- NULL;barray <- NULL
+  namMods <- character()
   j <- 1
   for(nam in names(fullModels)){
     pars <- fullModels[[nam]]
@@ -120,18 +121,24 @@ calcGradBvec <- function(fullModels, doses, clinRel, off, scal, type){
         checkDoseModArgs(nam, doses, pars[i,], clinRel, off, scal, type)
         temp <- formGrad(doses, pars[i,], nam, off, scal)
         gradarray <- c(gradarray, temp)
-        temp <- calcBvec(doses, pars[i,], clinRel, nam, off, scal)
-        barray <- c(barray, temp)
+        if(type != "Dopt"){
+          temp <- calcBvec(doses, pars[i,], clinRel, nam, off, scal)
+          barray <- c(barray, temp)
+        }
+        namMods <- c(namMods, nam)
         j <- j+1
       } 
     } else {
       checkDoseModArgs(nam, doses, pars, clinRel, off, scal, type)      
       gradarray <- c(gradarray, formGrad(doses, pars, nam, off, scal))
-      barray <- c(barray, calcBvec(doses, pars, clinRel, nam, off, scal))
+      if(type != "Dopt"){      
+        barray <- c(barray, calcBvec(doses, pars, clinRel, nam, off, scal))
+      }
+      namMods <- c(namMods, nam)      
       j <- j+1        
     }
   }
-  list(gradarray=gradarray, barray=barray)
+  list(gradarray=gradarray, barray=barray, namMods=namMods)
 }
 
 ## checks whether MED exists
@@ -180,19 +187,29 @@ mult <- function(start, fn, grd, delta, ...){
   des
 }
 
+## returns the number of parameters (needed for C call)
+nPars <- function(mods){
+  builtIn <- c("linlog", "linear", "quadratic", 
+             "emax", "exponential", "logistic", 
+             "betaMod", "sigEmax")
+  ind <- match(mods, builtIn)
+  if(any(is.na(ind))){
+    stop("only built in models allowed in calcOptDesign")
+  }
+  c(2,2,3,3,3,4,4,4)[ind]
+}
+
 ## function which calls different optimizers
 getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
-                         method, tundelta, type){
+                         method, tundelta, type, nam, lowbnd, uppbnd){
   M <- as.integer(length(weights))
   if(length(gradvecs)/(4*k) != M)
     stop("Either weights or doses of wrong length.")
   if(length(nold) != k)
         stop("Either nold or doses of wrong length.")
   k <- as.integer(k)
-  p <- integer(M)
-  for(i in 0:(M-1)){
-    p[i+1] <- 4-sum(bvecs[(i*4+2):(i*4+4)]==0)
-  }
+  p <- as.integer(nPars(nam))
+
   type <- match(type, c("MED", "Dopt", "MED&Dopt"))
   
   if(method == "nlminb"){ # nlminb and optim run on transformed values
@@ -218,7 +235,7 @@ getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
                  k=k, weights=as.double(weights), M=M, n2=as.double(n2),
                  nold = as.double(nold), bvec=as.double(bvecs),
                  trans = idtrans, type = as.integer(type),
-                 control = control, LB = rep(0,k), UB = rep(1, k))
+                 control = control, LB = lowbnd, UB = uppbnd)
   } else if(method == "mult"){
     grd <- function(x, ...){
       grad(optFunc, x, ..., method = "simple")
@@ -232,7 +249,18 @@ getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
                  nold = as.double(nold), bvec=as.double(bvecs),
                  trans = idtrans, type = as.integer(type))
     res <- list(des = des, value = value)
-  }
+  } #else if(method == "cobyla"){ 
+    #require(Rcobyla, quietly = TRUE)
+    #constfun <- function(x, ...){
+    #  1-sum(x^2)
+    #}
+    #res <- Rcobyla(sqrt(rep(1/k, k)), fn=optFunc, constrfn=constfun,
+    #               xvec=as.double(gradvecs), pvec=as.integer(p),
+    #               k=k, weights=as.double(weights), M=M, n2=as.double(n2),
+    #               nold = as.double(nold), bvec=as.double(bvecs),
+    #               trans = transcobyla, type = as.integer(type),
+    #               control = control)
+  #} 
   res
 }
 
@@ -253,6 +281,11 @@ transTrig <- function(y, k){
 ## identity function
 idtrans <- function(y, k){
   y
+}
+
+## transformation for cobyla
+transcobyla <- function(y, k){
+  y^2
 }
 
 ## calculate uniform design but on R^k scale
@@ -278,10 +311,11 @@ optFunc <- function(x, xvec, pvec, k, weights, M, n2, nold, bvec, type, trans){
 }
 
 ## user visible function calling all others
-calcOptDesign <- function(fullModels, weights, doses, clinRel, nold = rep(0, length(doses)),
+calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)),
                           n2 = NULL, control=list(), scal=1.2*max(doses), off=0.1*max(doses),
                           type = c("MED", "Dopt", "MED&Dopt"),
                           method = c("Nelder-Mead", "nlminb", "mult", "solnp"),
+                          lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
                           tundelta=NULL){
   ## fullModels - list of all model parameters (fullMod object)
   ## weights - vector of weights for all fullModels
@@ -296,12 +330,29 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel, nold = rep(0, len
   }
   type <- match.arg(type)
   method <- match.arg(method)
+  if(is.null(clinRel) & type != "Dopt"){
+    stop("need to specify clinical relevance parameter")
+  }
+  if(length(lowbnd) != length(doses)){
+    stop("lowbnd needs to be of same length as doses")
+  }
+  if(length(uppbnd) != length(doses)){
+    stop("uppbnd needs to be of same length as doses")
+  }  
+  if(any(lowbnd > 0) | any(uppbnd < 1)){
+    if(method != "solnp"){
+      stop("only optimizer solnp can handle additional constraints on weights")
+    }
+  }
+
   lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
   barray <- lst$barray
   gradarray <- lst$gradarray
+  namMods <- lst$namMods
     
   res <- getOptDesign(gradarray, barray, weights, nold, n2,
-                      length(doses), control, method, tundelta, type)
+                      length(doses), control, method, tundelta, 
+                      type, namMods, lowbnd, uppbnd)
   if(method == "Nelder-Mead"|method == "nlminb"){ # transform results back
     des <- transTrig(res$par, length(doses))
     if(method == "Nelder-Mead"){
@@ -320,6 +371,15 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel, nold = rep(0, len
       warning("algorithm indicates no convergence, the 'optimizerResults'
                attribute of the returned object contains more details.")
     }
+  } else if(method == "cobyla"){
+    des <- transcobyla(res$par)
+    des <- des/sum(des)
+    crit <- res$fval
+    if(res$message != "Normal return from cobyla"){
+      warning("algorithm indicates no convergence, the 'optimizerResults'
+               attribute of the returned object contains more details.")
+    }
+    
   } else {
     des <- res$des
     crit <- res$value
