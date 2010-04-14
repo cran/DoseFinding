@@ -11,10 +11,11 @@
   D-optimal design, or a mixture of these two criteria.
 }
 \usage{
-calcOptDesign(fullModels, weights, doses, clinRel, nold = rep(0, length(doses)), 
+calcOptDesign(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)), 
              n2 = NULL, control = list(),  scal=1.2*max(doses), off=0.1*max(doses),
              type = c("MED", "Dopt", "MED&Dopt"),
              method = c("Nelder-Mead", "nlminb", "mult", "solnp"),
+             lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
              tundelta = NULL)
 }
 \arguments{
@@ -34,7 +35,7 @@ calcOptDesign(fullModels, weights, doses, clinRel, nold = rep(0, length(doses)),
     Doses available
 }
   \item{clinRel}{
-   Clinical relevance
+   Clinical relevance needed for calculating "MED" and "MED&Dopt" type designs.
 }
   \item{nold}{
     Vector of sample sizes already allocated to the different doses.
@@ -72,6 +73,10 @@ calcOptDesign(fullModels, weights, doses, clinRel, nold = rep(0, length(doses)),
   best suited ("nlminb" is usually a bit faster and more reliable than "Nelder-Mead"). For a larger
   number of doses option "solnp" is the best option ("Nelder-Mead" and
   "nlminb" often fail, while "mult" is too slow).
+}
+\item{lowbnd, uppbnd}{
+  Vectors of the same length as dose vector specifying upper and lower limits for the
+  allocation weights. This option is only available when using the "solnp" optimizer.
 }
 \item{tundelta}{
   Tuning parameter for mult optimization.
@@ -115,16 +120,17 @@ doses <- c(0, 18.75, 150)
 weights <- c(1) # just one model
 # by default calculates MED optimal design
 des1 <- calcOptDesign(fMod, weights, doses, clinRel=0.2) 
-des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, type = "Dopt")
+des2 <- calcOptDesign(fMod, weights, doses, type = "Dopt")
 des3 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, type = "MED&Dopt")
 
 # illustrating the different optimizers
 des1 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="Nelder-Mead")
 des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="nlminb")
 des3 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="mult")
-\dontrun{
 des4 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="solnp")
-}
+# now assume additional constraints (only available for method = solnp)
+des5 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, lowbnd = rep(0.2,3),
+        uppbnd = rep(0.45, 3), method="solnp")
 
 # larger candidate model set
 doses <- c(0, 10, 25, 50, 100, 150)
@@ -134,8 +140,8 @@ fMod <- fullMod(mods, doses, base=0, maxEff=0.4, off=1)
 weights <- rep(1/5, 5)
 desMED <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
                         off=1, method = "nlminb")
-desDopt <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
-                         off=1, type = "Dopt")
+desDopt <- calcOptDesign(fMod, weights, doses, scal=200, off=1, 
+                         type = "Dopt")
 desMix <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
                         off=1, type = "MED&Dopt")
 # allocated 100 persons according to desMix design

@@ -78,7 +78,8 @@ bootMCPMod <- function(x, nSim = 1000, fitControl = list(), start = NULL, seed =
   }
   out$doseEst <- sapply(bootrep, function(x) x$estDose)
   if(substr(x$input$selModel, 1, 3) == "ave"){
-    out$model <- sapply(bootrep, function(x) x$weights)
+    out$model <- lapply(bootrep, function(x) x$weights)
+    out$doseEstMods <- lapply(bootrep, function(x) attr(x$estDose, "tdModels"))
   } else {
     out$model <- sapply(bootrep, function(x) x$selModel)
   }

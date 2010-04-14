@@ -669,8 +669,12 @@ fitModel.nls <- function(data, model, addCovars, start, control = NULL,
     }
   }
   if(inherits(fm, "nls")){
-    fm <- list(coefs = cf, RSS2 = deviance(fm),
-               df = nrow(data)-length(cf), fitMethod = "nls")
+    if(fm$convInfo$finIter > 0){
+      fm <- list(coefs = cf, RSS2 = deviance(fm),
+                 df = nrow(data)-length(cf), fitMethod = "nls")
+    } else { # nls made no iteration, so did not converge (see also ChangeLog 14.10.10)
+      fm <- NA 
+    }
   }
   fm
 }

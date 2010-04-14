@@ -1,3 +1,17 @@
+2010-04-14 Bjoern Bornkamp
+    * fitModel.nls now checks whether nls with plinear option made
+      a positive number of iterations (as additional convergence check).
+      In some cases (eg. when number of parameters = number of 
+      doses) plinear does not do any iteration and does *not* 
+      put out a warning message that the algorithm failed.
+    * The calcOptDesign function now allows for upper and lower bounds
+      on the allocation weights.
+    * There is no longer the need to specify clinRel, when one wants
+      to calculate a D-optimal design.
+    * Output of bootMCPMod function in case of model averaging now
+      also includes dose estimates under each model & corrected
+      bug in print.bootMCPMod function (thanks to Setia Pramana)
+
 2010-03-08 Bjoern Bornkamp
     * 1st Release as version 0.1. Improvements over MCPMod package:
       - Extended and improved version of MCPMod (allowing for covariates

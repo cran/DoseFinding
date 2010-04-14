@@ -42,9 +42,10 @@
 }
 \value{
   An object of class \code{bootMCPMod}, ie. a list with entries \code{doseEst},
-  \code{model} and (if \code{calcDR} is TRUE) \code{}, containing the
-  bootstrap replications. Additionally the original fitted MCPMod object
-  is included.
+  \code{model} and (if \code{calcDR} is TRUE) \code{doseResp}, containing the
+  bootstrap replications. In case of model averaging \code{doseEstMods} contains
+  the bootstrap replications of the dose estimates of the different significant models.
+  Additionally the original fitted MCPMod object is included.
 }
 \author{
   Bjoern Bornkamp
