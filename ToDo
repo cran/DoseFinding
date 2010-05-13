@@ -1,5 +1,4 @@
 To do:
-- Allow matrix of designs in calcCrit
 - allow for dose finding with active control  
 - additional methods for bootMCPMod objects (plot, summary method)
 - calculation of lower bound on design criterion (for validating numerically

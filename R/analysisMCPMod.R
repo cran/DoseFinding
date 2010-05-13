@@ -67,7 +67,7 @@ modelSelect <-
       fm <- NA
     } else { 
       if (selMethod == "AIC" | selMethod == "BIC") {
-        model2 <- namSigMod[which(crit == min(crit, na.rm = TRUE))]
+        model2 <- namSigMod[which.min(crit)]#old: which(crit == min(crit, na.rm = TRUE))
         fm <- list(fm=fm[[model2]])
         attr(fm, "model2") <- names(fm) <- model2
         attr(fm, "IC") <- crit

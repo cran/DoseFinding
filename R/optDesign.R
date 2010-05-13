@@ -400,23 +400,23 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
                      nold = rep(0, length(doses)), n2 = NULL, 
                      scal=1.2*max(doses), off=0.1*max(doses),
                      type = c("MED", "Dopt", "MED&Dopt")){
-  if(abs(sum(weights)-1) > 0.0001){
-    stop("weights need to sum to 1")
-  }
   if(inherits(design, "design")){
     design <- design$design
   }
   if(!is.numeric(design)){
-    stop("design needs to be a numeric vector")
+    stop("design needs to be numeric")
   }
-  if(abs(sum(design)-1) > 0.0001){
+  if(!is.matrix(design)){
+    design <- matrix(design, ncol = length(design))
+  }
+  if(ncol(design) != length(doses)){
+    stop("design and doses should be of the same length")      
+  }
+  if(any(abs(rowSums(design)-1) > 0.001)){
     stop("design needs to sum to 1")
   }  
-  if(length(design) != length(doses)){
-    stop("design and doses should be of the same length")
-  }
   if(is.null(n2)){
-    n2 <- 100
+    n2 <- 100 # value arbitrary
   }
   type <- match.arg(type)
   lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
@@ -431,10 +431,15 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
     p[i+1] <- 4-sum(lst$barray[(i*4+2):(i*4+4)]==0)
   }
   type <- match(type, c("MED", "Dopt", "MED&Dopt"))
-  optFunc(design, xvec=as.double(lst$gradarray), pvec=as.integer(p),
-          k=k, weights=as.double(weights), M=M, n2=as.double(n2),
-          nold = as.double(nold), bvec=as.double(lst$barray),
-          trans = idtrans, type = as.integer(type))
+  res <- numeric(nrow(design))
+  for(i in 1:nrow(design)){
+    res[i] <- optFunc(design[i,], xvec=as.double(lst$gradarray),
+                      pvec=as.integer(p), k=k, weights=as.double(weights),
+                      M=M, n2=as.double(n2), nold = as.double(nold),
+                      bvec=as.double(lst$barray), trans = idtrans,
+                      type = as.integer(type))
+  }
+  res
 }
 
 ## print designs

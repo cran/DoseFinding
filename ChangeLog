@@ -1,3 +1,13 @@
+2010-05-13 Bjoern Bornkamp
+    * Removed one example from sampSize to reduce check time.
+    * modelSelect: Use first model when two models have exactly
+      the same AIC or BIC value.
+    * predict.DRMod: Return NA as standard deviation if code
+      cannot calculate Cholesky transformation of covariance
+      matrix (thanks to Setia Pramana for the hint).
+    * calcCrit: Code now allows for specifying multiple designs
+      in a matrix.
+	
 2010-04-14 Bjoern Bornkamp
     * fitModel.nls now checks whether nls with plinear option made
       a positive number of iterations (as additional convergence check).

@@ -19,8 +19,9 @@ calcCrit(design, fullModels, weights, doses, clinRel,
 }
 \arguments{
   \item{design}{ 
-   Numeric vector of allocation weights for the different doses. This
-   needs to sum to 1.
+    Numeric vector of allocation weights or matrix for the different
+    doses. The rows of the matrices need to sum to 1. Alternatively
+    also an object of class "design" can be used.
 }
   \item{fullModels}{
    List containing all model parameters for the models (can for example be
@@ -70,18 +71,15 @@ calcCrit(design, fullModels, weights, doses, clinRel,
 }
 
 \examples{
-## compare to Dette et al. (2008), p. 1228, Table 2, line 5
+## Example (i) Dette et al. (2008), p. 1228, Table 2, line 5
 ## calculate optimal design for Emax model
 mods <- list(emax = 25)
-doses <- c(0,150)
+doses <- c(0, 18.75, 150)
 fMod <- fullMod(mods, doses, base=0, maxEff=0.4)
 fMod$emax[2] <- 0.6666667
-doses <- c(0, 18.75, 150)
-weights <- c(1) # just one model
+weights <- 1 # just one model
 des <- calcOptDesign(fMod, weights, doses, clinRel=0.2) 
 
-## value of design criterion for optimal design
-des$crit
 ## now compare this design to equal allocations on
 ## 0, 10, 25, 50, 100, 150
 doses2 <- c(0, 10, 25, 50, 100, 150)
@@ -95,18 +93,16 @@ crit3 <- calcCrit(design3, fMod, weights, doses2, clinRel=0.2)
 ## ratio of asymptotic variances
 exp(des$crit-crit3)
 
-## compare to Dette et al. (2008), p. 1228, Table 2, line 5
+
+## Example (ii) Dette et al. (2008), p. 1230, Table 5, line 5
 ## calculate optimal design for beta model
 fmods <- list(betaMod = c(0.33, 2.31))
-doses <- c(0,150)
-fMod <- fullMod(fmods, doses, base=0, maxEff=0.4, scal=200)
 doses <- c(0, 0.49, 25.2, 108.07, 150)
-weights <- c(1)
+fMod <- fullMod(fmods, doses, base=0, maxEff=0.4, scal=200)
+weights <- 1
 deswgts <- calcOptDesign(fMod, weights, doses, clinRel=0.1,
                 scal=200, control=list(maxit=1000))
 
-## value of design criterion for optimal design
-deswgts$crit
 ## now compare this design to equal allocations on
 ## 0, 10, 25, 50, 100, 150
 doses2 <- c(0, 10, 25, 50, 100, 150)
@@ -114,6 +110,14 @@ design2 <- c(1/6, 1/6, 1/6, 1/6, 1/6, 1/6)
 crit2 <- calcCrit(design2, fMod, weights, doses2, clinRel=0.1, scal=200)
 ## ratio of asymptotic variances
 exp(deswgts$crit-crit2)
+
+## example with matrix
+designs <- rbind(c(0.25,0.5,0.25), c(0.5,0.25,0.25), c(0.34,0.33,0.33))
+mods <- list(emax = 25)
+doses <- c(0, 18.75, 150)
+fMod <- fullMod(mods, doses, base=0, maxEff=1)
+weights <- 1
+calcCrit(designs, fMod, weights, doses, clinRel = 0.2)
 }
 
 \seealso{ \code{\link{calcOptDesign}}
