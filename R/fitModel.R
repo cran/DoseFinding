@@ -920,7 +920,14 @@ predict.DRMod <- function(object, type = c("fullModel", "EffectCurve"),
       covMat <- vcov(object, data, uGrad)
       grd <- getGrad(object, doseVec, uGrad)
       j <- cbind(grd[,1, drop = FALSE], m,  grd[,-1, drop = FALSE])
-      seFit <- sqrt(rowSums((j%*%t(chol(covMat)))^2)) # t(j)%*%covMat%*%j
+      cholcovMat <- try(chol(covMat), silent = TRUE)
+      if (!inherits(cholcovMat, "matrix")) {
+        warning("Cannot cannot calculate standard deviation for ", 
+                model, " model.\n")
+        seFit <- rep(NA, length(doseVec))
+      } else {
+        seFit <- sqrt(rowSums((j%*%t(cholcovMat))^2)) # t(j)%*%covMat%*%j
+      }
       res <- list(fit = mn, se.fit = as.vector(seFit),
                   residual.scale=sig, df=object$df)
       return(res)
