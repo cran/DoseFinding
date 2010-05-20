@@ -15,11 +15,13 @@
 }
 \usage{
 powerScenario(planMMobj, muAlt = NULL, sigmaAlt = NULL,
+              rowNames = NULL, colNames = NULL,
               control = mvtnorm.control())
 }
 \arguments{
   \item{planMMobj}{
-    A planMM object with calculated critical value.
+    A planMM object with calculated critical value. Be sure you selected
+    right direction for the trend in planMM object.
   }
   \item{muAlt}{
     A vector with the alternative mean or a
@@ -29,6 +31,10 @@ powerScenario(planMMobj, muAlt = NULL, sigmaAlt = NULL,
   }
   \item{sigmaAlt}{
     A vector of alternative sigmas to investigate.
+  }
+  \item{rowNames, colNames}{
+    Names for the output matrix, if NULL a default naming
+    convention is used.
   }
   \item{control}{
     List of control options for the mvtnorm related functions, see

@@ -492,7 +492,8 @@ powCalc <- function(cMat, n, alpha = 0.025, delta = NULL, mu = NULL,
 ## Calculates the power under one particular scenario
 ## (ie one particular mean vector and sigma)
 powerScenario <- function(planMMobj, muAlt = NULL, sigmaAlt = NULL,
-                 control = mvtnorm.control()){
+                          rowNames = NULL, colNames = NULL,
+                          control = mvtnorm.control()){
   if(is.null(muAlt) | is.null(sigmaAlt)){
     stop("muAlt and sigmaAlt need to be specified.")
   }
@@ -520,10 +521,19 @@ powerScenario <- function(planMMobj, muAlt = NULL, sigmaAlt = NULL,
                       alternative = alternative, control = control)
   }
   out <- matrix(res, nrow = nrow(muAlt), ncol = length(sigmaAlt))
-  rowNam <- apply(muAlt, 1, paste, collapse=",")
-  rowNam <- paste("muAlt: (", rowNam, ")", sep="")
-  colNam <- paste("sigmaAlt: ", sigmaAlt, sep="")
-  dimnames(out) <- list(rowNam, colNam)
+  if(is.null(rowNames)){
+    rwnams <- rownames(muAlt)
+    if(is.null(rwnams)){
+      rowNames <- apply(muAlt, 1, paste, collapse=",")
+      rowNames <- paste("muAlt: (", rowNames, ")", sep="")
+    } else {
+      rowNames <- rwnams
+    }
+  }
+  if(is.null(colNames)){
+    colNames <- paste("sigmaAlt: ", sigmaAlt, sep="")
+  }
+  dimnames(out) <- list(rowNames, colNames)
   class(out) <- "powerScen"
   out
 }

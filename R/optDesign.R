@@ -426,10 +426,7 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
     stop("Either weights or doses of wrong length.")
   if(length(nold) != k)
         stop("Either nold or doses of wrong length.")
-  p <- integer(M)
-  for(i in 0:(M-1)){
-    p[i+1] <- 4-sum(lst$barray[(i*4+2):(i*4+4)]==0)
-  }
+  p <- as.integer(nPars(lst$namMods))
   type <- match(type, c("MED", "Dopt", "MED&Dopt"))
   res <- numeric(nrow(design))
   for(i in 1:nrow(design)){

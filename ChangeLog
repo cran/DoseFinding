@@ -1,3 +1,10 @@
+2010-XX-XX Bjoern Bornkamp
+    * Smaller changes in calcCrit functions (the parameter p is
+      now calculated by the nPars function as in getOptDesign)
+    * Add further options to powerScenario function (now possible
+      to for user-specified row and column names for output matrix)
+
+
 2010-05-13 Bjoern Bornkamp
     * Removed one example from sampSize to reduce check time.
     * modelSelect: Use first model when two models have exactly
