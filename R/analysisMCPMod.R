@@ -552,8 +552,8 @@ plot.MCPMod <-
   rg <- range(dat[,2], plotMat$pred)
   yl <- c(rg[1] - 0.1*diff(rg), rg[2] + 0.1*diff(rg))
   panDat <- list(data=dat, clinRel=x$input$clinRel, complData=complData,
-                 cR=clinRel, doseEst=doseEst, lenDose=lenDose, DoseInd=DoseInd,
-                 colors=colors, lg=lg, covars = covars) # data for panels
+                 lenDose=lenDose, DoseInd=DoseInd, colors=colors, lg=lg,
+                 covars = covars) # data for panels
   ## information for key argument
   if(!covars){
     if(complData){
@@ -582,31 +582,33 @@ plot.MCPMod <-
     keyList <- c(keyList, list(points=list(col=colors[5], pch=18)),
                  list(text=list(lab="Estim. Dose")))
   }
-  xyplot(pred~dose|nam, data=plotMat, xlab = "Dose", type="l",
-         col=col, ylab = ylab,
-         groups=plotMat$group, pD=panDat, ylim = yl, 
-         panel=function(x, y, subscripts, groups,..., pD) {
-           panel.superpose(x,y,subscripts,groups, ...)
-           if(!covars){
-             if(!pD$complData){
-               panel.xyplot(pD$data[,1],pD$data[,2], pch=16,
-                            col=pD$colors[3]) # plot data/means
-             } else {
-               panel.xyplot(pD$data[,1],pD$data[,2], col=pD$colors[3])
+  xyplot(pred ~ dose | nam, data = plotMat, xlab = "Dose", type = "l", 
+         ylab = ylab, groups = plotMat$group, pD = panDat, 
+         ylim = yl, strip = function(...) strip.default(..., style = 1),
+         as.table = TRUE, key = keyList,
+         panel = function(x, y, subscripts, groups, ..., pD) {
+           panel.xyplot(x[groups == "pred"], y[groups == "pred"], col = pD$colors[1], ...)
+           if(CI){
+             panel.xyplot(x[groups == "LL"], y[groups == "LL"], col = pD$colors[2], ...)
+             panel.xyplot(x[groups == "UL"], y[groups == "UL"], col = pD$colors[2], ...)
+           }
+           if (!covars) {
+             if (!complData) {
+               panel.xyplot(pD$data[, 1], pD$data[, 2], pch = 16, 
+                            col = pD$colors[3])
+             }
+             else {
+               panel.xyplot(pD$data[, 1], pD$data[, 2], col = pD$colors[3])
              }
            }
-           if(pD$cR) panel.abline(h=y[1]+pD$clinRel, lty=8,
-                                  col=pD$colors[4]) # plot clinical
-                                                    # relevance threshold
-           if(pD$doseEst) {
-             ind <- max(subscripts)/(pD$lenDose*pD$lg) # locate dose
-                                                       # estimator in x
-             panel.dotplot(x[pD$DoseInd[ind]], y[pD$DoseInd[ind]],
-                           pch=18, col=pD$colors[5], col.line=0) # plot dose  
+           if (clinRel) 
+             panel.abline(h = y[1] + pD$clinRel, lty = 8, col = pD$colors[4])
+           if (doseEst) {
+             ind <- max(subscripts)/(pD$lenDose * pD$lg)
+             panel.dotplot(x[pD$DoseInd[ind]], y[pD$DoseInd[ind]], 
+                           pch = 18, col = pD$colors[5], col.line = 0)
            }
-         },
-         strip = function(...) strip.default(..., style = 1), as.table=TRUE,
-         key = keyList, ...)
+         }, ...)
 }
 
 ## function to predict dose-response curve from MCPMod object
