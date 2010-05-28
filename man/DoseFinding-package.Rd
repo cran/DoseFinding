@@ -19,8 +19,8 @@ homoscedastic endpoints are supported.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.1-3\cr
-Date: \tab 2010-20-05\cr
+Version: \tab 0.2-1\cr
+Date: \tab 2010-05-27\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }

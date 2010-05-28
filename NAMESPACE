@@ -5,7 +5,8 @@ export(fitDRModel, MCPtest, betaMod, critVal, emax, exponential,
        mvtnorm.control, quadratic, sigEmax, MCPtest, intervals,
        ED, MED, LP, planMM, plotModels, powCalc, powerMM, powerScenario,
        sampSize, getPars, guesst, fullMod, MCPMod,
-       genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit)
+       genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit,
+       getGrad)
 
 
 S3method(print, DRMod)

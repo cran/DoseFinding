@@ -1,4 +1,14 @@
-2010-XX-XX Bjoern Bornkamp
+2010-05-27 Bjoern Bornkamp
+    * Made the getGrad function (gradient for dose-response model),
+      including documentation available for end-user (was previously
+      hidden in NAMESPACE)
+    * Changes in the plot.MCPMod function (col argument for 
+      panel.superpose was read in different order depending on
+      lattice options, now there is a manual workaround with
+      panel.xyplot calls for each group)
+
+
+2010-05-20 Bjoern Bornkamp
     * Smaller changes in calcCrit functions (the parameter p is
       now calculated by the nPars function as in getOptDesign)
     * Add further options to powerScenario function (now possible
