@@ -1198,12 +1198,23 @@ AIC.DRMod <- function(object, ..., k = 2){
     warning("DRMod object does not contain a converged fit")
     return(NA)
   }
+  logL <- logLik(object)
+  -2*as.vector(logL) + k*(attr(logL, "df")) 
+}
+
+logLik.DRMod <- function(object, ...){
+  if(length(object) == 1){ # object does not contain a converged fit
+    warning("DRMod object does not contain a converged fit")
+    return(NA)
+  }
 
   RSS <- object$RSS2
   n <- object$df+length(object$coefs)
   sig2 <- RSS/n
-  logL <- -n/2*(log(2*pi) + 1 + log(sig2))
-  -2*logL + k*(length(coef(object))+1) # +1 because of sigma parameter
+  val <- -n/2*(log(2*pi) + 1 + log(sig2))
+  attr(val, "df") <- length(object$coefs)+1 # +1 because of sigma parameter
+  class(val) <- "logLik"
+  val
 }
 
 ## getData function, allows to recover data used for fitting

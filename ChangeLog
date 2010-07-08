@@ -1,3 +1,12 @@
+2010-07-08 Bjoern Bornkamp
+    * calcCrit and calcOptDesign now check for NA, NaN or +-Inf
+      values in the gradient and bvector (and stop execution when
+      these values occur) before passing these values to the C
+      code.
+    * Introduced a logLik method for DRMod objects
+    * Changed mvtnorm.control default argument for "interval"
+      to reflect recent changes in mvtnorm package.
+
 2010-05-27 Bjoern Bornkamp
     * Made the getGrad function (gradient for dose-response model),
       including documentation available for end-user (was previously

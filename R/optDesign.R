@@ -346,13 +346,21 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
   }
 
   lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
-  barray <- lst$barray
-  gradarray <- lst$gradarray
-  namMods <- lst$namMods
-    
-  res <- getOptDesign(gradarray, barray, weights, nold, n2,
+  ## check for invalid values (NA, NaN and +-Inf)
+  checkInvalid <- function(x) if(!is.null(x)) any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  grInv <- checkInvalid(lst$gradarray)
+  if(type != "Dopt"){
+    bvInv <- checkInvalid(lst$barray)
+  } else {
+    bvInv <- FALSE
+  }
+  if(grInv | bvInv){
+    stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
+        too extreme parameter values in argument 'fullModels'")
+  }
+  res <- getOptDesign(lst$gradarray, lst$barray, weights, nold, n2,
                       length(doses), control, method, tundelta, 
-                      type, namMods, lowbnd, uppbnd)
+                      type, lst$namMods, lowbnd, uppbnd)
   if(method == "Nelder-Mead"|method == "nlminb"){ # transform results back
     des <- transTrig(res$par, length(doses))
     if(method == "Nelder-Mead"){
@@ -426,6 +434,18 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
     stop("Either weights or doses of wrong length.")
   if(length(nold) != k)
         stop("Either nold or doses of wrong length.")
+  ## check for invalid values (NA, NaN and +-Inf)
+  checkInvalid <- function(x) if(!is.null(x)) any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  grInv <- checkInvalid(lst$gradarray)
+  if(type != "Dopt"){
+    bvInv <- checkInvalid(lst$barray)
+  } else {
+    bvInv <- FALSE
+  }
+  if(grInv | bvInv){
+    stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
+        too extreme parameter values in argument 'fullModels'")
+  }
   p <- as.integer(nPars(lst$namMods))
   type <- match(type, c("MED", "Dopt", "MED&Dopt"))
   res <- numeric(nrow(design))

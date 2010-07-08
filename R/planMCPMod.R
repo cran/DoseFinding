@@ -127,7 +127,7 @@ guesst <- function(d, p, model = c("emax", "exponential", "logistic", "quadratic
 ## control parameters for functions in package mvtnorm
 mvtnorm.control <-
   function(maxpts = 30000, abseps = 0.001, releps = 0,
-           interval = c(-10,10)){
+           interval = c(0,10)){
   res <- list(maxpts = maxpts, abseps = abseps,
               releps = releps, interval = interval)
   class(res) <- "GenzBretz"    
