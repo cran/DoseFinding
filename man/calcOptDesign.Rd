@@ -11,11 +11,14 @@
   D-optimal design, or a mixture of these two criteria.
 }
 \usage{
-calcOptDesign(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)), 
-             n2 = NULL, control = list(),  scal=1.2*max(doses), off=0.1*max(doses),
+calcOptDesign(fullModels, weights, doses, clinRel = NULL,
+             nold = rep(0, length(doses)), n2 = NULL,
+             control = list(),  scal=1.2*max(doses),
+             off=0.1*max(doses),
              type = c("MED", "Dopt", "MED&Dopt"),
              method = c("Nelder-Mead", "nlminb", "mult", "solnp"),
-             lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
+             lowbnd = rep(0, length(doses)),
+             uppbnd = rep(1, length(doses)),
              tundelta = NULL)
 }
 \arguments{

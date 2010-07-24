@@ -13,17 +13,17 @@ Bretz et al. (2005).
 }
 \usage{
 MCPMod(formula, data, models = NULL, addCovars = ~1,
-       contMat = NULL, critV = NULL, off = NULL, scal = NULL,
-       alpha = 0.025, alternative = c("one.sided", "two.sided"),
-       direction = c("increasing", "decreasing"),
-       selModel = c("maxT", "AIC", "BIC", "aveAIC", "aveBIC"),
-       doseEst = c("MED2", "MED1", "MED3", "ED", "MED1old", "MED2old", "MED3old"),
-       doseEstPar = NULL, std = TRUE, start = NULL,
-       uModPars = NULL, addArgs = NULL, clinRel = NULL,
-       lenDose = 101, pWeights = NULL, fitControl = fit.control(),
-       optimizer = c("nls", "nls&bndnls", "bndnls"), pVal = TRUE,
-       testOnly = FALSE, mvtcontrol = mvtnorm.control(),
-       na.action = na.fail, bnds = NULL, uGrad = NULL)
+     contMat = NULL, critV = NULL, off = NULL, scal = NULL,
+     alpha = 0.025, alternative = c("one.sided", "two.sided"),
+     direction = c("increasing", "decreasing"),
+     selModel = c("maxT", "AIC", "BIC", "aveAIC", "aveBIC"),
+     doseEst = c("MED2", "MED1", "MED3", "ED", "MED1old", "MED2old", "MED3old"),
+     doseEstPar = NULL, std = TRUE, start = NULL,
+     uModPars = NULL, addArgs = NULL, clinRel = NULL,
+     lenDose = 101, pWeights = NULL, fitControl = fit.control(),
+     optimizer = c("nls", "nls&bndnls", "bndnls"), pVal = TRUE,
+     testOnly = FALSE, mvtcontrol = mvtnorm.control(),
+     na.action = na.fail, bnds = NULL, uGrad = NULL)
 }
 
 \arguments{
@@ -336,8 +336,9 @@ Seber, G.A.F. and Wild, C.J. (2003). Nonlinear Regression, Wiley.
 data(biom)
 models <- list(linear = NULL, linlog = NULL, emax = 0.2,
             exponential = c(0.279,0.15), quadratic = c(-0.854,-1))
-dfe <- MCPMod(resp ~ dose, biom, models, alpha = 0.05, doseEstPar = 0.05, pVal = TRUE,
-           selModel = "maxT", doseEst = "MED2old", clinRel = 0.4, off = 1)
+dfe <- MCPMod(resp ~ dose, biom, models, alpha = 0.05, doseEstPar = 0.05,
+           pVal = TRUE, selModel = "maxT", doseEst = "MED2old",
+           clinRel = 0.4, off = 1)
 ## detailed information is available via summary
 summary(dfe)
 ## plots data with selected model function
@@ -437,8 +438,8 @@ userModGrad <-
 ## name starting values for nls
 start <- list(userMod=c(a=1, b=2, d=2))       
 models <- list(userMod=c(0, 1, 1), linear = NULL)
-dfe6 <- MCPMod(resp ~ dose, dats, models, clinRel = 0.4, selModel="AIC", start = start,
-         uGrad = userModGrad)
+dfe6 <- MCPMod(resp ~ dose, dats, models, clinRel = 0.4, selModel="AIC",
+         start = start, uGrad = userModGrad)
 
 ## (iv) Contrast matrix and critical value handed over and not calculated
 ## simulate dose response data
@@ -448,8 +449,8 @@ dat <- genDFdata(mu = (0:4)/4, n = 20,
 doses <- (0:4)/4
 mods <- list(linear = NULL, quadratic = -0.7)
 pM <- planMM(mods, doses, 20)
-fit <- MCPMod(resp ~ dose, dat, models = NULL, clinRel = 0.3, contMat = pM$contMat,
-               critV = pM$critVal)
+fit <- MCPMod(resp ~ dose, dat, models = NULL, clinRel = 0.3,
+           contMat = pM$contMat, critV = pM$critVal)
 
 ## (v) Use self constructed contrasts (and hand them over)
 mu1 <- c(1, 2, 2, 2, 2)                      

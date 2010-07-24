@@ -130,7 +130,7 @@ fitDRModel(formula, data, model, addCovars = ~1, na.action = na.fail,
 \code{\link{linear}}, \code{\link{linlog}}, \code{\link{sigEmax}},
 \code{\link{emax}}, \code{\link{quadratic}}, \code{\link{logistic}},
 \code{\link{betaMod}}, \code{\link{exponential}},
-\code{\link{coef.DRMod}}, \code{\link{AIC.DRMod}},
+\code{\link{coef.DRMod}}, \code{\link{AIC.DRMod}}, \code{\link{logLik.DRMod}},
 \code{\link{predict.DRMod}}, \code{\link{vcov.DRMod}},
 \code{\link{plot.DRMod}},
 \code{\link{MED.DRMod}}, \code{\link{ED.DRMod}}
@@ -152,6 +152,8 @@ coef(fitemax)
 vcov(fitemax)
 # confidence intervals for estimates
 intervals(fitemax, level = 0.95)
+# fitted log-likelihood
+logLik(fitemax)
 # extracting AIC (or BIC)
 AIC(fitemax)
 # calculate the minimum effective dose
