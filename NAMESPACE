@@ -1,0 +1,38 @@
+import(mvtnorm, lattice)
+
+export(fitDRModel, MCPtest, betaMod, critVal, emax, exponential,
+       linear, linlog, logistic, modelMeans, getBnds, 
+       mvtnorm.control, quadratic, sigEmax, MCPtest, intervals,
+       ED, MED, LP, planMM, plotModels, powCalc, powerMM, powerScenario,
+       sampSize, getPars, guesst, fullMod, MCPMod,
+       genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit)
+
+
+S3method(print, DRMod)
+S3method(plot, DRMod)
+S3method(intervals, DRMod)
+S3method(vcov, DRMod)
+S3method(coef, DRMod)
+S3method(predict, DRMod)
+S3method(AIC, DRMod)
+S3method(ED, DRMod)
+S3method(MED, DRMod)
+S3method(print, MCPtest)
+S3method(print, doseEst)
+S3method(print, sampSize)
+S3method(print, planMM)
+S3method(print, LP)
+S3method(print, design)
+S3method(plot, powerMM)
+S3method(plot, LP)
+S3method(plot, fullMod)
+S3method(plot, planMM)
+S3method(plot, MCPMod)
+S3method(print, MCPMod)
+S3method(print, summary.MCPMod)
+S3method(summary, MCPMod)
+S3method(predict, MCPMod)
+S3method(print, bootMCPMod)
+S3method(print, powerScen)
+
+useDynLib(DoseFinding)

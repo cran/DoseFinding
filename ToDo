@@ -1,0 +1,10 @@
+To do:
+- allow for lower and upper bounds for allocations in 
+  calcOptDesign function (could be an option when method = "solnp")
+- allow for dose finding with active control  
+- additional methods for bootMCPMod objects (plot, summary method)
+- calculation of lower bound on design criterion (for validating numerically
+  found optima)
+- Function to interactively choose guesstimates
+- long term goal: allowing for more general endpoint distributions
+  (e.g. Bernoulli, negative-binomial, survival)
