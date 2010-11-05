@@ -9,8 +9,7 @@
 }
 \usage{
 \method{predict}{DRMod}(object, type = c("fullModel", "EffectCurve"),
-        newdata = NULL, doseSeq = NULL, addCovarVals,
-        se.fit = FALSE, lenSeq = 101,
+        newdata = NULL, doseSeq = NULL, se.fit = FALSE, lenSeq = 101,
         data = getData(object), uGrad = NULL,...)
 }
 \arguments{
@@ -30,10 +29,6 @@
   in case of type="EffectCurve", if missing use lenSeq
   equally spaced values between smallest and largest dose in the
   data.
-}
-\item{addCovarVals}{
-  Data frame with one row specifying values for the additional
-  covariates when type = "fullModel"
 }
 \item{se.fit}{
   Logical determining, whether standard deviations for the predicted

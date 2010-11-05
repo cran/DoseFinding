@@ -398,7 +398,7 @@ fit.control <- function(nlscontrol = list(), nlminbcontrol = list(),
 }
 
 ## main fitting function, returns an object of class DRMod
-fitDRModel <- function(formula, data, model, addCovars = ~1, 
+fitDRModel <- function(formula, data, model = NULL, addCovars = ~1, 
                      na.action = na.fail,  optimizer = c("nls", "nls&bndnls", "bndnls"),
                      bnds = NULL, start = NULL, nlscontrol = nls.control(),
                      gridSize = list(dim1=30, dim2=144), nlminbcontrol = list(),
@@ -426,6 +426,8 @@ fitDRModel <- function(formula, data, model, addCovars = ~1,
   optimizer <- match.arg(optimizer)  
   builtIn <- c("linlog", "linear", "quadratic", "emax", "exponential", 
       "logistic", "betaMod", "sigEmax")
+  if(is.null(model))
+    stop("need to specify the model that should be fitted")
   modelNum <- match(model, builtIn)
   builtIn <- !is.na(modelNum)
   if(builtIn){
@@ -869,7 +871,7 @@ fitModel.userMod <- function(data, model, addCovars, addArgs, uModPars,
 }
 
 predict.DRMod <- function(object, type = c("fullModel", "EffectCurve"),
-                          newdata = NULL, doseSeq = NULL, addCovarVals,
+                          newdata = NULL, doseSeq = NULL,
                           se.fit = FALSE, lenSeq = 101,
                           data = getData(object), uGrad = NULL, ...){
   if(length(object) == 1){ # object does not contain a converged fit
@@ -1049,6 +1051,40 @@ print.DRMod <- function(x, digits = 5,...){
   cat("Degrees of freedom:", x$df, "\n")
 }
 
+summary.DRMod <- function(object, digits = 4, data = getData(object), ...){
+  class(object) <- "summary.DRMod"
+  print(object, digits = digits, data = data)
+}
+
+print.summary.DRMod <- function(x, digits = 4, data, ...){
+  if(length(x) == 1){
+    cat("NA\n")
+    return()
+  }
+  cat("Fitted Dose Response Model\n\n")
+  cat(paste("Model:", attr(x, "model")), "\n\n")
+  ## residual information
+  cat("Residuals:\n")
+  nam <- c("Min", "1Q", "Median", "3Q", "Max")
+  nn <- attr(x, "doseRespNam")
+  resid <- predict.DRMod(x, data=data)-data[[nn[2]]]
+  rq <- structure(quantile(resid), names = nam)
+  print(rq, digits = digits, ...)
+
+  cat("\nCoefficients:\n")
+  coefs <- x$coef
+  sdv <- sqrt(diag(vcov.DRMod(x, data = data)))
+  df <- matrix(nrow = length(coefs), ncol = 2)
+  df[,1] <- coefs
+  df[,2] <- sdv
+  colnam <- c("Estimate", "Std. Error")
+  dimnames(df) <- list(names(coefs), colnam)
+  print(df, digits = digits)
+  cat("\nResidual standard error:", signif(sqrt(x$RSS2/x$df), 
+      digits), "\n")
+  cat("Degrees of freedom:", x$df, "\n")
+}
+
 ## calculate gradient for dose-resonse model
 getGrad <- function(object, dose, uGrad = NULL){
   ## object - fitted DRMod object (builtin or usermodel)
@@ -1056,7 +1092,7 @@ getGrad <- function(object, dose, uGrad = NULL){
   ## uGrad - function that takes the same arguments
   ##         as usermodel function and returns
   ##         gradient
-  if(!inherits(object, "DRMod")) {
+  if(!inherits(object, c("DRMod", "summary.DRMod"))) {
     stop("object must inherit from class DRMod")
   }
   model <- attr(object, "model")
@@ -1230,9 +1266,9 @@ getData <- function (object){
   }
   if(!is.data.frame(data)){
     stop("data provided by getData not a data frame,
-          try to use the data argument of plot.DRMod,
-          predict.DRMod, vcov.DRMod or
-          intervals.DRMod directly")
+          try to use the data argument directly to
+          hand over the data set on which the model
+          was fitted.")
   }
   data
 }

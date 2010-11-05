@@ -17,7 +17,7 @@
   below, see the argument 'optimizer'.
 }
 \usage{
-fitDRModel(formula, data, model, addCovars = ~1, na.action = na.fail,
+fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
            optimizer = c("nls", "nls&bndnls", "bndnls"), bnds = NULL, start = NULL,
            nlscontrol = nls.control(), gridSize =
            list(dim1 = 30, dim2 = 144), nlminbcontrol = list(),
@@ -141,8 +141,14 @@ data(biom)
 fitemax <- fitDRModel(resp ~ dose, biom, "emax")
 
 # a lot of things can be done with a DRMod object
+# basic information
+fitemax
+# a bit more information
+summary(fitemax)
 # predicting
 predict(fitemax, newdata=data.frame(dose = c(0,0.5,1)))
+# predictions with standard error
+
 # plotting
 plot(fitemax, type = "DRCurve")
 plot(fitemax, type = "EffectCurve") # difference from placebo

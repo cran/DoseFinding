@@ -17,7 +17,9 @@ library(lattice)
 
 ## check whether models argument is valid 
 ## (two list entries with the same name are not allowed)
-checkModels <- function(models){
+checkModels <- function(models, ind){
+  if(is.null(models) & ind)
+    stop("need to specify a candidate model list in 'models' argument")
   nams <- names(models)
   if(length(nams) != length(unique(nams))){
     stop("only one list entry allowed for each model class in 'models' argument")
@@ -127,7 +129,7 @@ guesst <- function(d, p, model = c("emax", "exponential", "logistic", "quadratic
 ## control parameters for functions in package mvtnorm
 mvtnorm.control <-
   function(maxpts = 30000, abseps = 0.001, releps = 0,
-           interval = c(0,10)){
+           interval = NULL){
   res <- list(maxpts = maxpts, abseps = abseps,
               releps = releps, interval = interval)
   class(res) <- "GenzBretz"    
@@ -323,7 +325,7 @@ getPars <- function(model, doses, initEstim, base, maxEff,
 ## list (similar to the models list) but with all model parameters.
 fullMod <-  function(models, doses, base, maxEff,
                      off = 0.1*max(doses), scal = 1.2*max(doses)){
-  checkModels(models)
+  checkModels(models, TRUE)
   complModels <- list()
   i <- 0
   for(nm in names(models)){
@@ -372,9 +374,10 @@ fullMod <-  function(models, doses, base, maxEff,
   complModels
 }
 
-plotModels <- function (models, doses, base, maxEff, nPoints = 200, off = 0.1*max(doses), 
-    scal = 1.2 * max(doses), superpose = FALSE, ylab = "Model means", 
-    xlab = "Dose", ...) 
+plotModels <- function (models, doses, base = 0, maxEff = 1, nPoints = 200,
+                        off = 0.1*max(doses),  scal = 1.2 * max(doses),
+                        superpose = FALSE, ylab = "Model means", 
+                        xlab = "Dose", ...) 
 {
     if (inherits(models, "fullMod")) {
         doses <- attr(models, "doses")

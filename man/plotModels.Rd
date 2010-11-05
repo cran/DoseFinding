@@ -7,7 +7,7 @@
   arguments.
 }
 \usage{
-plotModels(models, doses, base, maxEff, nPoints = 200, 
+plotModels(models, doses, base = 0, maxEff = 1, nPoints = 200, 
            off = 0.1 * max(doses), scal = 1.2 * max(doses), 
            superpose = FALSE, ylab = "Model means", 
            xlab = "Dose", ...)

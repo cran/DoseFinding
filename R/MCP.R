@@ -420,7 +420,7 @@ print.MCPtest <- function(x, digits = 4, ...){
   print(dfrm)
   if(!is.null(x$critVal)){
     twoSide <- x$alternative == "two.sided"
-    vec <- c(paste(" one-sided (", x$alternative[1], "))", sep=""), " two-sided)")
+    vec <- c(" one-sided)", " two-sided)")
     cat("\n","Critical value: ", round(x$critVal, digits), sep="")
     if(attr(x$critVal, "Calc")){
       cat(" (alpha = ", x$alpha,",", vec[twoSide+1], sep="")

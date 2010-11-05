@@ -13,7 +13,7 @@ rndDesign(w, N, eps = 0.0001)
 }
 \arguments{
   \item{w}{
-    Vector of design weights.
+    Vector of design weights or an object of class "design".
   }
   \item{N}{
     Total sample size.

@@ -1,3 +1,16 @@
+2010-11-05 Bjoern Bornkamp
+    * MED function now checks for clinRel > 0 (thanks to Georgina).
+    * Changed minor bug in output from print.MCPtest (print one-sided
+      just once)
+    * Code now outputs a warning, when 'models' argument is missing
+      (in MCPMod and fullMod function); in fitDRModel it outputs 
+      a warning if 'model' is missing
+    * Introduced a default base = 0 and maxEff = 1 for the plotModels
+      function.
+    * Added a summary method for DRMod objects.
+    * Removed superfluous addCovarVals argument from predict.DRMod
+    * Removed option method = "mult" in calcOptDesign
+
 2010-07-08 Bjoern Bornkamp
     * calcCrit and calcOptDesign now check for NA, NaN or +-Inf
       values in the gradient and bvector (and stop execution when

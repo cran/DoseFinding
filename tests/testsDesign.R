@@ -115,7 +115,6 @@ fMod <- fullMod(fmods, doses, base=0, maxEff=0.4, off=1)
 weights <- rep(1/5, 5)
 deswgts <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200, off=1)
 deswgts2 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200, off=1, method = "nlminb")
-deswgts3 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200, off=1, method = "mult")
 
 # Some other examples 
 ########################################################################
