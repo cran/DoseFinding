@@ -8,6 +8,8 @@ export(fitDRModel, MCPtest, betaMod, critVal, emax, exponential,
        genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit,
        getGrad)
 
+S3method(summary, DRMod)
+S3method(print, summary.DRMod)
 S3method(print, DRMod)
 S3method(plot, DRMod)
 S3method(intervals, DRMod)

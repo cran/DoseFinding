@@ -11,7 +11,7 @@
 }
 \usage{
 \method{predict}{MCPMod}(object, type = c("fullModel", "EffectCurve"), newdata = NULL,
-        doseSeq = NULL, addCovarVals, lenSeq = 101, uGrad = NULL, ...)
+        doseSeq = NULL,  lenSeq = 101, uGrad = NULL, ...)
 }
 \arguments{
   \item{object}{
@@ -30,10 +30,6 @@
   in case of type="EffectCurve", if missing use lenSeq
   equally spaced values between smallest and largest dose in the
   data.
-}
-\item{addCovarVals}{
-  Data frame with one row specifying values for the additional
-  covariates when type = "fullModel"
 }
 \item{lenSeq}{
   If doseSeq is not specified a equally spaced grid of "lenSeq"

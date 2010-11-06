@@ -11,7 +11,7 @@
 }
 \usage{
 mvtnorm.control(maxpts = 30000, abseps = 0.001, releps = 0,
-           interval = c(0,10))
+           interval = NULL)
 }
 \arguments{
   \item{maxpts}{ Maximum number of function values as integer. }

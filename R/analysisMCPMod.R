@@ -201,7 +201,7 @@ MCPMod <-
            testOnly = FALSE, mvtcontrol = mvtnorm.control(),
            na.action = na.fail, bnds = NULL, uGrad = NULL)
 {
-  checkModels(models) # check for valid 'models' argument
+  checkModels(models, is.null(contMat)) # check for valid 'models' argument
   if(!inherits(formula, "formula")){ # check for valid formula argument
     stop("need to hand over a formula in 'formula' argument")
   }
@@ -613,7 +613,7 @@ plot.MCPMod <-
 
 ## function to predict dose-response curve from MCPMod object
 predict.MCPMod <- function(object, type = c("fullModel", "EffectCurve"), newdata = NULL,
-                           doseSeq = NULL, addCovarVals, lenSeq = 101, uGrad = NULL,
+                           doseSeq = NULL, lenSeq = 101, uGrad = NULL,
                            ...){
   if(!object$signf | all(is.na(object$model2))){ # return vector of NA of appropriate length
     if(type[1] == "fullModel"){
@@ -635,7 +635,7 @@ predict.MCPMod <- function(object, type = c("fullModel", "EffectCurve"), newdata
   fm <- object$fm
   if(sub != "ave"){
     res <- predict(fm[[1]], type, newdata, doseSeq,
-                   addCovarVals, FALSE, lenSeq, object$data,
+                   se.fit = FALSE, lenSeq, object$data,
                    uGrad, ...)
   } else {
     res <- nam <- list();z <- 0
@@ -643,7 +643,7 @@ predict.MCPMod <- function(object, type = c("fullModel", "EffectCurve"), newdata
       if(is.list(fm[[i]])){
         z <- z + 1
         res[[z]] <- predict(fm[[i]], type, newdata, doseSeq,
-                            addCovarVals, FALSE, lenSeq, object$data,
+                            se.fit = FALSE, lenSeq, object$data,
                             uGrad, ...)
         nam[[z]] <- attr(fm[[i]], "model")
       }
@@ -686,6 +686,10 @@ MED.DRMod <- function(object, type = c("MED2", "MED1", "MED3"), clinRel = NULL,
   }
   if(is.null(clinRel)){
     stop("need clinical relevance parameter in argument clinRel")
+  } else {
+    if(clinRel < 0){
+      stop("need clinRel > 0.")
+    }
   }
   if(any(gamma > 0.5)){
     stop("gamma needs to be in (0,0.5]")
