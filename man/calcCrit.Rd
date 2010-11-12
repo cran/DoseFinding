@@ -21,7 +21,10 @@ calcCrit(design, fullModels, weights, doses, clinRel,
   \item{design}{ 
     Numeric vector of allocation weights or matrix for the different
     doses. The rows of the matrices need to sum to 1. Alternatively
-    also an object of class "design" can be used.
+    also an object of class "design" can be used. Note that there should
+    be at least as many design points available as there are parameters
+    in the dose-response models selected in \code{fullModels} (otherwise
+    the code returns an NA).
 }
   \item{fullModels}{
    List containing all model parameters for the models (can for example be

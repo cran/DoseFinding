@@ -1,4 +1,13 @@
-2010-11-05 Bjoern Bornkamp
+2010-11-12 Bjoern Bornkamp (version 0.3-1)
+    * calcOptDesign now has an additional optimizer "exact". This
+      methods calculates all possible designs for a given sample size
+      and then selects the best.
+    * Changed order in MakeVars as requested
+    * calcCrit now checks whether there are not less design points
+      than parameters.
+    * Code now checks for positive sigma in powCalc and powerMM
+	
+2010-11-05 Bjoern Bornkamp (version 0.2-3)
     * MED function now checks for clinRel > 0 (thanks to Georgina).
     * Changed minor bug in output from print.MCPtest (print one-sided
       just once)
@@ -11,7 +20,7 @@
     * Removed superfluous addCovarVals argument from predict.DRMod
     * Removed option method = "mult" in calcOptDesign
 
-2010-07-08 Bjoern Bornkamp
+2010-07-08 Bjoern Bornkamp (version 0.2-2)
     * calcCrit and calcOptDesign now check for NA, NaN or +-Inf
       values in the gradient and bvector (and stop execution when
       these values occur) before passing these values to the C
@@ -20,7 +29,7 @@
     * Changed mvtnorm.control default argument for "interval"
       to reflect recent changes in mvtnorm package.
 
-2010-05-27 Bjoern Bornkamp
+2010-05-27 Bjoern Bornkamp (version 0.2-1)
     * Made the getGrad function (gradient for dose-response model),
       including documentation available for end-user (was previously
       hidden in NAMESPACE)
@@ -30,14 +39,14 @@
       panel.xyplot calls for each group)
 
 
-2010-05-20 Bjoern Bornkamp
+2010-05-20 Bjoern Bornkamp (version 0.1-3)
     * Smaller changes in calcCrit functions (the parameter p is
       now calculated by the nPars function as in getOptDesign)
     * Add further options to powerScenario function (now possible
       to for user-specified row and column names for output matrix)
 
 
-2010-05-13 Bjoern Bornkamp
+2010-05-13 Bjoern Bornkamp (version 0.1-2)
     * Removed one example from sampSize to reduce check time.
     * modelSelect: Use first model when two models have exactly
       the same AIC or BIC value.
@@ -47,7 +56,7 @@
     * calcCrit: Code now allows for specifying multiple designs
       in a matrix.
 	
-2010-04-14 Bjoern Bornkamp
+2010-04-14 Bjoern Bornkamp (version 0.1-1)
     * fitModel.nls now checks whether nls with plinear option made
       a positive number of iterations (as additional convergence check).
       In some cases (eg. when number of parameters = number of 
@@ -61,7 +70,7 @@
       also includes dose estimates under each model & corrected
       bug in print.bootMCPMod function (thanks to Setia Pramana)
 
-2010-03-08 Bjoern Bornkamp
+2010-03-08 Bjoern Bornkamp (version 0.1)
     * 1st Release as version 0.1. Improvements over MCPMod package:
       - Extended and improved version of MCPMod (allowing for covariates
         and robustified self-developed optimizer)

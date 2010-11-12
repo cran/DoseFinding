@@ -16,7 +16,7 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
              control = list(),  scal=1.2*max(doses),
              off=0.1*max(doses),
              type = c("MED", "Dopt", "MED&Dopt"),
-             method = c("Nelder-Mead", "nlminb", "solnp"),
+             method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
              lowbnd = rep(0, length(doses)),
              uppbnd = rep(1, length(doses)))
 }
@@ -43,11 +43,19 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
     Vector of sample sizes already allocated to the different doses.
 }
   \item{n2}{
-   Sample size for next cohort.
+   Sample size for next cohort (mandatory for \code{method = "exact"}
+   and when any entry of \code{nold} is larger than 0).
 }
   \item{control}{
    List containing control parameters passed down to numerical
-   optimization algorithms (optim, nlminb or solnp function)
+   optimization algorithms (optim, nlminb or solnp function). For \code{type =
+   "exact"} this should be a list with possible entries \code{maxvls1}
+   and \code{maxvls2}, determining the maximum number of designs allowed
+   for passing to the criterion function (default \code{maxvls2=1e5}) and for
+   creating the initial unrestricted matrix of designs (default
+   \code{maxvls1=1e6}). In addition there can be an entry
+   \code{blockSize} in case the patients are allocated a minimum group
+   size is requiredy.
 }
   \item{scal}{
    Scal parameter for beta model
@@ -61,17 +69,29 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
 }
 \item{method}{
   Algorithm used for calculating the optimal design. Options
-  "Nelder-Mead" and "nlminb" use the \code{\link{optim}} respectively the
+  "Nelder-Mead" and "nlminb" use the \code{\link{optim}} and
   \code{\link{nlminb}} function and use trigonometric functions to turn
   the constrained optimization problem into an unconstrained one (see
   Atkinson, Donev and Tobias, 2007, pages 130,131).
+
   Option "solnp" uses the solnp function from the Rsolnp package, which
-  implements an optimizer for non-linear optimization under constraints.
+  implements an optimizer for non-linear optimization under general
+  constraints.
+
+  Option "exact" tries all given combinations of \code{n2} patients to the
+  given dose groups (subject to the bounds specified via \code{lowbnd}
+  and \code{uppbnd}) and reports the best design. When patients are only
+  allowed to be allocated in groups of a certain blockSize, this
+  can be adjusted via the control argument.
+  \code{n2/blockSize} and \code{length(doses)} should be rather small
+  for this approach to be feasible.
 
   When the number of doses is small (<8) usually "Nelder-Mead" and
   "nlminb" are  best suited ("nlminb" is usually a bit faster and more
   reliable than "Nelder-Mead"). For a larger  number of doses option
-  "solnp" is the best option ("Nelder-Mead" and "nlminb" often fail).
+  "solnp" is the best option ("Nelder-Mead" and "nlminb" often
+  fail). When the sample size is small "exact" provides the optimal
+  solution rather quickly.
 }
 \item{lowbnd, uppbnd}{
   Vectors of the same length as dose vector specifying upper and lower
@@ -120,9 +140,16 @@ des3 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, type = "MED&Dopt")
 des1 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="Nelder-Mead")
 des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="nlminb")
 des3 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, method="solnp")
-# now assume additional constraints (only available for method = solnp)
+## assume additional constraints (only available for method = solnp)
 des4 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, lowbnd = rep(0.2,3),
         uppbnd = rep(0.45, 3), method="solnp")
+## assume only 20 patients are to be allocated (exact calculation possible)
+des5 <- calcOptDesign(fMod, weights, doses, n2 = 20, clinRel=0.2,
+                      method="exact")
+## assume the minimum block-size patients is 5
+des6 <- calcOptDesign(fMod, weights, doses, n2 = 20, clinRel=0.2,
+                      method="exact", control = list(blockSize = 5))
+
 
 ## larger candidate model set
 doses <- c(0, 10, 25, 50, 100, 150)
