@@ -447,7 +447,10 @@ powCalc <- function(cMat, n, alpha = 0.025, delta = NULL, mu = NULL,
            sigma = NULL, cVal = NULL, corMat = NULL,
            alternative = c("one.sided", "two.sided"),
            control = mvtnorm.control()){
-
+  if(!is.null(sigma)){
+    if(sigma <= 0)
+      stop("sigma needs to be > 0")
+  }
   alternative <- match.arg(alternative)
   nD <- nrow(cMat)
   nMod <- ncol(cMat)
@@ -557,6 +560,8 @@ powerMM <- function(models, doses, base, maxEff, sigma, lower, upper,
            alternative = c("one.sided", "two.sided"),
            control = mvtnorm.control(), muMat = NULL, alRatio = NULL,
            typeN = c("arm", "total"), ...){
+  if(sigma <= 0)
+    stop("sigma needs to be > 0")
   alternative <- match.arg(alternative)
   if (!missing(models)) {
     ## if models is of class fullMod, will ignore other arguments

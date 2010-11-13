@@ -153,3 +153,30 @@ weights <- rep(0.2, 5)
 des1 <- calcOptDesign(fMod, weights, doses, clinRel = 200, scal = 500*1.2)
 des2 <- calcOptDesign(fMod, weights, doses, clinRel = 200, scal = 500*1.2, type = "Dopt")
 des3 <- calcOptDesign(fMod, weights, doses, clinRel = 200, scal = 500*1.2, type = "MED&Dopt")
+
+########################################################################
+#### method = "exact" and "solnp"
+fmods <- list(emax = c(25, 107.14), logistic = c(150, 45.51),
+              linear = NULL, betaMod = c(1,1))
+doses <- c(0, 62.5, 125, 250, 500)
+fMod <- fullMod(fmods, doses, base=60, maxEff=280, scal=500*1.2)
+weights <- rep(0.2, 5)
+des41 <- calcOptDesign(fMod, weights, doses, clinRel = 200, n2 = 10,
+                      scal = 500*1.2, method = "exact",
+                      lowbnd = c(0.3,0,0,0,0))
+des42 <- calcOptDesign(fMod, weights, doses, clinRel = 200, 
+                      scal = 500*1.2, method = "solnp",
+                      lowbnd = c(0.1,0,0,0,0))
+des51 <- calcOptDesign(fMod, weights, doses, clinRel = 200, n2 = 10,
+                       scal = 500*1.2, type = "Dopt", method = "exact",
+                       uppbnd = rep(0.5,5))
+des52 <- calcOptDesign(fMod, weights, doses, clinRel = 200, 
+                       scal = 500*1.2, type = "Dopt", method = "solnp",
+                       uppbnd = rep(0.5,5))
+des61 <- calcOptDesign(fMod, weights, doses, clinRel = 200, n2 = 10,
+                       method = "exact", scal = 500*1.2,
+                       type = "MED&Dopt")
+des62 <- calcOptDesign(fMod, weights, doses, clinRel = 200, 
+                       method = "solnp", scal = 500*1.2,
+                       type = "MED&Dopt")
+

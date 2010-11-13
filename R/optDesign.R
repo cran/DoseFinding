@@ -213,7 +213,15 @@ getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
                  nold = as.double(nold), bvec=as.double(bvecs),
                  trans = idtrans, type = as.integer(type),
                  control = con, LB = lowbnd, UB = uppbnd)
-  }  
+  } else if(method == "exact"){
+    require(partitions, quietly = TRUE)
+    con <- list(maxvls1 = 1e6, maxvls2 = 1e5, blockSize = 1)
+    con[(namc <- names(control))] <- control    
+    mat <- getDesMat(n2, k, lowbnd, uppbnd,
+                     con$blockSize, con$maxvls1, con$maxvls2)
+    designmat <- sweep(mat*n2, 2, nold, "+")
+    res <- sweep(designmat, 2, n2+sum(nold), "/")
+  }
   res
 }
 
@@ -262,7 +270,7 @@ optFunc <- function(x, xvec, pvec, k, weights, M, n2, nold, bvec, type, trans){
 calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)),
                           n2 = NULL, control=list(), scal=1.2*max(doses), off=0.1*max(doses),
                           type = c("MED", "Dopt", "MED&Dopt"),
-                          method = c("Nelder-Mead", "nlminb", "solnp"),
+                          method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
                           lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses))){
   ## fullModels - list of all model parameters (fullMod object)
   ## weights - vector of weights for all fullModels
@@ -272,11 +280,16 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
   if(abs(sum(weights)-1) > 0.0001){
     stop("weights need to sum to 1")
   }
-  if(is.null(n2)){
-    n2 <- 100
-  }
   type <- match.arg(type)
   method <- match.arg(method)
+  if(is.null(n2)){
+    if(method == "exact")
+      stop("need to specify sample size via n2 argument")
+    if(any(nold > 0))
+      stop("need to specify sample size for next cohort via n2 argument")
+    n2 <- 100
+  }
+
   if(is.null(clinRel) & type != "Dopt"){
     stop("need to specify clinical relevance parameter")
   }
@@ -287,14 +300,17 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
     stop("uppbnd needs to be of same length as doses")
   }  
   if(any(lowbnd > 0) | any(uppbnd < 1)){
-    if(method != "solnp"){
-      stop("only optimizer solnp can handle additional constraints on weights")
+    if(method != "solnp" & method != "exact"){
+      stop("only optimizers solnp or exact can handle additional constraints on weights")
     }
   }
 
   lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
   ## check for invalid values (NA, NaN and +-Inf)
-  checkInvalid <- function(x) if(!is.null(x)) any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  checkInvalid <- function(x){
+    if(!is.null(x))
+      any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  }
   grInv <- checkInvalid(lst$gradarray)
   if(type != "Dopt"){
     bvInv <- checkInvalid(lst$barray)
@@ -319,13 +335,20 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
       warning("algorithm indicates no convergence, the 'optimizerResults'
                attribute of the returned object contains more details.")
     }
-  } else if(method == "solnp"){ # no need to transform back
+  }
+  if(method == "solnp"){ # no need to transform back
     des <- res$pars
     crit <- res$values[length(res$values)]
     if(res$convergence){
       warning("algorithm indicates no convergence, the 'optimizerResults'
                attribute of the returned object contains more details.")
     }
+  }
+  if(method == "exact"){
+    critv <- calcCrit(res, fullModels, weights, doses,
+                      clinRel, nold, n2, scal, off, type)
+    des <- res[which.min(critv),]
+    crit <- min(critv)
   }
   out <- list()
   out$crit <- crit
@@ -357,7 +380,7 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
   }
   if(any(abs(rowSums(design)-1) > 0.001)){
     stop("design needs to sum to 1")
-  }  
+  }
   if(is.null(n2)){
     n2 <- 100 # value arbitrary
   }
@@ -370,7 +393,10 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
   if(length(nold) != k)
         stop("Either nold or doses of wrong length.")
   ## check for invalid values (NA, NaN and +-Inf)
-  checkInvalid <- function(x) if(!is.null(x)) any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  checkInvalid <- function(x){
+    if(!is.null(x))
+      any(is.na(x)|is.nan(x)|abs(x)==Inf)
+  }
   grInv <- checkInvalid(lst$gradarray)
   if(type != "Dopt"){
     bvInv <- checkInvalid(lst$barray)
@@ -384,7 +410,17 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
   p <- as.integer(nPars(lst$namMods))
   type <- match(type, c("MED", "Dopt", "MED&Dopt"))
   res <- numeric(nrow(design))
-  for(i in 1:nrow(design)){
+  ## check for sufficient number of design points
+  iter <- 1:nrow(design)
+  count <- apply(design, 1, function(x) sum(x > 0.0001))
+  ind <- count < max(p)
+  if(any(ind)){
+    iter <- iter[!ind]
+    res[ind] <- NA
+    if(all(is.na(res)))
+      warning("need more at least as many dose levels in the design as parameters in the model")
+  }
+  for(i in iter){
     res[i] <- optFunc(design[i,], xvec=as.double(lst$gradarray),
                       pvec=as.integer(p), k=k, weights=as.double(weights),
                       M=M, n2=as.double(n2), nold = as.double(nold),
@@ -447,3 +483,34 @@ rndDesign <- function(w, N, eps = 0.0001){
   }
 }
 
+## calculate all possible compositions of n2 patients to nDoses groups
+## (assuming a certain block-size) upper and lower bounds on the
+## allocations can also be specified
+getDesMat <- function(n2, nDoses, lowbnd = rep(0, nDoses), 
+                      uppbnd = rep(1, nDoses), blockSize,
+                      maxvls1, maxvls2){
+  if(n2 %% blockSize)
+    stop("n2 needs to be divisible by blockSize")
+  nG <- n2/blockSize
+  combn <- choose(nG+nDoses-1,nDoses-1)
+  if(combn > maxvls1)
+    stop(paste(combn, "(unrestricted) combinations, increase maxvls1 in control 
+         argument if you really want to perform this calculation"))
+
+  desmat <- t(compositions(nG, nDoses))/nG
+ 
+  if(any(lowbnd > 0) | any(uppbnd < 1)){
+    comp <- matrix(lowbnd, byrow = TRUE, ncol = nDoses, nrow=nrow(desmat))
+    LindMat <- desmat >= comp
+    comp <- matrix(uppbnd, byrow=TRUE, ncol = nDoses, nrow=nrow(desmat))
+    UindMat <- desmat <= comp
+    ind <- rowSums(LindMat*UindMat) == nDoses
+    desmat <- desmat[ind,]
+    if(nrow(desmat) == 0)
+      stop("no design is compatible with bounds specified in lowbnd and uppbnd")
+  }
+  if(nrow(desmat) > maxvls2)
+    stop(paste(nrow(desmat), "combinations, increase maxvls2 in control argument if
+         you really want to perform this calculation"))
+  desmat
+}
