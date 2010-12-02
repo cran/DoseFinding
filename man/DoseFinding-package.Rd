@@ -19,8 +19,8 @@ homoscedastic endpoints are supported.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.3-1\cr
-Date: \tab 2010-11-12\cr
+Version: \tab 0.4-1\cr
+Date: \tab 2010-12-01\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }
@@ -31,7 +31,10 @@ Bjoern Bornkamp, Jose Pinheiro, Frank Bretz
   
 Maintainer: Bjoern Bornkamp <bornkamp@statistik.tu-dortmund.de>
 } \references{ 
-
+  Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
+  J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
+  to appear in \emph{Annals of Applied Statistics}
+  
   Bornkamp B., Pinheiro J. C., and Bretz, F. (2009). MCPMod: An
   R Package for the Design and Analysis of Dose-Finding Studies,
   \emph{Journal of Statistical Software}, \bold{29}(7), 1--23

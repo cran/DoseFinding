@@ -1,3 +1,10 @@
+2010-12-01 Bjoern Bornkamp (version 0.4-1)
+    * Introduced new functions calcBayesEst and getUpdDesign,
+      both were used for simulation purposes in the paper
+      Bornkamp et al. (2011) "Response Adaptive Dose-Finding
+      under Model Uncertainty" (to appear in Annals of Applied
+      Statistics).
+	
 2010-11-12 Bjoern Bornkamp (version 0.3-1)
     * calcOptDesign now has an additional optimizer "exact". This
       methods calculates all possible designs for a given sample size
