@@ -1,3 +1,7 @@
+2011-02-09 Bjoern Bornkamp (version 0.4-2)
+    * calcBayesEst, getUpdDesign: Minor changes to make functions
+      more suited for general purpose use.
+
 2010-12-01 Bjoern Bornkamp (version 0.4-1)
     * Introduced new functions calcBayesEst and getUpdDesign,
       both were used for simulation purposes in the paper
