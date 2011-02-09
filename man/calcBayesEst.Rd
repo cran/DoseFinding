@@ -11,16 +11,17 @@
   al. (2011), see below for the reference. 
 }
 \usage{
-calcBayesEst(dat, models, prior, bnds = getBnds(mD = max(dat$dose)), 
-             weights, numPar = c(100, 1597), meanInd = TRUE,
-             clinRel, scal, off)
+calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)), 
+             weights = NULL, numPar = c(100, 1597), meanInd = TRUE,
+             clinRel, scal = NULL, off = NULL)
 }
 \arguments{
-  \item{dat}{
-    data frame containing doses (first column) and responses (2nd column)
-  }
+  \item{data}{Data frame containing the dose and the response data. The code assumes
+    the columns to be named "dose" and "resp". }
   \item{models}{
-    models list (as in \code{\link{MCPMod}} function)
+    models list (as in \code{\link{MCPMod}} function). Note that for
+    this function only the models "linear", "linlog", "emax",
+    "exponential", "logistic" and "betaMod" are allowed.
   }
   \item{prior}{
     List with the following entries\cr
@@ -56,7 +57,8 @@ calcBayesEst(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
     List of parameter bounds for models (see \code{\link{getBnds}} for details)
   }
   \item{weights}{
-    prior model probabilities: in same order as models in list
+    prior model probabilities: in same order as models in list. By
+    default equal prior model probabilities are assumed.
   }
   \item{numPar}{
     vector with two entries (number of glp points for 1d and 2d integration)

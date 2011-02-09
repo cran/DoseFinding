@@ -787,6 +787,8 @@ sampSize <- function(models, doses, base, maxEff, sigma, upperN, lowerN = floor(
            typeN = c("arm", "total"), ...){
 
   alternative <- match.arg(alternative)
+  if(power >= 1 | power <= 0)
+    stop("power value needs to be in (0,1)")
   if (missing(models)) {
     ## may pass necessary information via muMat
     if (is.null(muMat)) {

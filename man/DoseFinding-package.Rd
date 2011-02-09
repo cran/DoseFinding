@@ -19,8 +19,8 @@ homoscedastic endpoints are supported.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.4-1\cr
-Date: \tab 2010-12-01\cr
+Version: \tab 0.4-2\cr
+Date: \tab 2011-02-09\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }
@@ -94,3 +94,4 @@ weights <- rep(1/5, 5)
 desMED <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
                         off=1, method = "nlminb")
 }
+

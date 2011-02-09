@@ -147,19 +147,25 @@ calcGradBvec <- function(fullModels, doses, clinRel, off, scal, type){
 
 ## checks whether MED exists
 existsMED <- function(model, doses, pars, clinRel, off, scal){
-  ds <- seq(min(doses), max(doses), length = 101)
-  pars <- c(pars, if(model == "linlog") off else if(model == "betaMod") scal else NULL)
-  if(model == "betaMod"){ # add a small amount for betaMod 
-    eps <- 0.01*clinRel # (-> some additional space necessary for calculation of numerical deriv of bvec of beta model)
+  ## checks whether MED exists
+  ## if clinRel = NULL return TRUE
+  if(!is.null(clinRel)){
+    ds <- seq(min(doses), max(doses), length = 101)
+    pars <- c(pars, if(model == "linlog") off else if(model == "betaMod") scal else NULL)
+    if(model == "betaMod"){ # add a small amount for betaMod 
+      eps <- 0.01*clinRel # (-> some additional space necessary for calculation of numerical deriv of bvec of beta model)
+    } else {
+      eps <- 0
+    }
+    pars <- c(list(ds), as.list(pars))
+    mm <- do.call(model, pars)
+    if(any(mm-mm[1] > clinRel+eps))
+      return(TRUE)
+    else
+      return(FALSE)
   } else {
-    eps <- 0
+    return(TRUE)
   }
-  pars <- c(list(ds), as.list(pars))
-  mm <- do.call(model, pars)
-  if(any(mm-mm[1] > clinRel+eps))
-    TRUE
-  else
-    FALSE
 }
 
 ## returns the number of parameters (needed for C call)

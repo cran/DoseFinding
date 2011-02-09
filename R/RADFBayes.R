@@ -16,11 +16,11 @@
 ## Bornkamp et al. (2011) Response-adaptive dose-finding under model
 ## uncertainty, Annals of Applied Statistics
 
-getUpdDesign <- function(dat, doses, n2, clinRel, models, prior, scal,
-                         meanInd, sWeights, sDoses,
+getUpdDesign <- function(data = NULL, doses, n2, clinRel=NULL, models, prior, scal = NULL,
+                         meanInd = TRUE, sWeights, sDoses,
                          method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
                          type = c("MED", "Dopt", "MED&Dopt"), control = list()){
-  ## dat - data frame containing doses (first column!) and responses (2nd column)
+  ## data - data frame containing doses (first column!) and responses (2nd column)
   ## doses - numeric vector given the doses available for the adaption
   ## n2 - numeric specifying the total sample size of the next cohort
   ## clinRel - clinical relevance threshold
@@ -35,39 +35,44 @@ getUpdDesign <- function(dat, doses, n2, clinRel, models, prior, scal,
   ##          usually Nelder-Mead
   ## control - list passed to calcoptDesign (control parameters for optimization)
 
-   res <- NULL
-   if(!is.null(dat)){
-     res <- calcBayesEst(dat, models, prior = prior, clinRel = clinRel,
+  if(!is.null(data)){
+    if (any(is.na(match(c("resp", "dose"), names(data))))) {
+      stop("resp and/or dose not found in data")   
+    }
+  }
+  res <- NULL
+   if(!is.null(data)){
+     res <- calcBayesEst(data, models, prior = prior, clinRel = clinRel,
                          scal = scal, meanInd = meanInd)
      wgths <- attr(res, "weights")[attr(res, "existsMED")]
      wgths[wgths < 0.00001] <- 0
      wgths <- wgths/sum(wgths)
      res <- xMEDList(res, attr(res, "existsMED")) # list of models with existing MED
    }
-   if(length(res) == 0){
-     if(is.null(dat)){ # start design
-       if(length(sWeights)!=length(sDoses)){
-         stop("sWeights and sDoses need to be of the same length.")
-       }
-       desRec <- cbind(sDoses, rndDesign(sWeights, n2))     
-     } else { # if no model has an MED estimate; use uniform design on available doses
-       nD <- length(doses)
+  if(length(res) == 0){
+    if(is.null(data)){ # start design
+      if(length(sWeights)!=length(sDoses)){
+        stop("sWeights and sDoses need to be of the same length.")
+      }
+      desRec <- cbind(sDoses, rndDesign(sWeights, n2))     
+    } else { # if no model has an MED estimate; use uniform design on available doses
+      nD <- length(doses)
        desRec <- cbind(doses, rndDesign(rep(1/nD,nD), n2))
-     }
-   } else {
-     ## calculate dose allocations used so far
-     ss1 <- calcPat(dat, doses)
-     method <- match.arg(method)
+    }
+  } else {
+    ## calculate dose allocations used so far
+    ss1 <- calcPat(data, doses)
+    method <- match.arg(method)
      desRec <- calcOptDesign(res, wgths, doses, clinRel = clinRel, 
-                            nold = ss1, n2 = n2, scal = scal,
-                            control = control, method = method, type = type)
-     desRec <- cbind(doses, rndDesign(desRec$design, n2))
-   }
-   desRec  
- }
+                             nold = ss1, n2 = n2, scal = scal,
+                             control = control, method = method, type = type)
+    desRec <- cbind(doses, rndDesign(desRec$design, n2))
+  }
+  desRec  
+}
 
-calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)), weights, 
-                  numPar = c(100, 1597), meanInd = TRUE, clinRel, scal, off){
+calcBayesEst <- function(data, models, prior, bnds = getBnds(mD = max(data$dose)), weights = NULL, 
+                         numPar = c(100, 1597), meanInd = TRUE, clinRel = NULL, scal = NULL, off = NULL){
   ## prior: List with the following entries
   ## a, d, m1, m2, V11, V12, V21, V22, S
   ## a/(d+2): prior mode of sigma2, if d<4 sigma2 has infinite variance
@@ -75,10 +80,13 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
   ## numPar: vector with two entries (number of glp points for 1d and 2d integration)
   ## meanInd: Should posterior means or posterior mode be calculated
   ## weights: prior model probabilities: in same order as models in list
-  
+
+  if (any(is.na(match(c("resp", "dose"), names(data))))) {
+    stop("resp and/or dose not found in data")       
+  }
   ## Check for valid scal
-   if(!missing(scal) & !is.null(scal)){
-     if(scal < max(dat$dose)){
+   if(!is.null(scal)){
+     if(scal < max(data$dose)){
        stop("scal needs to be larger than maximum dose")
      }
    }
@@ -104,8 +112,8 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
    }
 
    ## Additional calculations
-   sm <- summ(dat)
-   doses <- unique(dat$dose)
+   sm <- summ(data)
+   doses <- unique(data$dose)
    linpar <- c(prior$a, prior$d, prior$m, prior$V)
    if(length(linpar) < 8)
      stop("need to specify valid 'prior' list")
@@ -129,7 +137,7 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
      }
      modNr <- match(nm, biModels)
      if (is.na(modNr)){
-       stop(paste("only following models allowed: ", biModels))
+       stop(cat("only following models allowed: ", biModels, "\n"))
      }
 
      if(modNr <= 2){ # linear and linlog model
@@ -224,7 +232,7 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
 
    ## Calculate posterior model probabilities
    intLiks <- do.call("c", intLiks)
-   if(missing(weights)){
+   if(is.null(weights)){
      weights <- rep(1/length(intLiks), length(intLiks))
    }
    if(length(weights) != length(intLiks)){
@@ -238,23 +246,6 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
    attr(ParList, "weights") <- w
    attr(ParList, "existsMED") <- do.call("c", exMED)
    ParList
- }
-
- existsMED <- function(model, doses, pars, clinRel, off, scal){
-   ## checks whether MED exists
-   ds <- seq(min(doses), max(doses), length = 101)
-   pars <- c(pars, if(model == "linlog") off else if(model == "betaMod") scal else NULL)
-   if(model == "betaMod"){ # add a small amount for betaMod 
-     eps <- 0.01*clinRel
-   } else {
-     eps <- 0
-   }
-   pars <- c(list(ds), as.list(pars))
-   mm <- do.call(model, pars)
-   if(any(mm-mm[1] > clinRel+eps))
-     TRUE
-   else
-     FALSE
  }
 
  xMEDList <- function(models, ind){
@@ -283,15 +274,15 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
    outList
  }
 
- summ <- function(dat){
+ summ <- function(data){
    ## calculates certain summaries of the data
    ## needed in C code
-   grpmean <- tapply(dat$resp, dat$dose, mean)
-   nVec <- as.numeric(table(dat$dose))
-   s2 <- sum((dat$resp - rep(grpmean, nVec))^2)
+   grpmean <- tapply(data$resp, data$dose, mean)
+   doses <- as.numeric(names(grpmean))
+   nVec <- as.numeric(table(data$dose))
+   s2 <- sum((data$resp - rep(grpmean, nVec))^2)
    yDinvy <- t(grpmean)%*%diag(nVec)%*%grpmean
    scal <- s2
-   doses <- unique(dat$dose)
    list(grpmean = grpmean, s2=s2, nVec = nVec, yDinvy=yDinvy, scal = scal, doses = doses)
  }
 
@@ -339,12 +330,12 @@ calcBayesEst <- function(dat, models, prior, bnds = getBnds(mD = max(dat$dose)),
 
 ## calculates the number of partients at the doses
 ## specified by dosesAv
-calcPat <- function(dat, dosesAv){
+calcPat <- function(data, dosesAv){
   ## dose variable assumed in first column
   nD <- length(dosesAv)
   npat <- numeric(nD)
   for(i in 1:nD){
-    npat[i] <- sum(dat[,1]==dosesAv[i])
+    npat[i] <- sum(data[,1]==dosesAv[i])
   }
   npat
 }

@@ -12,15 +12,14 @@
   \code{\link{calcOptDesign}} to calculate the optimal design.
 }
 \usage{
-getUpdDesign(dat, doses, n2, clinRel, models, prior, scal,
-             meanInd, sWeights, sDoses, method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
+getUpdDesign(data = NULL, doses, n2, clinRel = NULL, models, prior, scal = NULL,
+             meanInd = TRUE, sWeights, sDoses, method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
              type = c("MED", "Dopt", "MED&Dopt"),  control = list())
 }
 \arguments{
-  \item{dat}{
-    Data frame containing doses (in the 1st column) and responses (in
-    the 2nd column). If equal to \code{NULL} a start design is
-    calculated (using the \code{sWeights} argument).
+  \item{data}{Data frame containing the dose and the response data. The code assumes
+    the columns to be named "dose" and "resp". If equal to NULL, the
+    design specified via \code{sWeights} is used.
   }
   \item{doses}{
     Numeric vector given the doses available for the adaption
@@ -47,7 +46,7 @@ getUpdDesign(dat, doses, n2, clinRel, models, prior, scal,
     the posterior mode should be used for updating (see \code{\link{calcBayesEst}} for details).
   }
   \item{sWeights}{
-    Allocation weights for the start design (used when \code{dat=NULL})
+    Allocation weights for the start design (used when \code{data=NULL})
   }
   \item{sDoses}{
     Doses to be used in start design (these might be different from the
