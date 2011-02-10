@@ -1,7 +1,7 @@
 Package: DoseFinding
 Type: Package
 Title: Planning and Analyzing Dose Finding experiments
-Version: 0.4-2
+Version: 0.4-3
 Date: 2011-02-09
 Author: Bjoern Bornkamp, Jose Pinheiro, Frank Bretz
 Depends: lattice, mvtnorm, numDeriv, R (>= 2.4.1)
@@ -16,6 +16,6 @@ Description: The DoseFinding package provides functions for the design
         homoscedastic endpoints are supported.
 License: GPL-3
 LazyLoad: yes
-Packaged: 2011-02-09 07:18:46 UTC; bjoern
+Packaged: 2011-02-09 18:30:19 UTC; bjoern
 Repository: CRAN
-Date/Publication: 2011-02-09 10:09:35
+Date/Publication: 2011-02-10 08:22:02

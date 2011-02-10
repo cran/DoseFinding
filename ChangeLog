@@ -1,3 +1,7 @@
+2011-02-09 Bjoern Bornkamp (version 0.4-3)
+    * Minor change in Makevars file (so that DoseFinding works on 
+      Solaris).
+
 2011-02-09 Bjoern Bornkamp (version 0.4-2)
     * calcBayesEst, getUpdDesign: Minor changes to make functions
       more suited for general purpose use.
