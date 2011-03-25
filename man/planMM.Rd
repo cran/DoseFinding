@@ -11,7 +11,7 @@
 planMM(models, doses, n, off = 0.1 * max(doses), scal = 1.2 * max(doses),
        std = TRUE, alpha = 0.025, alternative = c("one.sided", "two.sided"),
        direction = c("increasing", "decreasing"),
-       control = mvtnorm.control(), cV = TRUE, muMat = NULL)
+       control = mvtnorm.control(), cV = TRUE, muMat = NULL, vCov = NULL)
 }
 \arguments{
   \item{models}{ A list of candidate models }
@@ -40,6 +40,8 @@ planMM(models, doses, n, off = 0.1 * max(doses), scal = 1.2 * max(doses),
                 and names of contrasts). If specified
                 the \code{models} argument should not be specified, see examples
                 below. }
+  \item{vCov}{ Covariance matrix of mean vectors assumed for calculation
+    of optimal contrasts.}
 }
 \value{
   An object of class planMM with the following components:

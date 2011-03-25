@@ -1,3 +1,19 @@
+2011-03-25 Bjoern Bornkamp (version 0.5-1)
+    * Restructured calcOptDesign function to allow for user
+      defined criteria functions.
+    * The MCPMod object now always contains a estDose and fm
+      entry (which is NA in case of non-significance or non-convergence)
+    * Added generalized fitting code, variances and covariances of 
+      estimates are not available at the moment.
+    * Added vCov argument to planMM, sampSize, powerMM (so it is possible
+      to take into account covariances when calculating optimal contrasts)
+    * Changed order in trellis plots in plotModels (order as specified in
+      models list instead of alphanumerical order)
+    * Restructured and summarized help pages 
+    * Removed dependency on numDeriv package (only suggested now),
+      this is only needed for calculating optimal designs involving
+      the beta model.
+
 2011-02-09 Bjoern Bornkamp (version 0.4-3)
     * Minor change in Makevars file (so that DoseFinding works on 
       Solaris).

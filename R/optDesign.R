@@ -71,6 +71,7 @@ calcBvec <- function(dose, theta, clinRel, model, off, scal){
              c(a, b, d, e)
            },
            "betaMod" = {
+             require(numDeriv, quietly = TRUE)
              f0 <- function(x, d1, d2, S){
                B <- (d1+d2)^(d1+d2)/(d1^d1*d2^d2)
                B*(x/S)^d1*(1-x/S)^d2
@@ -181,31 +182,13 @@ nPars <- function(mods){
 }
 
 ## function which calls different optimizers
-getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
-                         method, type, nam, lowbnd, uppbnd){
-  M <- as.integer(length(weights))
-  if(length(gradvecs)/(4*k) != M)
-    stop("Either weights or doses of wrong length.")
-  if(length(nold) != k)
-        stop("Either nold or doses of wrong length.")
-  k <- as.integer(k)
-  p <- as.integer(nPars(nam))
-
-  type <- match(type, c("MED", "Dopt", "MED&Dopt"))
-  
+getOptDesign <- function(func, method, k, control, lowbnd, uppbnd){
+  ## actual optimizer
   if(method == "nlminb"){ # nlminb and optim run on transformed values
-    res <- nlminb(getStart(k), objective=optFunc, xvec=as.double(gradvecs),
-                  pvec=as.integer(p), k=k, weights=as.double(weights),
-                  M=M, n2=as.double(n2), nold = as.double(nold),
-                  bvec=as.double(bvecs), trans = transTrig,
-                  type = as.integer(type),
-                  control = control, lower=rep(0, k), upper=rep(pi, k))
+    res <- nlminb(getStart(k), objective=func, control = control,
+                  lower=rep(0, k), upper=rep(pi, k))
   } else if(method == "Nelder-Mead"){
-    res <- optim(getStart(k), fn=optFunc, xvec=as.double(gradvecs), pvec=as.integer(p),
-                 k=k, weights=as.double(weights), M=M, n2=as.double(n2),
-                 nold = as.double(nold), bvec=as.double(bvecs),
-                 trans = transTrig, type = as.integer(type),
-                 control = control)
+    res <- optim(getStart(k), fn=func, control = control)
   } else if(method == "solnp"){ # no need for transformed values for solnp
     require(Rsolnp, quietly = TRUE)
     eqfun <- function(x, ...){
@@ -213,21 +196,9 @@ getOptDesign <- function(gradvecs, bvecs, weights, nold, n2, k, control,
     }
     con <- list(trace = 0)
     con[(namc <- names(control))] <- control
-    res <- solnp(rep(1/k, k), fun=optFunc, eqfun=eqfun, eqB=1,
-                 xvec=as.double(gradvecs), pvec=as.integer(p),
-                 k=k, weights=as.double(weights), M=M, n2=as.double(n2),
-                 nold = as.double(nold), bvec=as.double(bvecs),
-                 trans = idtrans, type = as.integer(type),
+    res <- solnp(rep(1/k, k), fun=func, eqfun=eqfun, eqB=1,
                  control = con, LB = lowbnd, UB = uppbnd)
-  } else if(method == "exact"){
-    require(partitions, quietly = TRUE)
-    con <- list(maxvls1 = 1e6, maxvls2 = 1e5, blockSize = 1)
-    con[(namc <- names(control))] <- control    
-    mat <- getDesMat(n2, k, lowbnd, uppbnd,
-                     con$blockSize, con$maxvls1, con$maxvls2)
-    designmat <- sweep(mat*n2, 2, nold, "+")
-    res <- sweep(designmat, 2, n2+sum(nold), "/")
-  }
+  } 
   res
 }
 
@@ -275,17 +246,17 @@ optFunc <- function(x, xvec, pvec, k, weights, M, n2, nold, bvec, type, trans){
 ## user visible function calling all others
 calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)),
                           n2 = NULL, control=list(), scal=1.2*max(doses), off=0.1*max(doses),
-                          type = c("MED", "Dopt", "MED&Dopt"),
+                          type = c("MED", "Dopt", "MED&Dopt", "userCrit"),
                           method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
-                          lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses))){
+                          lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
+                          userCrit = NULL, ...){
   ## fullModels - list of all model parameters (fullMod object)
   ## weights - vector of weights for all fullModels
   ## clinRel - clinical relevance
   ## nold - vector containing current group sample sizes
   ## n2 - individuals to be allocated in next phase
-  if(abs(sum(weights)-1) > 0.0001){
-    stop("weights need to sum to 1")
-  }
+
+  ## check arguments
   type <- match.arg(type)
   method <- match.arg(method)
   if(is.null(n2)){
@@ -295,8 +266,7 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
       stop("need to specify sample size for next cohort via n2 argument")
     n2 <- 100
   }
-
-  if(is.null(clinRel) & type != "Dopt"){
+  if(is.null(clinRel) & substr(type, 1, 3) == "MED"){
     stop("need to specify clinical relevance parameter")
   }
   if(length(lowbnd) != length(doses)){
@@ -310,49 +280,98 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
       stop("only optimizers solnp or exact can handle additional constraints on weights")
     }
   }
-
-  lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
-  ## check for invalid values (NA, NaN and +-Inf)
-  checkInvalid <- function(x){
-    if(!is.null(x))
-      any(is.na(x)|is.nan(x)|abs(x)==Inf)
-  }
-  grInv <- checkInvalid(lst$gradarray)
-  if(type != "Dopt"){
-    bvInv <- checkInvalid(lst$barray)
+  k <- length(doses)
+  if(is.element(method, c("Nelder-Mead", "nlminb"))){
+    transform <- transTrig
   } else {
-    bvInv <- FALSE
+    transform <- idtrans
   }
-  if(grInv | bvInv){
-    stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
-        too extreme parameter values in argument 'fullModels'")
-  }
-  res <- getOptDesign(lst$gradarray, lst$barray, weights, nold, n2,
-                      length(doses), control, method, type,
-                      lst$namMods, lowbnd, uppbnd)
-  if(method == "Nelder-Mead"|method == "nlminb"){ # transform results back
-    des <- transTrig(res$par, length(doses))
-    if(method == "Nelder-Mead"){
-      crit <- res$value
+  if(type != "userCrit"){
+    ## check arguments
+    if(abs(sum(weights)-1) > sqrt(.Machine$double.eps)){
+      stop("weights need to sum to 1")
+    }
+    ## prepare criterion function
+    lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
+    gradvecs <- lst$gradarray
+    bvecs <- lst$barray
+    nam <- lst$namMods
+    ## check for invalid values (NA, NaN and +-Inf)
+    checkInvalid <- function(x){
+      if(!is.null(x))
+        any(is.na(x)|is.nan(x)|abs(x)==Inf)
+    }
+    grInv <- checkInvalid(lst$gradarray)
+    if(type != "Dopt"){
+      bvInv <- checkInvalid(lst$barray)
     } else {
-      crit <- res$objective
+      bvInv <- FALSE
+    }
+    if(grInv | bvInv){
+      stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
+        too extreme parameter values in argument 'fullModels'")
+    }
+    M <- as.integer(length(weights))
+    if(length(gradvecs)/(4*k) != M)
+      stop("Either weights or doses of wrong length.")
+    if(length(nold) != k)
+      stop("Either nold or doses of wrong length.")
+    k <- as.integer(k)
+    p <- as.integer(nPars(nam))
+    inttype <- match(type, c("MED", "Dopt", "MED&Dopt"))
+    objFunc <- function(par){
+      optFunc(par, xvec=as.double(gradvecs),
+              pvec=as.integer(p), k=k, weights=as.double(weights),
+              M=M, n2=as.double(n2), nold = as.double(nold),
+              bvec=as.double(bvecs), trans = transform,
+              type = as.integer(inttype))
+    }
+  } else {
+    if(is.null(userCrit))
+      stop("need design criterion in userCrit when specified")
+    if(!is.function(userCrit))
+      stop("userCrit needs to be a function")
+    objFunc <- function(par){
+      par2 <- do.call("transform", list(par, k))
+      userCrit((par2*n2+nold)/(sum(nold)+n2), doses, ...)
+    }
+  }
+
+  if(method != "exact"){ # use getOptDesign function
+    res <- getOptDesign(objFunc, method, k, control, lowbnd, uppbnd)
+    ## now transform to standardized output
+    if(method == "Nelder-Mead" | method == "nlminb"){ # transform results back
+      des <- transTrig(res$par, length(doses))
+      if(method == "Nelder-Mead"){
+        crit <- res$value
+      } else {
+        crit <- res$objective
+      }
+    }
+    if(method == "solnp"){ # no need to transform back
+      des <- res$pars
+      crit <- res$values[length(res$values)]
     }
     if(res$convergence){
       warning("algorithm indicates no convergence, the 'optimizerResults'
                attribute of the returned object contains more details.")
     }
-  }
-  if(method == "solnp"){ # no need to transform back
-    des <- res$pars
-    crit <- res$values[length(res$values)]
-    if(res$convergence){
-      warning("algorithm indicates no convergence, the 'optimizerResults'
-               attribute of the returned object contains more details.")
+  } else { # not use getOptDesign
+    ## enumerate possible exact designs
+    require(partitions, quietly = TRUE)
+    con <- list(maxvls1 = 1e6, maxvls2 = 1e5, blockSize = 1)
+    con[(namc <- names(control))] <- control    
+    mat <- getDesMat(n2, k, lowbnd, uppbnd,
+                     con$blockSize, con$maxvls1, con$maxvls2)
+    designmat <- sweep(mat*n2, 2, nold, "+")
+    res <- sweep(designmat, 2, n2+sum(nold), "/")
+    ## evaluate criterion function
+    if(type != "userCrit"){
+      critv <- calcCrit(res, fullModels, weights, doses,
+                        clinRel, nold, n2, scal, off, type)
+    } else {
+      critv <- apply(res, 1, objFunc)
     }
-  }
-  if(method == "exact"){
-    critv <- calcCrit(res, fullModels, weights, doses,
-                      clinRel, nold, n2, scal, off, type)
     des <- res[which.min(critv),]
     crit <- min(critv)
   }
@@ -362,7 +381,7 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
   out$doses <- doses
   out$n2 <- n2
   out$nold <- nold
-  out$type <- type[1]
+  out$type <- type
   attr(out, "optimizerResults") <- res
   class(out) <- "design"
   out
@@ -441,7 +460,8 @@ print.design <- function(x, digits = 5, ...){
   nam <- switch(x$type,
                 "MED" = "MED",
                 "Dopt" = "D",
-                "MED&Dopt" = "MED and D mixture")
+                "MED&Dopt" = "MED and D mixture",
+                "userCrit" = "userCrit")
   cat("Calculated", nam, "- optimal design:\n")
   vec <- x$design
   names(vec) <- x$doses

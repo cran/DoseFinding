@@ -15,10 +15,11 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
              nold = rep(0, length(doses)), n2 = NULL,
              control = list(),  scal=1.2*max(doses),
              off=0.1*max(doses),
-             type = c("MED", "Dopt", "MED&Dopt"),
+             type = c("MED", "Dopt", "MED&Dopt", "userCrit"),
              method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
              lowbnd = rep(0, length(doses)),
-             uppbnd = rep(1, length(doses)))
+             uppbnd = rep(1, length(doses)),
+             userCrit = NULL, ...)
 }
 \arguments{
   \item{fullModels}{
@@ -98,6 +99,17 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
   limits for the  allocation weights. This option is only available when
   using the "solnp" optimizer.
 }
+\item{userCrit}{
+  User defined design criterion, should be a function that given a
+  vector of allocation weights and the doses returns the criterion
+  function. The first argument of \code{userCrit} should be the vector
+  of design weights, while the second argument should be the
+  \code{doses} argument (see example below). Additional arguments to
+  \code{userCrit} can be passed via ...
+}
+\item{...}{
+  Additional arguments for \code{userCrit}.
+}
 }
 \author{
    Bjoern Bornkamp
@@ -112,7 +124,8 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
   In some cases (particularly when the number of doses is large, e.g. 7
   or larger) it might be necessary to allow a larger number of
   iterations in the algorithm (via the argument control), particularly
-  for the Nelder-Mead algorithm.
+  for the Nelder-Mead algorithm. Alternatively one can use the solnp
+  optimizer that is usually the most reliable, but not fastest option.
 }
 \references{
   Atkinson, A.C., Donev, A.N. and Tobias, R.D. (2007). Optimum
@@ -146,7 +159,7 @@ des4 <- calcOptDesign(fMod, weights, doses, clinRel=0.2, lowbnd = rep(0.2,3),
 ## assume only 20 patients are to be allocated (exact calculation possible)
 des5 <- calcOptDesign(fMod, weights, doses, n2 = 20, clinRel=0.2,
                       method="exact")
-## assume the minimum block-size patients is 5
+## assume the minimum block-size is 5
 des6 <- calcOptDesign(fMod, weights, doses, n2 = 20, clinRel=0.2,
                       method="exact", control = list(blockSize = 5))
 
@@ -183,5 +196,17 @@ des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.1, n2=30, scal=200,
 ## the calculated overall design is the same as the 1-step design
 (30*des2$design+nold)/(30+sum(nold))
 des$design
+
+########################################################################
+#### user defined criterion function (D-optimality for cubic polynomial)
+CubeCrit <- function(w, doses){
+  X <- cbind(1, doses, doses^2, doses^3)
+  CVinv <- crossprod(X*w)
+  -log(det(CVinv))
+}
+calcOptDesign(doses = c(0,0.05,0.2,0.6,1),
+              type = "userCrit", userCrit = CubeCrit,
+              method = "nlminb")
+
 }
 \keyword{ models }

@@ -131,3 +131,74 @@ fit <- lm(y~x, data=dd2)
 mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")
 summary(mcp)
 obj
+
+########################################################################
+#### some binary test cases
+getDFdataSet.bin <- function(doses, n){
+  ll <- getDosSampSiz()
+  ll$n <- ll$n+10
+  e0 <- rnorm(1, 0, sqrt(3.28))
+  eMax <- rnorm(1, 0, 5)
+  if(runif(1)<0.3){
+    mn <- do.call("betaMod", c(list(ll$doses), as.list(c(e0 = e0, eMax = eMax, delta1=runif(1, 0.5, 5),
+                delta2=runif(1, 0.5, 5), scal=1.2*max(ll$doses)))))
+  } else {
+    mn <- do.call("logistic", c(list(ll$doses), as.list(c(e0 = e0,
+                  eMax = eMax, ed50=runif(1, 0.05*max(ll$doses), 1.5*max(ll$doses)),
+                  delta=runif(1, 0.5, max(ll$doses)/2)))))
+  }
+  resp <- rbinom(length(ll$n), ll$n, 1/(1+exp(-mn)))
+  aa <- data.frame(dose = ll$doses, resp = resp)    
+  aa <- data.frame(x= aa$dose, y=aa$resp/ll$n, n=ll$n)
+  aa[sample(1:nrow(aa)),]  
+}
+
+set.seed(1909)
+dd <- getDFdataSet.bin()
+bet <- guesst(0.9*max(dd$x), p=0.8, "betaMod", scal = 1.2*max(dd$x), dMax = 0.7*max(dd$x))
+sE <- guesst(c(0.5*max(dd$x), 0.7*max(dd$x)) , p=c(0.5, 0.9), "sigEmax")
+models <- list(linear = NULL, betaMod = bet, sigEmax = sE)
+logReg <- glm(y~as.factor(x)-1, family=binomial, data=dd, weights = n)
+dePar <- coef(logReg)
+vCov <- vcov(logReg)
+dose <- sort(unique(dd$x))
+obj <- gMCPtest(dose, dePar, vCov, models, scal = 1.2*max(dd$x), pVal = T, direction = "increasing")
+dd2 <- dd;dd2$x <- as.factor(dd$x)
+fit <- glm(y~x-1, family = binomial, data=dd2, weights = n)
+mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")
+summary(mcp)
+print(obj, digits = 3)
+
+set.seed(1997)
+dd <- getDFdataSet.bin()
+bet <- guesst(0.9*max(dd$x), p=0.8, "betaMod", scal = 1.2*max(dd$x), dMax = 0.7*max(dd$x))
+sE <- guesst(c(0.5*max(dd$x), 0.7*max(dd$x)) , p=c(0.5, 0.9), "sigEmax")
+models <- list(linear = NULL, betaMod = bet, sigEmax = sE)
+logReg <- glm(y~as.factor(x)-1, family=binomial, data=dd, weights = n)
+dePar <- coef(logReg)
+vCov <- vcov(logReg)
+dose <- sort(unique(dd$x))
+obj <- gMCPtest(dose, dePar, vCov, models, scal = 1.2*max(dd$x), pVal = T, direction = "decreasing")
+dd2 <- dd;dd2$x <- as.factor(dd$x)
+fit <- glm(y~x-1, family = binomial, data=dd2, weights = n)
+mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")
+summary(mcp)
+print(obj, digits = 3)
+
+set.seed(1)
+dd <- getDFdataSet.bin()
+bet <- guesst(0.9*max(dd$x), p=0.8, "betaMod", scal = 1.2*max(dd$x), dMax = 0.7*max(dd$x))
+sE <- guesst(c(0.5*max(dd$x), 0.7*max(dd$x)) , p=c(0.5, 0.9), "sigEmax")
+models <- list(linear = NULL, betaMod = bet, sigEmax = sE)
+logReg <- glm(y~as.factor(x)-1, family=binomial, data=dd, weights = n)
+dePar <- coef(logReg)
+vCov <- vcov(logReg)
+dose <- sort(unique(dd$x))
+obj <- gMCPtest(dose, dePar, vCov, models, scal = 1.2*max(dd$x), pVal = T)
+dd2 <- dd;dd2$x <- as.factor(dd$x)
+fit <- glm(y~x-1, family = binomial, data=dd2, weights = n)
+mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")
+summary(mcp)
+print(obj, digits = 3)
+
+
