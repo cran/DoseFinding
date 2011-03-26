@@ -4,27 +4,32 @@
 \alias{DoseFinding}
 \docType{package}
 \title{
-Planning and Analyzing Dose Finding experiments
+Package overview
 }
 \description{
 The DoseFinding package provides functions for the design and analysis
 of dose-finding experiments (for example pharmaceutical Phase II
-clinical trials). It provides functions for: multiple contrast tests (\code{MCPtest}),
-fitting non-linear dose-response models (\code{fitDRModel}), calculating optimal designs 
-(\code{calcOptDesign}) and an implementation of the MCPMod
-methodology (\code{MCPMod}). Currently only normally distributed
-homoscedastic endpoints are supported.
+clinical trials). It provides functions for: multiple contrast tests
+(\code{MCPtest}), fitting non-linear dose-response models
+(\code{fitDRModel}), calculating optimal designs (\code{calcOptDesign})
+and an implementation of the MCPMod methodology (\code{MCPMod}). For
+non-normal endpoints see \code{gMCPtest} and \code{gFitDRModel}.
 }
 \details{
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.4-3\cr
-Date: \tab 2011-02-09\cr
+Version: \tab 0.5-1\cr
+Date: \tab 2011-03-25\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }
-Details
+The main functions are:
+\bold{MCPtest}, implementing multiple contrast tests, \bold{fitDRModel}
+that fits non-linear dose-response models, \bold{calcOptDesign} that
+calculate optimal designs and \bold{MCPMod}, which implements the MCPMod
+methodology. \bold{gMCPtest} and \bold{gFitDRModel} are generalizations
+of \code{MCPtest} and \code{fitDRModel} for non-normal data.
 }
 \author{
 Bjoern Bornkamp, Jose Pinheiro, Frank Bretz

@@ -10,7 +10,6 @@
 getPars(model, doses, initEstim, base, maxEff,
         off = 0.1 * max(doses), scal = 1.2 * max(doses))
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{model}{ A character string with the model name. Built-in models    
         have their full parameterization derived internally. For   

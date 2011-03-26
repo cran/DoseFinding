@@ -15,7 +15,7 @@ sampSize(models, doses, base, maxEff, sigma, upperN,
          alpha = 0.025, alternative = c("one.sided", "two.sided"),
          tol = 0.001, verbose = FALSE,
          control = mvtnorm.control(), muMat = NULL,
-         typeN = c("arm", "total"), ...)
+         typeN = c("arm", "total"), vCov = NULL, ...)
 }
 \arguments{
   \item{models}{ A list specifying the candidate models. This
@@ -50,6 +50,8 @@ sampSize(models, doses, base, maxEff, sigma, upperN,
   \item{typeN}{ One of "arm" or "total". Determines, whether the sample size in the
                 smallest arm or the total sample size is iterated in bisection
                 search algorithm. See examples below. }
+  \item{vCov}{ Covariance matrix of mean vectors assumed for calculation
+    of optimal contrasts.}
   \item{\dots}{ Possible additional arguments for \code{sumFct}  }
 }
 \details{

@@ -1,14 +1,17 @@
 \name{AIC.DRMod}
 \Rdversion{1.1}
 \alias{AIC.DRMod}
+\alias{logLik.DRMod}
 \title{
-  Calculate AIC (or BIC) for a DRMod object
+  Calculate AIC, BIC or log-likelihood for a DRMod object
 }
 \description{
-  Calculate AIC (or BIC) for a DRMod object
+  Calculate AIC, BIC or log-likelihood for a DRMod object
 }
 \usage{
 \method{AIC}{DRMod}(object, ..., k = 2)
+
+\method{logLik}{DRMod}(object, ...)
 }
 \arguments{
   \item{object}{

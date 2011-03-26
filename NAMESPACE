@@ -6,7 +6,7 @@ export(fitDRModel, MCPtest, betaMod, critVal, emax, exponential,
        ED, MED, LP, planMM, plotModels, powCalc, powerMM, powerScenario,
        sampSize, getPars, guesst, fullMod, MCPMod,
        genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit,
-       getGrad, calcBayesEst, getUpdDesign)
+       getGrad, calcBayesEst, getUpdDesign, gFitDRModel, gMCPtest)
 
 S3method(summary, DRMod)
 S3method(print, summary.DRMod)
@@ -37,5 +37,15 @@ S3method(summary, MCPMod)
 S3method(predict, MCPMod)
 S3method(print, bootMCPMod)
 S3method(print, powerScen)
+S3method(print, gDRMod)
+S3method(summary, gDRMod)
+S3method(print, summary.gDRMod)
+S3method(vcov, gDRMod)
+S3method(coef, gDRMod)
+S3method(predict, gDRMod)
+S3method(plot, gDRMod)
+S3method(intervals, gDRMod)
+S3method(print, gMCPtest)
+
 
 useDynLib(DoseFinding)

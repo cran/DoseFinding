@@ -7,8 +7,9 @@
 \description{
   Calculates posterior means (or a variant of the posterior mode, see
   Details below) and the posterior model probabilities for a set of
-  candidate models. The methodology is described in Bornkamp et
-  al. (2011), see below for the reference. 
+  candidate models. The data are assumed to be homoscedastic normally
+  distributed and no additional covariates are allowed. The methodology
+  is described in Bornkamp et al. (2011), see below for the reference.
 }
 \usage{
 calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)), 
@@ -30,7 +31,8 @@ calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)),
     \cr
     a,d,m,V determine the normal inverse gamma prior for baseline, maximum effect and sigma2
     see O'Hagan and Forster (p., 305, 2006) or Bornkamp et al. (2011)
-    for the parameterization used here.\cr
+    for the parameterization used here (the parameter d is called nu in
+    the Bornkamp et al. (2011) paper).\cr
     For the non-linear parameters (those in the standardized model function), beta distributions
     are used, the bounds of the beta distribution are determined from the \code{bnds} argument,
     while mode of the beta distribution is obtained from the guesstimates from the model list.\cr
@@ -38,7 +40,8 @@ calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)),
     \cr
     a, d - determine the prior mode of the prior for sigma2
     the mode of the prior for sigma2 is a/(d+2), the prior mean is a/(d-2) (d>2)
-    the prior variance for sigma2 is infinite for d<=4\cr
+    the prior variance for sigma2 is infinite for d<=4. Note that d is
+    called \eqn{\nu}{nu} in the Bornkamp et al. (2011) paper.\cr
     \cr
     m - vector of length 2: prior means for placebo and maximum effect of the dose-response models
     (note that this information is transformed to priors for the

@@ -130,9 +130,7 @@ fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
 \code{\link{linear}}, \code{\link{linlog}}, \code{\link{sigEmax}},
 \code{\link{emax}}, \code{\link{quadratic}}, \code{\link{logistic}},
 \code{\link{betaMod}}, \code{\link{exponential}},
-\code{\link{coef.DRMod}}, \code{\link{AIC.DRMod}}, \code{\link{logLik.DRMod}},
-\code{\link{predict.DRMod}}, \code{\link{vcov.DRMod}},
-\code{\link{plot.DRMod}},
+\code{\link{predict.DRMod}}, \code{\link{plot.DRMod}}, \code{\link{AIC.DRMod}}, 
 \code{\link{MED.DRMod}}, \code{\link{ED.DRMod}}
 }
 \examples{

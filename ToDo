@@ -4,5 +4,4 @@ To do:
 - calculation of lower bound on design criterion (for validating numerically
   found optima)
 - Function to interactively choose guesstimates
-- long term goal: allowing for more general endpoint distributions
-  (e.g. Bernoulli, negative-binomial, survival)
+- Add Bayesian fitting capabilities in gFitDRModel?

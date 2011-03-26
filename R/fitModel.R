@@ -241,7 +241,7 @@ getLinCoef <- function(x, y, X, est, model, scal=NULL, W=NULL){
 }
 
 plot.DRMod <- function(x, type = c("EffectCurve", "DRCurve"),
-                       addCovarVals = NULL, CI = TRUE, level = 0.95,
+                       addCovarVals = NULL, CI = FALSE, level = 0.95,
                        plotData = c("means", "complData", "none"), display = TRUE,
                        lenDose = 201, data = getData(x), uGrad, ...){
   if(length(x) == 1){ # object does not contain a converged fit

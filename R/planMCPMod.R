@@ -174,7 +174,7 @@ planMM <-  function(models, doses, n, off = 0.1*max(doses), scal = 1.2*max(doses
                     std = TRUE, alpha = 0.025,
                     alternative = c("one.sided", "two.sided"),
                     direction = c("increasing", "decreasing"),
-                    control = mvtnorm.control(), cV = TRUE, muMat = NULL){
+                    control = mvtnorm.control(), cV = TRUE, muMat = NULL, vCov = NULL){
   alternative <- match.arg(alternative)
   if (missing(models)) {
     ## may pass necessary information via muMat
@@ -192,7 +192,7 @@ planMM <-  function(models, doses, n, off = 0.1*max(doses), scal = 1.2*max(doses
       mu <- modelMeans(models, doses, std, off, scal)      
     }
   }
-  contMat <- modContr(mu, n, NULL)
+  contMat <- modContr(mu, n, vCov)
   corMat <- t(contMat)%*%(contMat/n)
   den  <- sqrt(crossprod(t(colSums(contMat^2/n))))
   corMat <- corMat / den
@@ -395,11 +395,12 @@ plotModels <- function (models, doses, base = 0, maxEff = 1, nPoints = 200,
     resp <- modelMeans(Models, doseSeq, std = FALSE, off, scal)
     nams <- dimnames(resp)[[2]]
     nM <- length(nams)
+    modelfact <- factor(rep(nams, each = length(doseSeq)),
+                        levels = nams)
     if (superpose) {
        respdata <- data.frame(response = c(resp),
                          dose = rep(doseSeq, ncol(resp)),
-                         model = factor(rep(nams, each = length(doseSeq)),
-                                        levels = nams))
+                         model = modelfact)
         spL <- trellis.par.get("superpose.line")
         spL$lty <- rep(spL$lty, nM%/%length(spL$lty) + 1)[1:nM]
         spL$lwd <- rep(spL$lwd, nM%/%length(spL$lwd) + 1)[1:nM]
@@ -421,7 +422,7 @@ plotModels <- function (models, doses, base = 0, maxEff = 1, nPoints = 200,
     }
     else {
         respdata <- data.frame(response = c(resp), dose = rep(doseSeq, 
-              ncol(resp)), model = factor(rep(nams, each = length(doseSeq))))
+              ncol(resp)), model = modelfact)
         xyplot(response ~ dose | model, data = respdata, panel.data = list(base = base, 
             maxEff = maxEff, doses = doses), xlab = xlab, ylab = ylab, 
             panel = function(x, y, ..., panel.data) {
@@ -559,7 +560,7 @@ powerMM <- function(models, doses, base, maxEff, sigma, lower, upper,
            scal = 1.2*max(doses), alpha = 0.025,
            alternative = c("one.sided", "two.sided"),
            control = mvtnorm.control(), muMat = NULL, alRatio = NULL,
-           typeN = c("arm", "total"), ...){
+           typeN = c("arm", "total"), vCov = NULL,...){
   if(sigma <= 0)
     stop("sigma needs to be > 0")
   alternative <- match.arg(alternative)
@@ -600,7 +601,7 @@ powerMM <- function(models, doses, base, maxEff, sigma, lower, upper,
     alRatio <- 1
   }
  
-  contMat <- modContr(muMat, upper*alRatio, NULL)
+  contMat <- modContr(muMat, upper*alRatio, vCov)
   nmod <- ncol(contMat)
   pow <- numeric(nmod)
   j <- 1
@@ -784,7 +785,7 @@ sampSize <- function(models, doses, base, maxEff, sigma, upperN, lowerN = floor(
            power = 0.8, alRatio = NULL, sumFct = mean, off = 0.1*max(doses), scal = 1.2*max(doses),
            alpha = 0.025, alternative = c("one.sided", "two.sided"),
            tol = 1e-3, verbose = FALSE, control = mvtnorm.control(), muMat = NULL,
-           typeN = c("arm", "total"), ...){
+           typeN = c("arm", "total"), vCov = NULL,...){
 
   alternative <- match.arg(alternative)
   if(power >= 1 | power <= 0)
@@ -825,7 +826,7 @@ sampSize <- function(models, doses, base, maxEff, sigma, upperN, lowerN = floor(
   } else {
     alRatio <- 1
   }
-  contMat <- modContr(muMat, upperN * alRatio, NULL)  # no need to change
+  contMat <- modContr(muMat, upperN * alRatio, vCov)  # no need to change
   summPow <-
     function(n, nD, contMat, muMat, sigma, alpha, sumFct, control, alternative, ...)
     {

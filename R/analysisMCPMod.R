@@ -307,6 +307,9 @@ MCPMod <-
   if (!all(is.na(result$model2))){
     result$fm <- fm
     result$estDose <- tDose
+  } else {
+    result$fm <- NA
+    result$estDose <- NA    
   }
   class(result) <- "MCPMod"
   result

@@ -15,7 +15,7 @@ powerMM(models, doses, base, maxEff, sigma, lower, upper, step,
         scal = 1.2 * max(doses), alpha = 0.025,
         alternative = c("one.sided", "two.sided"),
         control = mvtnorm.control(), muMat = NULL, alRatio = NULL,
-        typeN = c("arm", "total"), ...)
+        typeN = c("arm", "total"), vCov = NULL, ...)
 }
 \arguments{
   \item{models}{ A list specifying the candidate models. This
@@ -49,6 +49,8 @@ powerMM(models, doses, base, maxEff, sigma, lower, upper, step,
   \item{typeN}{ One of "arm" or "total". Determines, whether the sample size in the
                 smallest arm or the total sample size is iterated in bisection
                 search algorithm. See examples below. }
+  \item{vCov}{ Covariance matrix of mean vectors assumed for calculation
+               of optimal contrasts.}
   \item{\dots}{ Possible additional arguments for sumFct. }
 }
 \details{
