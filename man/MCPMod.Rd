@@ -248,8 +248,8 @@ Bretz et al. (2005). The method consists of two steps:\cr
     remaining significant models are used. Finally the target dose is estimated.\cr
 
     Built in models are the linear, linear in log, emax, sigmoid emax, logistic, 
-    exponential, quadratic and beta model (for their definitions see their help files or 
-    Bretz et al. (2005), Pinheiro et al. (2006)).
+    exponential, quadratic and beta model (for their definitions see
+    \link{Dose-Response Models}).
     Users may hand over their own model functions for details have a look at the Example (iii).
 }
 \value{

@@ -898,8 +898,17 @@ predict.DRMod <- function(object, type = c("fullModel", "EffectCurve"),
       m <- model.matrix(addCovars, data)
       doseVec <- data[, doseNam]
     } else {
-      m <- model.matrix(addCovars, newdata, xlev = xlev)
-      doseVec <- newdata[, doseNam]
+      tms <- attr(terms(addCovars), "term.labels")
+      missind <- !is.element(tms, names(newdata))
+      if(any(missind)){
+        chct <- paste("No values specified in newdata for", tms[missind])
+        stop(chct)
+      } else {
+        m <- model.matrix(addCovars, newdata, xlev = xlev)
+        doseVec <- newdata[, doseNam]
+        if(nrow(m) != length(doseVec))
+          stop("incompatible model matrix and doseVec created from newdata")
+      } 
     }
     m <- m[,-1, drop=FALSE] # remove intercept column (is necessary)
     if(builtIn){ 

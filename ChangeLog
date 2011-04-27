@@ -1,3 +1,11 @@
+2011-04-27 Bjoern Bornkamp (version 0.5-2)
+    * Corrected bug in b-vector for sigEmax model (calcBvec,
+      only affected MED-type optimal designs)
+    * Included INDEX file to order the overview help-page better
+    * predict.DRMod now stops when type = "fullModel" and the
+      argument newdata does not contain values for all variables
+      specified in addCovars (thanks to Mouna). 
+
 2011-03-25 Bjoern Bornkamp (version 0.5-1)
     * Restructured calcOptDesign function to allow for user
       defined criteria functions.

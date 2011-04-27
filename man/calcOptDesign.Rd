@@ -8,7 +8,7 @@
   Given a set of models (with full parameter values and model
   probabilities) this function calculates the MED optimal design (see
   Dette, Bretz, Pepelyshev and Pinheiro (2008) for details) or the
-  D-optimal design, or a mixture of these two criteria.
+  D-optimal design, or a mixture of these two criteria. 
 }
 \usage{
 calcOptDesign(fullModels, weights, doses, clinRel = NULL,
@@ -127,6 +127,10 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
   for the Nelder-Mead algorithm. Alternatively one can use the solnp
   optimizer that is usually the most reliable, but not fastest option.
 }
+\seealso{
+\code{\link{calcCrit}}
+}
+
 \references{
   Atkinson, A.C., Donev, A.N. and Tobias, R.D. (2007). Optimum
   Experimental Designs, with SAS, Oxford University Press

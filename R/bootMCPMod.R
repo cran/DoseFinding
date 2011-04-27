@@ -38,11 +38,7 @@ calcBoot <- function(index, x, fitcontrol, start, calcDR, ...){
   } else {
     out$selModel <- MM$model2
   }
-  if(is.null(MM$estDose)){ # no PoC or no model converged
-    out$estDose <- NA
-  } else {
-    out$estDose <- MM$estDose
-  }
+  out$estDose <- MM$estDose
   out
 }
 

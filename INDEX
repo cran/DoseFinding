@@ -1,0 +1,73 @@
+_______________________________________________________________________
+General:
+DoseFinding-package     Package overview
+fitDRModel              Fit a non-linear regression model with linear
+                        covariates (normal, homoscedastic data).
+gFitDRModel             Generalized fitting of dose-response models to
+                        raw dose-response estimates.
+Dose-Response Models    Built-in dose-response models in DoseFinding
+MCPtest                 Perform model-based multiple contrast test
+gMCPtest                Generalized model-based multiple contrast tests
+calcOptDesign           Function to calculate an optimal design
+_______________________________________________________________________
+MCPMod-related:
+plotModels              Plot candidate models
+MCPMod                  Perform MCPMod analysis of a data set
+bootMCPMod              Evaluate precision of dose estimate by
+                        nonparametric bootstrapping
+guesst                  Calculate guesstimates based on prior knowledge
+planMM                  Calculate optimal contrasts and
+			critical value for MCP test
+sampSize                Sample size calculations for MCPMod
+powerMM                 Calculate power for different sample sizes
+powerScenario           Calculates the power for an planMM object under
+                        a particular alternative scenario
+LP                      Sensitivity analysis for misspecification of
+                        standardized model parameters in MCPMod
+_______________________________________________________________________
+Datasets:
+biom                    Biometrics Dose Response data
+IBScovars               Irritable Bowel Syndrome Dose Response data
+                        with covariates
+migraine                Migraine Dose Response data
+
+_______________________________________________________________________
+Additional functions/help pages:
+AIC.DRMod               Calculate AIC, BIC or log-likelihood for a
+                        DRMod object
+calcBayesEst            Calculates posterior estimates and posterior
+                        model probabilities for a set of candidate
+                        models (normal homoscedastic data).
+DRMod and gDRMod methods
+                        Methods for DRMod and gDRMod objects
+ED.DRMod                Calculate EDp estimator for a DRMod object
+MED.DRMod               Calculate MED for a DRMod object
+calcCrit                Calculate design criterion for a specified
+                        design.
+critVal                 Calculate critical value for multiple contrast
+                        test
+fit.control             Set control parameters for non-linear model
+                        fitting
+fullMod                 Calculate location and scale parameters for
+                        candidate set of models
+genDFdata               Simulate dose-response data
+getBnds                 Calculates default bounds for non-linear
+                        parameters
+getGrad                 Calculate the gradient for the non-linear part
+                        of a DRMod object
+getInit                 Starting values for non-linear parameters.
+getPars                 Calculate location and scale parameters
+getUpdDesign            Calculate Bayes estimates and optimal design
+                        for next cohort
+guesst                  Calculate guesstimates based on prior knowledge
+modelMeans              Calculate mean vectors for a given candidate set
+mvtnorm.control         Control options for pmvt and qmvt functions
+plot.LP                 Plot method for LP objects
+plot.MCPMod             Plot MCPMod model fits
+plot.fullMod            Plot method for fullMod objects
+plot.planMM             Plotting a planMM object
+plot.powerMM            Plot method for powerMM objects
+powCalc                 Calculate the power for the multiple contrast
+                        test
+predict.MCPMod          Predict a MCPMod object.
+rndDesign               Round a continuous design to integer values.

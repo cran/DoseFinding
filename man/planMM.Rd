@@ -1,7 +1,7 @@
 \name{planMM}
 \alias{planMM}
 \alias{print.planMM}
-\title{ Calculate planning quantities for MCPMod }
+\title{ Calculate optimal contrasts and critical value for MCP test }
 \description{
    Calculates the optimal model contrasts, the critical value and the contrast correlation matrix, i.e.
    the quantities necessary to conduct a multiple contrast test for a given candidate set of 
