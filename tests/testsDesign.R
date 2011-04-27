@@ -180,3 +180,13 @@ des62 <- calcOptDesign(fMod, weights, doses, clinRel = 200,
                        method = "solnp", scal = 500*1.2,
                        type = "MED&Dopt")
 
+########################################################################
+#### Example from Padmanabhan and Dragalin, Biometrical Journal 52 (2010)
+#### p. 836-852
+models <- list(sigEmax = c(4, 5))
+doses <- 0:8
+fm <- fullMod(models, doses, base=0, maxEff=-1.65)
+fm$sigEmax <- c(0, -1.70, 4, 5)
+## compare to Figure 1, p. 841
+desSED <- calcOptDesign(fm, 1, doses, type="Dopt", method = "solnp")
+desSEM <- calcOptDesign(fm, 1, doses, clinRel = -1.3, type="MED", method = "solnp")

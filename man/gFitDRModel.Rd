@@ -20,9 +20,9 @@
   %confidence intervals for the obtained fit.
 }
 \usage{
-  gFitDRModel(dose, drEst, vCov, model = NULL, bnds = NULL, start = NULL,
-              gridSize = list(dim1 = 30, dim2 = 144), nlminbcontrol = list(),
-              off = NULL, scal = NULL)
+  gFitDRModel(dose, drEst, vCov, model = NULL, bnds = NULL,
+              start = NULL, gridSize = list(dim1 = 30, dim2 = 144),
+              nlminbcontrol = list(), off = NULL, scal = NULL)
 }
 \arguments{
   \item{dose}{ Numeric specifying the dose variable. }
@@ -32,7 +32,8 @@
 	      estimate specified via \code{drEst}}
  \item{model}{ Dose-response model to fit, possible models are
 	      "linlog", "linear", "quadratic", "emax", "exponential",
-              "sigEmax", "betaMod" and "logistic" }
+              "sigEmax", "betaMod" and "logistic", see \link{Dose-Response Models}.
+	    }
   \item{bnds}{ Bounds for the nonlinear parameters, need to be
     finite. See also the \code{\link{getBnds}} function. }
   \item{start}{ Optional starting values for the nonlinear parameters of

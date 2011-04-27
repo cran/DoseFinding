@@ -18,11 +18,11 @@
 }
 \usage{
 fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
-           optimizer = c("nls", "nls&bndnls", "bndnls"), bnds = NULL, start = NULL,
-           nlscontrol = nls.control(), gridSize =
-           list(dim1 = 30, dim2 = 144), nlminbcontrol = list(),
-           optimizetol = .Machine$double.eps^0.5, off = NULL,
-           scal = NULL, keep.data = TRUE, uModPars = NULL, addArgs = NULL)
+     optimizer = c("nls", "nls&bndnls", "bndnls"), bnds = NULL, start = NULL,
+     nlscontrol = nls.control(), gridSize =
+     list(dim1 = 30, dim2 = 144), nlminbcontrol = list(),
+     optimizetol = .Machine$double.eps^0.5, off = NULL,
+     scal = NULL, keep.data = TRUE, uModPars = NULL, addArgs = NULL)
 }
 \arguments{
   \item{formula}{
@@ -37,9 +37,10 @@ fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
   \item{model}{
     The non-linear model to be used for fitting the data. Built-in
     models are "linlog", "linear", "quadratic", "emax", "exponential",
-    "sigEmax", "betaMod" and "logistic". User defined models can also be
-    specified. The name specified in the model argument needs to be
-    equal to the name of the model function, see the examples for details.
+    "sigEmax", "betaMod" and "logistic" (see \link{Dose-Response Models}). 
+    User defined models can also be specified. The name
+    specified in the model argument needs to be equal to the name of the
+    model function, see the examples for details.
   }
   \item{addCovars}{
     Formula specifying additional (linear) covariates

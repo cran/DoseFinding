@@ -63,9 +63,10 @@ getUpdDesign <- function(data = NULL, doses, n2, clinRel=NULL, models, prior, sc
     ## calculate dose allocations used so far
     ss1 <- calcPat(data, doses)
     method <- match.arg(method)
-     desRec <- calcOptDesign(res, wgths, doses, clinRel = clinRel, 
-                             nold = ss1, n2 = n2, scal = scal,
-                             control = control, method = method, type = type)
+    type <- match.arg(type)
+    desRec <- calcOptDesign(res, wgths, doses, clinRel = clinRel, 
+                            nold = ss1, n2 = n2, scal = scal,
+                            control = control, method = method, type = type)
     desRec <- cbind(doses, rndDesign(desRec$design, n2))
   }
   desRec  

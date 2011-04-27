@@ -64,7 +64,7 @@ calcBvec <- function(dose, theta, clinRel, model, off, scal){
            "sigEmax" = {
              brack <- (clinRel*theta[3]^theta[4]/(theta[2]-clinRel))^(1/theta[4])
              a <- 0
-             b <- -brack/(theta[2]-clinRel)
+             b <- -brack/((theta[2]-clinRel)*theta[4])
              d <- brack/theta[3]
              inbrack <- log(clinRel*theta[3]^theta[4]/(theta[2]-clinRel))-log(theta[3])*theta[4]
              e <- -brack*inbrack/theta[4]^2
