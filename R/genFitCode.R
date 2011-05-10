@@ -157,7 +157,7 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
   if(length(drEst) != nD)
     stop("dose and drEst need to be of the same size")
   dose <- as.numeric(dose)
-  drFit <- as.numeric(drFit)
+  drEst <- as.numeric(drEst)
   if(nrow(vCov) != nD | ncol(vCov) != nD)
     stop("vCov and dose have non-confirming size")
   if (is.null(model)) 

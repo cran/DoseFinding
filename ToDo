@@ -9,3 +9,5 @@ To do:
   missing data) for commonly encountered endpoints (e.g. normal, binary, 
   time-to-event)?
 - Extend calcOptDesign to non-normal data
+- Add function to perform sample size calculation for nonlinear
+  dose-response modelling

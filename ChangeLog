@@ -1,3 +1,9 @@
+2011-05-06 Bjoern Bornkamp (version 0.5-3)
+    * Ensure in rndDesign that N is recognized as
+      an integer by using N <- round(N), to avoid floating point
+      problems.
+    * Remove naming bug in gFitDRModel (drFit instead of drEst)
+
 2011-04-27 Bjoern Bornkamp (version 0.5-2)
     * Corrected bug in b-vector for sigEmax model (calcBvec,
       only affected MED-type optimal designs)
