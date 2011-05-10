@@ -190,3 +190,41 @@ fm$sigEmax <- c(0, -1.70, 4, 5)
 ## compare to Figure 1, p. 841
 desSED <- calcOptDesign(fm, 1, doses, type="Dopt", method = "solnp")
 desSEM <- calcOptDesign(fm, 1, doses, clinRel = -1.3, type="MED", method = "solnp")
+
+## designs underlying Table 2, p. 843 (from an e-mail of Vlad)
+## I cannot reproduce the displayed efficiencies exactly
+## (most probably due to numerical round-off)
+##LDoD
+## [1,] 0.246 0.141 0.123 0.000 0.000 0.240    0    0 0.250
+## [2,] 0.248 0.233 0.061 0.210 0.000 0.000    0    0 0.248
+## [3,] 0.246 0.000 0.000 0.223 0.081 0.204    0    0 0.246
+## [4,] 0.250 0.247 0.045 0.210 0.000 0.000    0    0 0.248
+## [6,] 0.250 0.249 0.192 0.062 0.000 0.000    0    0 0.246
+## MEDoD
+## [1,] 0.49 0.01 0.00 0.00 0.00 0.00 0.36 0.14    0
+## [2,] 0.49 0.02 0.00 0.15 0.35 0.00 0.00 0.00    0
+## [3,] 0.23 0.26 0.01 0.00 0.00 0.46 0.04 0.00    0
+## [4,] 0.50 0.00 0.49 0.01 0.00 0.00 0.00 0.00    0
+## [6,] 0.49 0.01 0.47 0.02 0.00 0.00 0.00 0.00    0
+models1 <- list(sigEmax = c(23.07, 1.18))
+models2 <- list(sigEmax = c(2, 2.22))
+models3 <- list(sigEmax = c(4, 5))
+models4 <- list(sigEmax = c(0.79, 1))
+models5 <- list(sigEmax = c(0.74, 1.18))
+doses <- 0:8
+fm <- list()
+fm[[1]] <- fullMod(models1, doses, base=0, maxEff=-1.65);fm[[1]]$sigEmax <- c(0, -7.29, 23.07, 1.18)
+fm[[2]] <- fullMod(models2, doses, base=0, maxEff=-1.65);fm[[2]]$sigEmax <- c(-0.08, -1.71, 2, 2.22)
+fm[[3]] <- fullMod(models3, doses, base=0, maxEff=-1.65);fm[[3]]$sigEmax <- c(0, -1.70, 4, 5)
+fm[[4]] <- fullMod(models4, doses, base=0, maxEff=-1.65);fm[[4]]$sigEmax <- c(0, -1.81, 0.79, 1.00)
+fm[[5]] <- fullMod(models5, doses, base=0, maxEff=-1.65);fm[[5]]$sigEmax <- c(-0.03, -1.72, 0.74, 1.18)
+desD <- desM <- matrix(ncol = 9, nrow = 5)
+for(i in 1:5){
+  cc1 <- calcOptDesign(fm[[i]], 1, doses, type="MED", method = "solnp",
+                      clinRel = -1.3)
+  cc2 <- calcOptDesign(fm[[i]], 1, doses, type="Dopt", method = "solnp")
+  desM[i,] <- cc1$design
+  desD[i,] <- cc2$design
+}
+round(desD, 3)
+round(desM, 2)

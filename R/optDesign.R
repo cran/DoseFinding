@@ -479,6 +479,7 @@ which.is.max <- function (x){
 ## efficient rounding (see Pukelsheim (1993), Ch. 12)
 rndDesign <- function(w, N, eps = 0.0001){
 
+  N <- round(N) # ensure N is an integer (at least numerically)
   if(inherits(w, "design")){
     w <- w$design
   }

@@ -1,8 +1,8 @@
 Package: DoseFinding
 Type: Package
 Title: Planning and Analyzing Dose Finding experiments
-Version: 0.5-2
-Date: 2011-04-27
+Version: 0.5-3
+Date: 2011-05-10
 Author: Bjoern Bornkamp, Jose Pinheiro, Frank Bretz
 Depends: lattice, mvtnorm, R (>= 2.4.1)
 Suggests: numDeriv, Rsolnp, partitions, multcomp
@@ -15,6 +15,6 @@ Description: The DoseFinding package provides functions for the design
         the MCPMod methodology.
 License: GPL-3
 LazyLoad: yes
-Packaged: 2011-04-27 18:31:03 UTC; bjoern
+Packaged: 2011-05-09 23:05:19 UTC; bjoern
 Repository: CRAN
-Date/Publication: 2011-04-27 18:55:32
+Date/Publication: 2011-05-10 03:59:36
