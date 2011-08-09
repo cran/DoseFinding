@@ -1,13 +1,16 @@
 To do:
 - allow for dose finding with active control  
 - additional methods for bootMCPMod objects (plot, summary method)
-- calculation of lower bound on design criterion (for validating numerically
-  found optima)
+- calculation of lower bound on design criterion (for validating
+  numerically found optima)
 - Function to interactively choose guesstimates
 - Add Bayesian (and bootstrap?) fitting capabilities in gFitDRModel?
-- Add a way to model dose-time-response data (i.e. add a way of handling
-  missing data) for commonly encountered endpoints (e.g. normal, binary, 
-  time-to-event)?
-- Extend calcOptDesign to non-normal data
+- Add a way to model dose-time-response data (i.e. add a way of
+  handling missing data) for commonly encountered endpoints
+  (e.g. normal, binary, time-to-event)?
+- Extend calcOptDesign to non-normal data (standardize according to number of 
+  parameters for D-optimal design)
 - Add function to perform sample size calculation for nonlinear
   dose-response modelling
+- Add possibility to fit placebo corrected dose-response estimates with
+  gFitDRModel

@@ -18,7 +18,7 @@
 \description{
   
   coef.(g)DRMod - Extract coefficients object, if wanted, the
-  function can seperate the coefficients into coefficients of the
+  function can separate the coefficients into coefficients of the
   dose-response model and the additional linear coefficients.
   
   predict.(g)DRMod - Predict a DRMod or gDRMod object
@@ -71,7 +71,7 @@
   }
   \item{sep}{
     Logical determining whether all coefficients should be returned in
-    one numeric or seperated in a list.
+    one numeric or separated in a list.
   }
   \item{data}{
     Data frame containing the variables on which the DRMod object was
@@ -132,7 +132,7 @@
   Examples of the fitDRModel function. 
 }
 \item{...}{
-  Additional arguments 
+  Additional arguments, for plot.DRMod these are passed to the call of \code{plot}
 }
 }
 \value{
