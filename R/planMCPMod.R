@@ -192,6 +192,10 @@ planMM <-  function(models, doses, n, off = 0.1*max(doses), scal = 1.2*max(doses
       mu <- modelMeans(models, doses, std, off, scal)      
     }
   }
+  if(length(n) > 1){
+    if(length(n) != length(doses))
+      stop("n needs to be of length 1 or of the same length as doses")
+  }
   contMat <- modContr(mu, n, vCov)
   corMat <- t(contMat)%*%(contMat/n)
   den  <- sqrt(crossprod(t(colSums(contMat^2/n))))
@@ -250,22 +254,23 @@ plot.planMM <- function (x, superpose = TRUE, xlab = "Dose",
     cMtr <- data.frame(resp = as.vector(cM), dose = rep(as.numeric(dimnames(cM)[[1]]), 
         nM), model = factor(rep(dimnames(cM)[[2]], each = nD), 
         levels = dimnames(cM)[[2]]))
-    if (superpose) {
-        spL <- trellis.par.get("superpose.line")
-        spL$lty <- rep(spL$lty, nM%/%length(spL$lty) + 1)[1:nM]
-        spL$lwd <- rep(spL$lwd, nM%/%length(spL$lwd) + 1)[1:nM]
-        spL$col <- rep(spL$col, nM%/%length(spL$col) + 1)[1:nM]
-        xyplot(resp ~ dose, data = cMtr, subscripts = TRUE, groups = cMtr$model, 
-            panel = panel.superpose, type = "o", xlab = xlab, 
-            ylab = ylab, key = list(lines = spL, transparent = TRUE, 
-                text = list(levels(cMtr$model), cex = 0.9), columns = ifelse(nM < 
-                  5, nM, min(4,ceiling(nM/min(ceiling(nM/4),3))))), ...)
+    if(superpose){
+      spL <- trellis.par.get("superpose.line")
+      spL$lty <- rep(spL$lty, nM%/%length(spL$lty) + 1)[1:nM]
+      spL$lwd <- rep(spL$lwd, nM%/%length(spL$lwd) + 1)[1:nM]
+      spL$col <- rep(spL$col, nM%/%length(spL$col) + 1)[1:nM]
+      ltplot <- xyplot(resp ~ dose, data = cMtr, subscripts = TRUE, groups = cMtr$model, 
+                       panel = panel.superpose, type = "o", xlab = xlab, 
+                       ylab = ylab, key = list(lines = spL, transparent = TRUE, 
+                       text = list(levels(cMtr$model), cex = 0.9),
+                       columns = ifelse(nM < 5, nM, min(4,ceiling(nM/min(ceiling(nM/4),3))))), ...)
+      } else {
+      ltplot <- xyplot(resp ~ dose | model, data = cMtr, type = "o", 
+                       xlab = xlab, ylab = ylab,
+                       strip = function(...) strip.default(..., 
+                         style = 1), ...)
     }
-    else {
-        xyplot(resp ~ dose | model, data = cMtr, type = "o", 
-               xlab = xlab, ylab = ylab, strip = function(...) strip.default(..., 
-                                           style = 1), ...)
-    }
+    print(ltplot)
 }
 
 ## calculates the location and scale parameters corresponding to
@@ -377,63 +382,60 @@ fullMod <-  function(models, doses, base, maxEff,
 plotModels <- function (models, doses, base = 0, maxEff = 1, nPoints = 200,
                         off = 0.1*max(doses),  scal = 1.2 * max(doses),
                         superpose = FALSE, ylab = "Model means", 
-                        xlab = "Dose", ...) 
-{
-    if (inherits(models, "fullMod")) {
-        doses <- attr(models, "doses")
-        base <- attr(models, "base")
-        maxEff <- attr(models, "maxEff")
-        off <- attr(models, "off")
-        scal <- attr(models, "scal")
-        Models <- models
-    }
-    else {
-        Models <- fullMod(models, doses, base, maxEff, off, scal)
-    }
-    doseSeq <- sort(union(seq(min(doses), max(doses), length = nPoints), 
-        doses))
-    resp <- modelMeans(Models, doseSeq, std = FALSE, off, scal)
-    nams <- dimnames(resp)[[2]]
-    nM <- length(nams)
-    modelfact <- factor(rep(nams, each = length(doseSeq)),
-                        levels = nams)
-    if (superpose) {
-       respdata <- data.frame(response = c(resp),
-                         dose = rep(doseSeq, ncol(resp)),
-                         model = modelfact)
-        spL <- trellis.par.get("superpose.line")
-        spL$lty <- rep(spL$lty, nM%/%length(spL$lty) + 1)[1:nM]
-        spL$lwd <- rep(spL$lwd, nM%/%length(spL$lwd) + 1)[1:nM]
-        spL$col <- rep(spL$col, nM%/%length(spL$col) + 1)[1:nM]
-        xyplot(response ~ dose, data = respdata, subscripts = TRUE, 
-            groups = respdata$model, panel.data = list(base = base, maxEff = maxEff, 
-                doses = doses), xlab = xlab, ylab = ylab, panel = function(x, 
-                y, subscripts, groups, ..., panel.data) {
-                panel.abline(h = c(panel.data$base, panel.data$base + 
-                  panel.data$maxEff), lty = 2)
-                panel.superpose(x, y, subscripts, groups, type = "l", 
-                  ...)
-                ind <- !is.na(match(x, panel.data$doses))
-                panel.superpose(x[ind], y[ind], subscripts[ind], 
-                  groups, ...)
-            }, key = list(lines = spL, transparent = TRUE, text = list(nams, 
-                cex = 0.9), columns = ifelse(nM < 
-                  5, nM, min(4,ceiling(nM/min(ceiling(nM/4),3))))), ...)
-    }
-    else {
-        respdata <- data.frame(response = c(resp), dose = rep(doseSeq, 
-              ncol(resp)), model = modelfact)
-        xyplot(response ~ dose | model, data = respdata, panel.data = list(base = base, 
-            maxEff = maxEff, doses = doses), xlab = xlab, ylab = ylab, 
-            panel = function(x, y, ..., panel.data) {
-                panel.abline(h = c(panel.data$base, panel.data$base + 
-                  panel.data$maxEff), lty = 2)
-                panel.xyplot(x, y, type = "l", ...)
-                ind <- match(panel.data$doses, x)
-                panel.xyplot(x[ind], y[ind], ...)
-            }, strip = function(...) strip.default(..., style = 1), 
-            as.table = TRUE,...)
-    }
+                        xlab = "Dose", ...) {
+  if(inherits(models, "fullMod")){
+    doses <- attr(models, "doses")
+    base <- attr(models, "base")
+    maxEff <- attr(models, "maxEff")
+    off <- attr(models, "off")
+    scal <- attr(models, "scal")
+    Models <- models
+  } else {
+    Models <- fullMod(models, doses, base, maxEff, off, scal)
+  }
+  doseSeq <- sort(union(seq(min(doses), max(doses), length = nPoints), 
+                        doses))
+  resp <- modelMeans(Models, doseSeq, std = FALSE, off, scal)
+  nams <- dimnames(resp)[[2]]
+  nM <- length(nams)
+  modelfact <- factor(rep(nams, each = length(doseSeq)),
+                      levels = nams)
+  if(superpose){
+    respdata <- data.frame(response = c(resp),
+                           dose = rep(doseSeq, ncol(resp)),
+                           model = modelfact)
+    spL <- trellis.par.get("superpose.line")
+    spL$lty <- rep(spL$lty, nM%/%length(spL$lty) + 1)[1:nM]
+    spL$lwd <- rep(spL$lwd, nM%/%length(spL$lwd) + 1)[1:nM]
+    spL$col <- rep(spL$col, nM%/%length(spL$col) + 1)[1:nM]
+    ltplot <- xyplot(response ~ dose, data = respdata, subscripts = TRUE, 
+                     groups = respdata$model, panel.data = list(base = base, maxEff = maxEff, 
+                     doses = doses), xlab = xlab, ylab = ylab,
+                     panel = function(x, y, subscripts, groups, ..., panel.data) {
+                       panel.abline(h = c(panel.data$base, panel.data$base + 
+                                      panel.data$maxEff), lty = 2)
+                       panel.superpose(x, y, subscripts, groups, type = "l", ...)
+                       ind <- !is.na(match(x, panel.data$doses))
+                       panel.superpose(x[ind], y[ind], subscripts[ind], 
+                                       groups, ...)
+                     }, key = list(lines = spL, transparent = TRUE,
+                          text = list(nams, cex = 0.9),
+                          columns = ifelse(nM < 5, nM, min(4,ceiling(nM/min(ceiling(nM/4),3))))), ...)
+  } else {
+    respdata <- data.frame(response = c(resp), dose = rep(doseSeq, ncol(resp)), model = modelfact)
+    ltplot <- xyplot(response ~ dose | model, data = respdata,
+                     panel.data = list(base = base, maxEff = maxEff, doses = doses),
+                     xlab = xlab, ylab = ylab, 
+                     panel = function(x, y, ..., panel.data) {
+                       panel.abline(h = c(panel.data$base, panel.data$base + 
+                                      panel.data$maxEff), lty = 2)
+                       panel.xyplot(x, y, type = "l", ...)
+                       ind <- match(panel.data$doses, x)
+                       panel.xyplot(x[ind], y[ind], ...)
+                     }, strip = function(...) strip.default(..., style = 1), 
+                     as.table = TRUE,...)
+  }
+  print(ltplot)
 }
 
 plot.fullMod <- function(x, ...){
@@ -743,40 +745,40 @@ plot.powerMM <- function(x, superpose = TRUE, line.at = NULL, models = "all",
     data.frame(pow = as.vector(unlist(x)),
                n = rep(nSeq, nC),
                type = factor(rep(nams, each = length(nSeq)), levels = nams))
-  if (superpose) {
-      panelFunc <- if (is.null(line.at)) {
-        panel.superpose
-      } else {
-        function(x, y, subscripts, groups, lineAt, ...) {
-          panel.superpose(x, y, subscripts, groups, ...)
-          panel.abline(h = lineAt, lty = 2)
-        }
+  if(superpose){
+    panelFunc <- if (is.null(line.at)) {
+      panel.superpose
+    } else {
+      function(x, y, subscripts, groups, lineAt, ...) {
+        panel.superpose(x, y, subscripts, groups, ...)
+        panel.abline(h = lineAt, lty = 2)
+      }
     }
     trLn <- trellis.par.get("superpose.line")[c("col", "lwd", "lty")]
     for(i in seq(along = trLn)) {
-       if(length(trLn[[i]]) > nC) trLn[[i]] <- trLn[[i]][1:nC]
+      if(length(trLn[[i]]) > nC) trLn[[i]] <- trLn[[i]][1:nC]
     }
-    xyplot(pow ~ n, pMatTr, groups = pMatTr$type, subscripts = TRUE,
-           panel = panelFunc, type = "l", lineAt = line.at,
-           xlab = xlab, ylab = ylab,
-           key = list(lines = trLn, text = list(lab = nams), transparent = TRUE, 
-           columns = ifelse(nC < 5, nC, min(4,ceiling(nC/min(ceiling(nC/4),3))))), ...)
+    ltplot <- xyplot(pow ~ n, pMatTr, groups = pMatTr$type, subscripts = TRUE,
+                     panel = panelFunc, type = "l", lineAt = line.at,
+                     xlab = xlab, ylab = ylab,
+                     key = list(lines = trLn, text = list(lab = nams), transparent = TRUE, 
+                       columns = ifelse(nC < 5, nC, min(4,ceiling(nC/min(ceiling(nC/4),3))))), ...)
   } else {                              # models in different panels
     if (is.null(line.at)) {
       panelFunc <- panel.xyplot
     }
     else {
-      panelFunc <-
-        function(x, y, lineAt, ...) {
-          panel.xyplot(x, y, ...)
-          panel.abline(h = lineAt, lty = 2) ## used 2 for consistency with above
-        }
+      panelFunc <- function(x, y, lineAt, ...) {
+        panel.xyplot(x, y, ...)
+        panel.abline(h = lineAt, lty = 2) ## used 2 for consistency with above
+      }
     }
-    xyplot(pow ~ n | type, pMatTr, panel = panelFunc,
-           type = "l", lineAt = line.at,
-           xlab = xlab, ylab = ylab, 
-           strip = function(...) strip.default(..., style = 1), ...)
+    ltplot <- xyplot(pow ~ n | type, pMatTr, panel = panelFunc,
+                     type = "l", lineAt = line.at,
+                     xlab = xlab, ylab = ylab, 
+                     strip = function(...) strip.default(..., style = 1), ...)
   }
+  print(ltplot)
 }
 
 ## Calculates  smallest sample size necessary to achieve given power
@@ -1164,25 +1166,27 @@ plot.LP <- function(x, line = TRUE, type = NULL, spldf = 5, ...){
     keyList <- NULL
     ylab <- type
   }
-  xyplot(LP~par1|par2, data=pData, 
-         panel.data = list(uv = used[1], line = line, col = col, df = spldf),
-         groups = grp, 
-         panel = function(x, y, subscripts, groups,..., panel.data) {
-           panel.abline(h = 0, lty = 2)
-           panel.abline(v = panel.data[["uv"]], lty = 2)
-           s <- seq(min(x), max(x), length = 101)
-           panel.superpose(x, y, type = "p", lwd = 1.3, groups = groups, subscripts = subscripts)
-
-           j <- 1
-           if(panel.data[["line"]]){   
-             for(i in unique(groups[subscripts])){   # add smooth line
-               ind <- which(groups[subscripts]==i)
-               p <- predict(smooth.spline(x[ind], y[ind], df = panel.data[["df"]]), s)
-               panel.xyplot(p$x, p$y , type = "l", col = panel.data[["col"]][j])
-               j <- j + 1
-             } 
-           }
-         }, 
-        main = main, xlab=par[1], strip=twoPars, ylab = ylab,
-        key = keyList)
+  ltplot <- xyplot(LP~par1|par2, data=pData, 
+                   panel.data = list(uv = used[1], line = line, col = col, df = spldf),
+                   groups = grp, 
+                   panel = function(x, y, subscripts, groups,..., panel.data) {
+                     panel.abline(h = 0, lty = 2)
+                     panel.abline(v = panel.data[["uv"]], lty = 2)
+                     s <- seq(min(x), max(x), length = 101)
+                     panel.superpose(x, y, type = "p", lwd = 1.3, groups = groups,
+                                     subscripts = subscripts)
+                     
+                     j <- 1
+                     if(panel.data[["line"]]){   
+                       for(i in unique(groups[subscripts])){   # add smooth line
+                         ind <- which(groups[subscripts]==i)
+                         p <- predict(smooth.spline(x[ind], y[ind], df = panel.data[["df"]]), s)
+                         panel.xyplot(p$x, p$y , type = "l", col = panel.data[["col"]][j])
+                         j <- j + 1
+                       } 
+                     }
+                   }, 
+                   main = main, xlab=par[1], strip=twoPars, ylab = ylab,
+                   key = keyList)
+  print(ltplot)
 }

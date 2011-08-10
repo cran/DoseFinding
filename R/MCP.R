@@ -383,7 +383,8 @@ MCPtest <- function(formula, data, models, addCovars = ~1,
     attr(critV, "Calc") <- FALSE
   }
   if(pVal){
-    pVals <- pValues(contMat, n, alpha, tStat, mvtcontrol, alternative, corMat)
+    nDF <- attr(tStat,"df")
+    pVals <- pValues(contMat, n, alpha, tStat, mvtcontrol, alternative, corMat, nDF)
   }
   res <- list()
   res$contMat <- contMat

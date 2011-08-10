@@ -157,6 +157,8 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
   if(length(drEst) != nD)
     stop("dose and drEst need to be of the same size")
   dose <- as.numeric(dose)
+  if(any(dose < -.Machine$double.eps))
+    stop("dose values need to be non-negative")
   drEst <- as.numeric(drEst)
   if(nrow(vCov) != nD | ncol(vCov) != nD)
     stop("vCov and dose have non-confirming size")
@@ -372,6 +374,7 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
     stop("DRMod object does not contain a converged fit")
     invisible(NA)
   }
+  addArgs <- list(...)
   type <- match.arg(type)
   dose <- x$data$dose
   drEst <- x$data$drEst
@@ -409,8 +412,11 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
     dff <- diff(rng)
     ylim <- c(rng[1] - 0.02 * dff, rng[2] + 0.02 * dff)
     if(display){
-      plot(doseSeq, pred, type = "l", xlab = doseNam, ylim = ylim, 
-           ylab = respNam, main = main)
+      callList <- list(doseSeq, pred, type = "l",
+                       xlab = doseNam, ylim = ylim,
+                       ylab = respNam, main = main)
+      callList[names(addArgs)] <- addArgs
+      do.call("plot", callList)
     }
   } else {
     crt <- qnorm(1 - (1 - level)/2)
@@ -424,8 +430,11 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
     dff <- diff(rng)
     ylim <- c(rng[1] - 0.02 * dff, rng[2] + 0.02 * dff)
     if (display) {
-      plot(doseSeq, pred$fit, type = "l", xlab = doseNam, 
-           ylim = ylim, ylab = respNam, main = main)
+      callList <- list(doseSeq, pred$fit, type = "l",
+                       xlab = doseNam, ylim = ylim,
+                       ylab = respNam, main = main)
+      callList[names(addArgs)] <- addArgs
+      do.call("plot", callList)
       lines(doseSeq, UB)
       lines(doseSeq, LB)
     }
@@ -441,6 +450,7 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
     }
   }
   res <- list()
+  res$doseSeq <- doseSeq
   attr(res, "level") <- level
   attr(res, "ylim") <- ylim
   if (CI) {

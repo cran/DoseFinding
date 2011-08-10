@@ -41,7 +41,7 @@ getDFdataSet <- function(doses, n){
 }
 
 #### simulate data and compare to output of glht of multcomp package and oldMCPMod function
-set.seed(1)
+set.seed(10)
 dd <- getDFdataSet()
 bet <- guesst(0.9*max(dd$x), p=0.8, "betaMod", scal = 1.2*max(dd$x), dMax = 0.7*max(dd$x))
 sE <- guesst(c(0.5*max(dd$x), 0.7*max(dd$x)) , p=c(0.5, 0.9), "sigEmax")

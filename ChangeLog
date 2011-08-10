@@ -1,3 +1,11 @@
+2011-08-09 Bjoern Bornkamp (version 0.5-4)
+    * MCPtest now uses correct degrees of freedom if addCovars != ~1
+    * Feedback from Andreas Krause led to a number 
+      smaller changes in the package (e.g., plot.(g)DRMod or 
+      fitDRModel). Thanks Andreas!
+    * Print lattice plots explicitly to increase compability
+      with Sweave.
+
 2011-05-06 Bjoern Bornkamp (version 0.5-3)
     * Ensure in rndDesign that N is recognized as
       an integer by using N <- round(N), to avoid floating point

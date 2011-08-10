@@ -248,7 +248,8 @@ plot.DRMod <- function(x, type = c("EffectCurve", "DRCurve"),
     stop("DRMod object does not contain a converged fit")
     invisible(NA)
   }
-  
+
+  addArgs <- list(...)
   type <- match.arg(type)
   plotData <- match.arg(plotData)
   doseNam <- attr(x, "doseRespNam")[1]
@@ -324,8 +325,11 @@ plot.DRMod <- function(x, type = c("EffectCurve", "DRCurve"),
     dff <- diff(rng)
     ylim <- c(rng[1]-0.02*dff, rng[2]+0.02*dff)
     if(display){
-      plot(doseSeq, pred, type = "l", xlab = doseNam,
-           ylim = ylim, ylab = respNam, main = main)
+      callList <- list(doseSeq, pred, type = "l",
+                       xlab = doseNam, ylim = ylim,
+                       ylab = respNam, main = main)
+      callList[names(addArgs)] <- addArgs
+      do.call("plot", callList)
     }
   } else {
     crt <- qt(1-(1-level)/2, df = x$df)
@@ -339,8 +343,11 @@ plot.DRMod <- function(x, type = c("EffectCurve", "DRCurve"),
     dff <- diff(rng)
     ylim <- c(rng[1]-0.02*dff, rng[2]+0.02*dff)
     if(display){
-      plot(doseSeq, pred$fit, type = "l", xlab = doseNam,
-           ylim = ylim, ylab = respNam, main = main)
+      callList <- list(doseSeq, pred$fit, type = "l",
+                       xlab = doseNam, ylim = ylim,
+                       ylab = respNam, main = main)
+      callList[names(addArgs)] <- addArgs
+      do.call("plot", callList)
       lines(doseSeq, UB)
       lines(doseSeq, LB)
     }
@@ -352,6 +359,7 @@ plot.DRMod <- function(x, type = c("EffectCurve", "DRCurve"),
     points(ds, rsp, cex = 0.45, pch = 19) 
   }
   res <- list()
+  res$doseSeq <- doseSeq
   attr(res, "level") <- level
   attr(res, "ylim") <- ylim
   if(!is.null(addCovarVals)){
@@ -463,6 +471,10 @@ fitDRModel <- function(formula, data, model = NULL, addCovars = ~1,
     names(dataFit)[c(ind1, ind2)] <- c("dose", "resp")
     weights <- NULL
   }
+  if(any(dataFit$dose < -.Machine$double.eps))
+    stop("dose values need to be non-negative")
+  if(!is.numeric(dataFit$dose))
+    stop("dose variable needs to be numeric")
   fit <- NA
   if (builtIn) { # built-in model
       if (is.element(modelNum, 1:3)) { # linear model
@@ -839,7 +851,7 @@ fitModel.userMod <- function(data, model, addCovars, addArgs, uModPars,
   ## start - named vector with starting values
   ## control - control list for nls
   if (is.null(start)) {
-    stop("must provide stating estimates for user-defined model")
+    stop("must provide starting estimates for user-defined model")
   }
   namStart <- names(start)
   if (is.null(namStart)) {
