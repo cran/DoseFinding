@@ -20,9 +20,10 @@
   %confidence intervals for the obtained fit.
 }
 \usage{
-  gFitDRModel(dose, drEst, vCov, model = NULL, bnds = NULL,
-              start = NULL, gridSize = list(dim1 = 30, dim2 = 144),
-              nlminbcontrol = list(), off = NULL, scal = NULL)
+  gFitDRModel(dose, drEst, vCov, model = NULL, intercept = TRUE,
+              bnds = NULL, start = NULL, gridSize = list(dim1 = 30,
+              dim2 = 144), nlminbcontrol = list(), off = NULL,
+              scal = NULL)
 }
 \arguments{
   \item{dose}{ Numeric specifying the dose variable. }
@@ -34,6 +35,11 @@
 	      "linlog", "linear", "quadratic", "emax", "exponential",
               "sigEmax", "betaMod" and "logistic", see \link{Dose-Response Models}.
 	    }
+ \item{intercept}{ Whether or not to include an intercept in the
+   model. Models without intercept are of interest for example for
+   fitting placebo-corrected estimates (note that the linear in log and
+   the logistic model cannot be fitted without intercept)
+     }
   \item{bnds}{ Bounds for the nonlinear parameters, need to be
     finite. See also the \code{\link{getBnds}} function. }
   \item{start}{ Optional starting values for the nonlinear parameters of
@@ -107,9 +113,22 @@
   drEst <- coef(logfit)
   vCov <- vcov(logfit)
   ## now fit an Emax model (on logit scale)
-  gfit <- gFitDRModel(doseVec, drEst, vCov, model = "emax", bnds = c(0,300))
+  gfit2 <- gFitDRModel(doseVec, drEst, vCov, model = "emax", bnds = c(0,300))
   ## model fit on logit scale
-  plot(gfit)
+  plot(gfit2)
+
+  ## now fit placebo adjusted data
+  data(biom)
+  ## produce first stage fit (using dose as factor)
+  anMod <- lm(resp~factor(dose), data=biom)
+  ## estimates (contrasts to placebo)
+  drFitC <- coef(anMod)[-1]
+  vCovC <- vcov(anMod)[-1,-1]
+  dose <- sort(unique(biom$dose))[-1]
+  ## now fit an emax model to these estimates
+  gfit3 <- gFitDRModel(dose, drFitC, vCovC, model = "emax",
+                      bnds = c(0.01, 2), intercept = FALSE)
+  plot(gfit3, plotData = "meansCI")
 }
 \author{ Bjoern Bornkamp }
 \keyword{models} 

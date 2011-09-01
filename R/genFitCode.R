@@ -23,7 +23,8 @@ inverse <- function(X){
 }
 
 gOptGrid <- function(model, dim, bnds, gridSize, dose,
-                    qrX, resXY, clinvCov, scal=NULL){
+                     qrX, resXY, clinvCov, intercept,
+                     scal=NULL){
   ## grid optimizer for non-linear case
   if(dim==1) N <- gridSize$dim1
   else N <- gridSize$dim2
@@ -35,7 +36,10 @@ gOptGrid <- function(model, dim, bnds, gridSize, dose,
   Zmat <- getZmat.weighted(dose, nodes, model, dim, scal)
   Zmat <- clinvCov%*%Zmat
 
-  resZmat <- qr.resid(qrX, Zmat)
+  if(intercept)
+    resZmat <- qr.resid(qrX, Zmat)
+  else
+    resZmat <- Zmat
   colsms1 <- colSums(resZmat * resXY)
   colsms2 <- colSums(resZmat * resZmat)
   gRSSvec <- sum(resXY*resXY) - (colsms1*colsms1)/colsms2
@@ -46,7 +50,7 @@ gOptGrid <- function(model, dim, bnds, gridSize, dose,
 
 gFitModel.bndnls <- function(dose, drEst, invCov, model,
                              start, clinvCov, gridSize,
-                             bnds, scal, control){
+                             bnds, intercept, scal, control){
   ## generalized fitting when bounds are there
   if(is.null(bnds))
     stop("need to specify bounds for non-linear parameters")
@@ -58,74 +62,126 @@ gFitModel.bndnls <- function(dose, drEst, invCov, model,
   } else {
     dim <- 2
   }
-  clinvCov <- chol(invCov)
-  X2 <- clinvCov%*%matrix(1, nrow = nD)
-  drEst2 <- clinvCov%*%drEst
-  qrX <- qr(X2)
-  resXY <- as.numeric(qr.resid(qrX, drEst2))
+  if(intercept){
+    X2 <- clinvCov%*%matrix(1, nrow = nD)
+    drEst2 <- clinvCov%*%drEst
+    qrX <- qr(X2)
+    resXY <- as.numeric(qr.resid(qrX, drEst2))
+  } else {
+    resXY <- as.numeric(clinvCov%*%drEst)
+  }
   
   if(is.null(start)){
     start <- gOptGrid(model, dim, bnds, gridSize, dose,
-                      qrX, resXY, clinvCov, scal)$est
+                      qrX, resXY, clinvCov, intercept, scal)$est
   }
   
   ## calculate estimates of linear parameters given nonlinear parameter
+  ## with intercept
   optFunc <- function(nl, dose, drEst, invCov, model,
-                      clinvCov, scal=NULL){
+                      clinvCov, intercept, scal=NULL){
     clList <- as.list(c(0, 1, nl, scal))
-    pred <- do.call(model, c(list(dose), clList))
-    X <- cbind(1, pred)
-    XinvCov <- crossprod(X, invCov)
-    dif <- drEst - X%*%inverse(XinvCov%*%X)%*%XinvCov%*%drEst 
+    x <- do.call(model, c(list(dose), clList))
+    if(intercept){
+      X <- cbind(1, x)
+      XinvCov <- crossprod(X, invCov)
+      dif <- drEst - X%*%inverse(XinvCov%*%X)%*%XinvCov%*%drEst
+    } else {
+      xinvCov <- crossprod(x, invCov)
+      dif <- drEst - x*sum(drEst*xinvCov)/sum(xinvCov * x)
+    }
     crossprod(clinvCov%*%dif)
   }
   
   ## gradient of optFunc
   optFuncGrad <- function(nl, dose, drEst, invCov, model, 
-                      clinvCov, scal=NULL){
+                      clinvCov, intercept, scal=NULL){
     clList <- as.list(c(0, 1, nl, scal))
-    pred <- do.call(model, c(list(dose), clList))
-    X <- cbind(1, pred)
-    XinvCov <- crossprod(X, invCov)
-    par <- inverse(XinvCov%*%X)%*%XinvCov%*%drEst
-    pred <- par[1]+par[2]*pred
-    grd <- gradCalc(model, c(par, nl), dose=dose, scal=scal)
-    out <- -2*as.numeric(crossprod(grd, invCov)%*%(drEst - pred))
+    x <- do.call(model, c(list(dose), clList))
     if(model == "emax" | model == "exponential")
       ind <- 3
     else
       ind <- 3:4
-    out[ind]
+    if(intercept){
+      X <- cbind(1, x)
+      XinvCov <- crossprod(X, invCov)
+      par <- inverse(XinvCov%*%X)%*%XinvCov%*%drEst
+      pred <- par[1]+par[2]*x
+    } else {
+      xinvCov <- crossprod(x, invCov)
+      par <- c(0, sum(drEst*xinvCov)/sum(xinvCov * x))
+      pred <- par[2]*x
+    }
+    grd <- gradCalc(model, c(par, nl), dose=dose, scal=scal)[,ind]
+    -2*as.numeric(crossprod(grd, invCov)%*%(drEst - pred))
   }
 
   opt <- try(nlminb(start, optFunc,
-                dose=dose, drEst = drEst, invCov = invCov, 
-                model = model, clinvCov = clinvCov,
-                scal = scal, lower = bnds[,1], upper = bnds[,2],
-                gradient = optFuncGrad, control = control))
+                    dose=dose, drEst = drEst, invCov = invCov, 
+                    model = model, clinvCov = clinvCov, intercept = intercept,
+                    scal = scal, lower = bnds[,1], upper = bnds[,2],
+                    gradient = optFuncGrad, control = control))
+  if((inherits(opt, "try-error") | opt$convergence != 0)|opt$iterations < 2){ # optimization failed
+    ## the following needs to be prettified ...
+    if(model %in% c("emax", "exponential")){ # 1 dim models use optimize (potentially more reliable)
+      dif <- (bnds[,2] - bnds[,1])/gridSize$dim1
+      lbnd <- max(c(start - 1.1 * dif), bnds[1])
+      ubnd <- min(c(start + 1.1 * dif), bnds[2])
+      res <- optimize(optFunc, c(lbnd, ubnd), dose=dose, drEst = drEst,
+                      invCov = invCov, model = model, clinvCov = clinvCov,
+                      intercept = intercept, scal = scal)
+      opt <- list(par = res$minimum, objective = res$objective, convergence=0)
+    } else { # 2 dim models re-try with different starting values
+      strtMat <- matrix(nrow = 2, ncol = 2)
+      strtMat[1,] <- c(max(start[1]*0.7, bnds[1,1]), min(start[2]*1.3, bnds[2,2]))
+      strtMat[2,] <- c(min(start[1]*1.3, bnds[1,2]), max(start[2]*0.7, bnds[2,1]))
+      for(i in 1:2){
+        opt <- try(nlminb(strtMat[i,], optFunc,
+                          dose=dose, drEst = drEst, invCov = invCov, 
+                          model = model, clinvCov = clinvCov, intercept = intercept,
+                          scal = scal, lower = bnds[,1], upper = bnds[,2],
+                          gradient = optFuncGrad, control = control))
+        if(!inherits(opt, "try-error")){
+          if(opt$convergence == 0)
+            break
+        }
+      }
+    }
+  }
+  
   ## collect information for output
   out <- list()
   nam0 <- switch(model, emax = c("eMax", "ed50"), sigEmax = c("eMax", 
                  "ed50", "h"), logistic = c("eMax", "ed50", "delta"), 
                  exponential = c("e1", "delta"), betaMod = c("eMax",
                  "delta1", "delta2"))
-  if(!inherits(opt, "try-error")){
+  if(!inherits(opt, "try-error") & opt$convergence == 0){
     ## recover estimates for linear parameters
     clList <- as.list(c(0, 1, opt$par, scal))
-    pred <- do.call(model, c(list(dose), clList))
-    X <- cbind(1, pred)
-    XinvCov <- crossprod(X, invCov)
-    par <- inverse(XinvCov%*%X)%*%XinvCov%*%drEst
-    par <- c(par, opt$par)
-    names(par) <- c("e0", nam0)
+    x <- do.call(model, c(list(dose), clList))
+    if(intercept){
+      X <- cbind(1, x)
+      XinvCov <- crossprod(X, invCov)
+      par <- inverse(XinvCov%*%X)%*%XinvCov%*%drEst
+      par <- c(par, opt$par)
+      names(par) <- c("e0", nam0)
+    } else {
+      xinvCov <- crossprod(x, invCov)
+      par <- sum(drEst*xinvCov)/sum(xinvCov * x)
+      par <- c(par, opt$par)
+      names(par) <- nam0
+    }
     out$par <- par
     out$gRSS2 <- opt$objective
+  } else {
+    stop("gFitDRModel did not converge, try change nlminbcontrol")
   }
-  out$conv <- as.numeric(inherits(opt, "try-error"))
+  out$conv <- as.logical(opt$convergence) | as.logical(inherits(opt, "try-error"))
   out
 }
 
-gFitModel.lin <- function(dose, drEst, invCov, model, clinvCov, off){
+gFitModel.lin <- function(dose, drEst, invCov, model, clinvCov,
+                          intercept, off){
   ## generalized fitting for linear models
   nam <- c("e0", "delta")
   if(model == "linear")
@@ -135,6 +191,10 @@ gFitModel.lin <- function(dose, drEst, invCov, model, clinvCov, off){
   if(model == "quadratic"){
     X <- cbind(1, dose, dose^2)
     nam <- c("e0", "b1", "b2")
+  }
+  if(!intercept){
+    X <- X[,-1, drop = FALSE]
+    nam <- nam[-1]
   }
   XinvCov <- crossprod(X, invCov)
   par <- as.numeric(solve(XinvCov%*%X)%*%XinvCov%*%drEst)
@@ -147,7 +207,8 @@ gFitModel.lin <- function(dose, drEst, invCov, model, clinvCov, off){
   out
 }
 
-gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NULL,
+gFitDRModel <- function(dose, drEst, vCov, model = NULL, intercept = TRUE,
+                        bnds = NULL, start = NULL,
                         gridSize = list(dim1 = 30, dim2 = 144), nlminbcontrol = list(),
                         off = NULL, scal = NULL){
   ## generalized fitting procedure, using a generalized least squares
@@ -159,6 +220,8 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
   dose <- as.numeric(dose)
   if(any(dose < -.Machine$double.eps))
     stop("dose values need to be non-negative")
+  if(!is.numeric(dose))
+    stop("dose variable needs to be numeric")
   drEst <- as.numeric(drEst)
   if(nrow(vCov) != nD | ncol(vCov) != nD)
     stop("vCov and dose have non-confirming size")
@@ -179,6 +242,8 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
       stop("need off parameter for linlog model")
   }
   else off <- NULL
+  if(!intercept & model %in% c("linlog", "logistic"))
+    stop("logistic and linlog models can only be fitted with intercept")
 
   ## pre-calculate some necessary information
   invCov <- solve(vCov)
@@ -187,11 +252,11 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
   clinvCov <- chol(invCov)
 
   if(modelNum < 4){ # linear model
-    modfit <- gFitModel.lin(dose, drEst, invCov, model, clinvCov, off)
+    modfit <- gFitModel.lin(dose, drEst, invCov, model, clinvCov, intercept, off)
   } else { # non-linear model
     modfit <- gFitModel.bndnls(dose, drEst, invCov, model, start,
-                               clinvCov, gridSize, bnds, scal,
-                               nlminbcontrol)
+                               clinvCov, gridSize, bnds, intercept,
+                               scal, nlminbcontrol)
   }
 
   if(modfit$conv == 0){
@@ -204,6 +269,7 @@ gFitDRModel <- function(dose, drEst, vCov, model = NULL, bnds = NULL, start = NU
     attr(res, "scal") <- scal
     attr(res, "off") <- off
     attr(res, "call") <- match.call()
+    attr(res, "intercept") <- intercept
   } else {
     res <- NA
   }
@@ -262,15 +328,22 @@ vcov.gDRMod <- function(object, ...){
         warning("DRMod object does not contain a converged fit")
         return(NA)
     }
-    ## REMOVE NEXT LINE LATER
+    ## REMOVE NEXT LINE LATER (also uncomment relevent tests in tests/)
     stop("currently not implemented")
     model <- attr(object, "model")
-    par <- object$coefs
+    intercept <- attr(object, "intercept")
+    if(!intercept){ # no intercept
+      par <- c(0, object$coefs)
+    } else {
+      par <- object$coefs
+    }
     dose <- object$data$dose
     invCov <- solve(object$data$vCov)
     off <- attr(object, "off")
     scal <- attr(object, "scal")
     grd <- gradCalc(model, par, dose=dose, scal=scal, off=off)
+    if(!intercept)
+      grd <- grd[,-1]
     covMat <- try(solve(t(grd)%*%invCov%*%grd), silent = TRUE)
     if (!inherits(covMat, "matrix")) {
       stop("cannot calculate covariance matrix. singular matrix in calculation of covariance matrix.")
@@ -288,7 +361,7 @@ coef.gDRMod <- function(object, ...){
 
 predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"), 
                            doseSeq = NULL, se.fit = FALSE, lenSeq = 101, ...){
-  ## REMOVE NEXT 4 LINES LATER
+  ## REMOVE NEXT 4 LINES LATER  (also uncomment relevent tests in tests/)
   if(se.fit){
     message("se.fit = TRUE currently not implemented")
     se.fit = FALSE
@@ -302,12 +375,13 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
   off <- attr(object, "off")
   model <- attr(object, "model")
   dose <- object$data$dose
-  cf <- coef(object)
   if(is.null(doseSeq)){
-    rg <- range(dose)
-    doseSeq <- seq(rg[1], rg[2], length = lenSeq)
+    doseSeq <- seq(0, max(dose), length = lenSeq)
   }
   type <- match.arg(type)
+  intercept <- attr(object, "intercept")
+  if(!intercept)
+    type <- "EffectCurve"
   if(type == "fullModel"){
     DRpars <- object$coefs
     call <- c(list(doseSeq), as.list(c(DRpars, scal, off)))
@@ -316,7 +390,7 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
       return(as.numeric(mn))
     } else {
       covMat <- vcov(object)
-      grd <- gradCalc(model, cf, doseSeq, off=off, scal=scal)
+      grd <- gradCalc(model, DRpars, doseSeq, off=off, scal=scal)
       cholcovMat <- try(chol(covMat), silent = TRUE)
       if(!inherits(cholcovMat, "matrix")){
         warning("Cannot cannot calculate standard deviation for ", 
@@ -328,9 +402,13 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
       res <- list(fit = mn, se.fit = as.vector(seFit))
       return(res)
     }
-  } else {
-    DRpars <- object$coefs
-    DRpars[1] <- 0
+  } else { # type == "EffectCurve"
+    if(!intercept){
+      DRpars <- c(0, object$coefs)
+    } else {
+      DRpars <- object$coefs
+      DRpars[1] <- 0
+    }
     call <- c(list(doseSeq), as.list(c(DRpars, scal, off)))
     mn <- do.call(model, call)
     if(is.element(model, c("logistic", "linlog"))){
@@ -341,24 +419,19 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
     if (!se.fit) {
       return(as.numeric(mn))
     } else {
-      J <- gradCalc(model, cf, doseSeq, off=off, scal=scal)
-      if (any(is.na(J)) | any(is.nan(J))) {
+      covMat <- vcov(object)
+      if(intercept)
+        covMat <- covMat[-1,-1]
+      cholcovMat <- try(chol(covMat), silent = TRUE)
+      if(!inherits(cholcovMat, "matrix")){
         warning("Cannot cannot calculate standard deviation for ", 
                 model, " model.\n")
         seFit <- rep(NA, length(doseSeq))
       } else {
-        R <- qr.R(qr(J))
-        Rinv <- try(solve(R), silent = TRUE)
-        if (!inherits(Rinv, "matrix")) {
-          warning("Cannot cannot calculate standard deviation for ", 
-                  model, " model.\n")
-          seFit <- rep(NA, length(doseSeq))
-        } else {
-          v <- gradCalc(model, cf, doseSeq, off=off, scal=scal)
-          v0 <- gradCalc(model, cf, 0, off=off, scal=scal)
-          v <- t(t(v) - as.numeric(v0))
-          seFit <- sqrt(rowSums((v %*% Rinv)^2))
-        }
+        grd <- gradCalc(model, DRpars, doseSeq, off=off, scal=scal)[,-1]
+        grd0 <- gradCalc(model, DRpars, 0, off=off, scal=scal)[,-1]      
+        grd <- t(t(grd) - as.numeric(grd0))
+        seFit <- sqrt(rowSums((grd %*% t(cholcovMat))^2))
       }
       res <- list(fit = mn, se.fit = as.vector(seFit))
       return(res)
@@ -380,15 +453,31 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
   drEst <- x$data$drEst
   doseNam <- attr(x, "doseRespNam")[1]
   respNam <- attr(x, "doseRespNam")[2]
-  rg <- range(dose)
-  doseSeq <- seq(rg[1], rg[2], length = lenDose)
+  doseSeq <- seq(0, max(dose), length = lenDose)
   type <- match.arg(type)
   plotData <- match.arg(plotData)
+  intercept <- attr(x, "intercept")
+  if(!intercept)
+    type <- "EffectCurve"
 
   if(type == "EffectCurve"){
     pred <- predict(x, type = type, se.fit = CI, doseSeq = doseSeq)
     main <- "Effect Curve"
-    drEst <- LBm <- UBm <- NULL
+    if(!intercept){
+      if(plotData == "meansCI"){
+        sdev <- sqrt(diag(x$data$vCov))
+        q <- qnorm(1 - (1 - level)/2)
+        LBm <- UBm <- numeric(length(dose))
+        for(i in 1:length(dose)){
+          LBm[i] <- drEst[i] - q*sdev[i]
+          UBm[i] <- drEst[i] + q*sdev[i]        
+        }
+      } else {
+        LBm <- UBm <- NULL
+      }
+    } else {
+      LBm <- UBm <- NULL
+    }
   }
   if (type == "DRCurve") {
     pred <- predict(x, type = "fullModel", se.fit = CI, doseSeq = doseSeq)
@@ -439,7 +528,7 @@ plot.gDRMod <- function(x, type = c("DRCurve", "EffectCurve"), CI = FALSE,
       lines(doseSeq, LB)
     }
   }
-  if(type == "DRCurve"){
+  if(type == "DRCurve"|!intercept){
     if(plotData == "means")
       points(dose, drEst, pch = 19, cex = 0.75)
     if(plotData == "meansCI"){
@@ -468,7 +557,7 @@ intervals.gDRMod <- function(object, level = 0.95, ...){
     warning("DRMod object does not contain a converged fit")
     return(NA)
   }
-  ## REMOVE NEXT LINE LATER
+  ## REMOVE NEXT LINE LATER  (also uncomment relevent tests in tests/)
   stop("currently not implemented")
   V <- vcov(object)
   vars <- diag(V)
@@ -491,22 +580,29 @@ gMCPtest <- function(dose, drEst, vCov, models, alpha = 0.025,
                      direction = c("increasing", "decreasing"), 
                      mvtcontrol = mvtnorm.control(), std = TRUE, 
                      off, scal){
-  nD <- length(dose)
-  if(length(drEst) != nD)
-    stop("dose and drEst need to be of the same size")
-  if(nrow(vCov) != nD | ncol(vCov) != nD)
-    stop("vCov and dose have non-confirming size")
+
   alternative <- match.arg(alternative)
   direction <- match.arg(direction)
   
   ## calculate test statistics
   if (is.null(contMat)) {
+    nD <- length(dose)
+    if(length(drEst) != nD)
+      stop("dose and drEst need to be of the same size")
+    if(nrow(vCov) != nD | ncol(vCov) != nD)
+      stop("vCov and dose have non-confirming size")
     mu <- modelMeans(models, dose, TRUE, off, scal)
     if (direction == "decreasing") {
       mu <- -mu
     }
     contMat <- modContr(mu, covMu = vCov)
     rownames(contMat) <- dose
+  } else {
+    nD <- nrow(contMat)
+    if(length(drEst) != nD)
+      stop("nrow(contMat) and drEst need to be of the same length")
+    if(nrow(vCov) != nD | ncol(vCov) != nD)
+      stop("vCov and contMat have non-confirming size")
   }
   ct <- as.vector(drEst %*% contMat)
   covMat <- t(contMat) %*% vCov %*% contMat

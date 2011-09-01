@@ -147,7 +147,7 @@ summary(fitemax)
 # predicting
 predict(fitemax, newdata=data.frame(dose = c(0,0.5,1)))
 # predictions with standard error
-
+predict(fitemax, newdata=data.frame(dose = c(0,0.5,1)), se.fit = TRUE)
 # plotting
 plot(fitemax, type = "DRCurve")
 plot(fitemax, type = "EffectCurve") # difference from placebo

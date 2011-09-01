@@ -133,6 +133,22 @@ vCov <- vcov(logfit)
 models <- list(linear = NULL, emax = 20)
 gtest2 <- gMCPtest(doseVec, drEst, vCov, models = models)
 gtest2
+
+## use user specified contrast matrix
+data(biom)
+## calculate a contrast matrix
+mu1 <- c(1, 2, 2, 2, 2)                      
+mu2 <- c(1, 1, 2, 2, 2)                      
+mu3 <- c(1, 1, 1, 2, 2)                      
+mMat <- cbind(mu1, mu2, mu3)              
+dimnames(mMat)[[1]] <- sort(unique(biom$dose))  
+contMat <- planMM(muMat = mMat, doses = doses, n = 20, cV = FALSE)$contMat
+## fit first stage model
+anMod <- lm(resp~factor(dose)-1, data=biom)
+drFit <- coef(anMod)
+vCov <- vcov(anMod)
+## perform MCP analysis
+gMCPtest(drEst = drFit, vCov = vCov, contMat = contMat)
 }
 \keyword{ model }
 

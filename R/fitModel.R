@@ -980,27 +980,44 @@ predict.DRMod <- function(object, type = c("fullModel", "EffectCurve"),
       return(as.numeric(mn))
     } else { ## calculate st. error (no need to calculate full covMat here)
       sig <- sqrt(object$RSS2/object$df)
-      J <- getGrad(object, data[, doseNam], uGrad)
-      if(any(is.na(J)) | any(is.nan(J))){
+      J <- getGrad(object, data[[doseNam]], uGrad)
+      JtJ <- crossprod(J)
+      covMat <- try(solve(JtJ)*sig^2, silent=TRUE)
+      j <- getGrad(object, doseSeq, uGrad)
+      j0 <- as.numeric(getGrad(object, 0, uGrad))
+      j <- t(t(j)-j0)
+      cholcovMat <- try(chol(covMat), silent = TRUE)
+      if (!inherits(cholcovMat, "matrix")) {
         warning("Cannot cannot calculate standard deviation for ", 
                 model, " model.\n")
         seFit <- rep(NA, length(doseSeq))
       } else {
-        R <- qr.R(qr(J))
-        Rinv <- try(solve(R), silent = TRUE)
-        if (!inherits(Rinv, "matrix")) {
-          warning("Cannot cannot calculate standard deviation for ", 
-                  model, " model.\n")
-          seFit <- rep(NA, length(doseSeq))
-        } else {
-          v <- getGrad(object, doseSeq, uGrad)
-          v0 <- as.numeric(getGrad(object, 0, uGrad))
-          v <- t(t(v) - v0)
-          seFit <- sig * sqrt(rowSums((v %*% Rinv)^2))
-        }
+        seFit <- sqrt(rowSums((j%*%t(cholcovMat))^2)) # t(j)%*%covMat%*%j
       }
       res <- list(fit = mn, se.fit = as.vector(seFit),
                   residual.scale=sig, df=object$df)
+      ## sig <- sqrt(object$RSS2/object$df)
+      ## J <- getGrad(object, data[, doseNam], uGrad)
+      ## if(any(is.na(J)) | any(is.nan(J))){
+      ##   warning("Cannot cannot calculate standard deviation for ", 
+      ##           model, " model.\n")
+      ##   seFit <- rep(NA, length(doseSeq))
+      ## } else {
+      ##   R <- qr.R(qr(J))
+      ##   Rinv <- try(solve(R), silent = TRUE)
+      ##   if (!inherits(Rinv, "matrix")) {
+      ##     warning("Cannot cannot calculate standard deviation for ", 
+      ##             model, " model.\n")
+      ##     seFit <- rep(NA, length(doseSeq))
+      ##   } else {
+      ##     v <- getGrad(object, doseSeq, uGrad)
+      ##     v0 <- as.numeric(getGrad(object, 0, uGrad))
+      ##     v <- t(t(v) - v0)
+      ##     seFit <- sig * sqrt(rowSums((v %*% Rinv)^2))
+      ##   }
+      ## }
+      ## res <- list(fit = mn, se.fit = as.vector(seFit),
+      ##             residual.scale=sig, df=object$df)
       return(res)
     }    
   }

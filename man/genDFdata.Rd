@@ -11,8 +11,13 @@ genDFdata(model, argsMod, doses, n, sigma, mu = NULL, offset = NULL)
 }
 \arguments{
   \item{model}{ Character string giving the name of a model function. The first
-                argument of the model function should be the dose variable. }
-  \item{argsMod}{ A vector with the arguments for the model function. }
+                argument of the model function should be the dose
+		variable. See \code{\link{Dose-Response Models}} for details on the built in
+		dose-response models
+	      }
+  \item{argsMod}{ A vector with the arguments for the model function,
+    see \code{\link{Dose-Response Models}} for details on the built in
+    dose-response models. }
   \item{doses}{ Dose levels to be used. }
   \item{n}{ Group sample sizes. }
   \item{sigma}{ Standard deviation. }
@@ -24,6 +29,9 @@ genDFdata(model, argsMod, doses, n, sigma, mu = NULL, offset = NULL)
 \value{
   A data frame with two columns called \code{dose} and \code{resp}, corresponding to the dose and 
   simulated response values.
+}
+\seealso{
+  \code{\link{Dose-Response Models}}
 }
 \examples{
 \dontrun{
