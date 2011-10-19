@@ -33,7 +33,7 @@ MCPtest(formula, data, models, addCovars = ~1,
     the model functions. The list entries should be equal to prior
     estimates for standardized model parameters. See the
     \link[MCPMod]{MCPMod} function for details on how to specify
-    candidate model shapes, and \link{Dose-Response Models}
+    candidate model shapes, and \link{DR-Models}
     for the definition of the implemented dose-response models.
   }
   \item{addCovars}{

@@ -1,17 +1,18 @@
+Help files are available for:
 _______________________________________________________________________
-General:
+General
 DoseFinding-package     Package overview
 fitDRModel              Fit a non-linear regression model with linear
                         covariates (normal, homoscedastic data).
 gFitDRModel             Generalized fitting of dose-response models to
                         raw dose-response estimates.
-Dose-Response Models    Built-in dose-response models in DoseFinding
+DR-Models               Built-in dose-response models in DoseFinding
 MCPtest                 Perform model-based multiple contrast test
 gMCPtest                Generalized model-based multiple contrast tests
 calcOptDesign           Function to calculate an optimal design
 _______________________________________________________________________
-MCPMod-related:
-plotModels              Plot candidate models
+MCPMod-related
+plotModels              Plot dose-response models
 MCPMod                  Perform MCPMod analysis of a data set
 bootMCPMod              Evaluate precision of dose estimate by
                         nonparametric bootstrapping
@@ -25,14 +26,14 @@ powerScenario           Calculates the power for an planMM object under
 LP                      Sensitivity analysis for misspecification of
                         standardized model parameters in MCPMod
 _______________________________________________________________________
-Datasets:
+Datasets
 biom                    Biometrics Dose Response data
 IBScovars               Irritable Bowel Syndrome Dose Response data
                         with covariates
 migraine                Migraine Dose Response data
 
 _______________________________________________________________________
-Additional functions/help pages:
+Additional functions/help pages
 AIC.DRMod               Calculate AIC, BIC or log-likelihood for a
                         DRMod object
 calcBayesEst            Calculates posterior estimates and posterior
