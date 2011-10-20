@@ -37,7 +37,7 @@ fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
   \item{model}{
     The non-linear model to be used for fitting the data. Built-in
     models are "linlog", "linear", "quadratic", "emax", "exponential",
-    "sigEmax", "betaMod" and "logistic" (see \link{Dose-Response Models}). 
+    "sigEmax", "betaMod" and "logistic" (see \link{DR-Models}). 
     User defined models can also be specified. The name
     specified in the model argument needs to be equal to the name of the
     model function, see the examples for details.

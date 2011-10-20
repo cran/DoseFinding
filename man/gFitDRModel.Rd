@@ -33,7 +33,7 @@
 	      estimate specified via \code{drEst}}
  \item{model}{ Dose-response model to fit, possible models are
 	      "linlog", "linear", "quadratic", "emax", "exponential",
-              "sigEmax", "betaMod" and "logistic", see \link{Dose-Response Models}.
+              "sigEmax", "betaMod" and "logistic", see \link{DR-Models}.
 	    }
  \item{intercept}{ Whether or not to include an intercept in the
    model. Models without intercept are of interest for example for

@@ -188,8 +188,8 @@ getGrid <- function(Ngrd, bnds, dim){
     if(Ngrd > 75025){
       N <- glp[22]
       k <- 1:N
-      mat <- cbind((k-0.5)/N, ((glp[ind-1]*k-0.5)/N)%%1)
-      mat2 <- cbind(runif(Ngrd-N), runif(Ngrd-N))
+      mat <- cbind((k-0.5)/N, ((glp[21]*k-0.5)/N)%%1)
+      mat2 <- cbind(runif(Ngrd-N), runif(Ngrd-N)) # simply add random variates
       mat <- rbind(mat, mat2)
     } else if(Ngrd < 5){
       i <- 1:Ngrd

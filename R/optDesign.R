@@ -372,7 +372,7 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
     } else {
       critv <- apply(res, 1, objFunc)
     }
-    des <- res[which.min(critv),]
+    des <- mat[which.min(critv),]
     crit <- min(critv)
   }
   out <- list()

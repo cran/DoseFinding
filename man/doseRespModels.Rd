@@ -1,5 +1,5 @@
-\name{Dose-Response Models}
-\alias{Dose-Response Models}
+\name{DR-Models}
+\alias{DR-Models}
 \alias{betaMod}
 \alias{emax}
 \alias{sigEmax}

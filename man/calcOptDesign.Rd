@@ -196,10 +196,19 @@ des <- calcOptDesign(fMod, weights, doses, clinRel=0.1, scal=200, control=list(m
 ## now use previously allocated patients
 nold <- c(45, 50, 0, 0, 0)
 des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.1, n2=30, scal=200,
-         off=1, control=list(maxit=1000), nold=nold)
+                      control=list(maxit=1000), nold=nold)
 ## the calculated overall design is the same as the 1-step design
 (30*des2$design+nold)/(30+sum(nold))
 des$design
+
+## same with exact optimizer
+des <- calcOptDesign(fMod, weights, doses, clinRel=0.1, scal=200,
+                     control=list(blockSize = 10), n2=120, method = "exact")
+nold <- c(10, 10, 0, 0, 0)
+des2 <- calcOptDesign(fMod, weights, doses, clinRel=0.1, n2=100, scal=200,
+                      control=list(blockSize = 10), nold=nold, method = "exact")
+(des2$design*100+nold)/(100+sum(nold))
+
 
 ########################################################################
 #### user defined criterion function (D-optimality for cubic polynomial)
