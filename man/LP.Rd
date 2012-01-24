@@ -28,8 +28,8 @@ LP(models, model, type = c("both", "LP1", "LP2"), paramRange,
    For models with two standardized model parameters a 2x2 matrix with the boundaries
    for each standardized model parameter in the rows. See examples for details. }
   \item{doses}{ Dose levels to be administered }
-  \item{base}{ Baseline effect }
-  \item{maxEff}{ Maximum change from baseline }
+  \item{base}{ Placebo effect }
+  \item{maxEff}{ Maximum change from placebo (in considered dose range) }
   \item{sigma}{ Standard deviation }
   \item{n}{ Numeric vector of sample sizes per group. In case just one number
   is specified, it is assumed that all group sample sizes are equal to 
@@ -88,25 +88,25 @@ models <- list(linear=NULL, emax=c(25),
            logistic=c(50,10.88111), exponential=c(85),
            betaMod=matrix(c(0.33,2.31,1.39,1.39),byrow=TRUE,nrow=2))
 
-# Examples from JBS paper, p.654
+## Examples from JBS paper, p.654
 LPobj <- LP(models, model = "emax", type = "both", paramRange = c(10,70),
           doses = doses, base = 0, maxEff = 0.4, sigma = 1, n = 60,
           alpha = 0.05, len = 15, scal = 200)
 print(LPobj)
 plot(LPobj)
 
-# for exponential model with fullMod and LP1:
+## for exponential model with fullMod and LP1:
 fMod <- fullMod(models, doses, base = 0, maxEff = 0.4, scal=200)
 LPobj <- LP(fMod, "exponential", "LP1", c(50, 120), sigma = 1,
             alpha = 0.05, len = 20, n = 60)
 plot(LPobj)
 
-# Examples for models with two standardized model parameters
+## Examples for models with two standardized model parameters
 LP(models, "betaMod", "LP1", 
    paramRange = matrix(c(0.3,1.9,0.4,2.5),nrow=2),
    doses, 0, 0.4, 1, 60, alpha=0.05, len=c(10,4), scal=200)
 
-#  Time consuming example
+##  Time consuming example
 LPobj <- LP(models, "logistic", "both",
             paramRange = matrix(c(40,5,60,15),nrow=2),    
             doses, 0, 0.4, 1, 60, alpha=0.05, len=c(10,4), scal=200)

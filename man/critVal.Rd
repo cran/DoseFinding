@@ -42,12 +42,12 @@ Gauss probabilities in R, \emph{R News}, \bold{1}, 27--29
 }
 \seealso{ \code{\link[MCPMod]{planMM}}, \code{\link{mvtnorm.control}}, \code{\link{MCPtest}} }
 \examples{
-# Calculation of critical value for Dunnett test
-# Set up contrast matrix (3 active doses)
+## Calculation of critical value for Dunnett test
+## Set up contrast matrix (3 active doses)
 CM <- rbind(-1,diag(3))
-# 30 patients per group, one-sided alpha 0.05
+## 30 patients per group, one-sided alpha 0.05
 critVal(CM, n=30, alpha = 0.05)
-# Example from R News 1(2) p. 28, 29
+## Example from R News 1(2) p. 28, 29
 CM <- c(1, 1, 1, 0, 0, -1, 0, 0, 1, 0, 0, -1, 0, 0,
        1, 0, 0, 0, -1, -1, 0, 0, -1, 0, 0)
 CM <- t(matrix(CM, ncol = 5))

@@ -18,7 +18,7 @@ planMM(models, doses, n, off = 0.1 * max(doses), scal = 1.2 * max(doses),
    \item{doses}{ A numeric vector giving the doses to be administered. }
   \item{n}{ The vector of sample sizes per group. In case just one number
   is specified, it is assumed that all group sample sizes are equal to 
-  this number.}
+  this number. }
   \item{off}{ Offset parameter for the linear in log model (default 10 perc of the maximum dose). }
   \item{scal}{ Scale parameter for the beta model (default 20 perc. larger than maximum dose).}
   \item{std}{ Optional logical indicating, whether standardized version
@@ -41,7 +41,8 @@ planMM(models, doses, n, off = 0.1 * max(doses), scal = 1.2 * max(doses),
                 the \code{models} argument should not be specified, see examples
                 below. }
   \item{vCov}{ Covariance matrix of mean vectors assumed for calculation
-    of optimal contrasts.}
+    of optimal contrasts. When vCov is given it is assumed that the
+    estimates are asymptotically normal. }
 }
 \value{
   An object of class planMM with the following components:
@@ -66,7 +67,7 @@ Statistics}, \bold{16}, 639--656
 \seealso{\code{\link{critVal}}, \code{\link{MCPtest}}}
 \examples{
 \dontrun{
-# Example from JBS paper
+## Example from JBS paper
 doses <- c(0,10,25,50,100,150)
 models <- list(linear = NULL, emax = 25,                               
                logistic = c(50, 10.88111), exponential= 85,            
@@ -74,10 +75,10 @@ models <- list(linear = NULL, emax = 25,
 plM <- planMM(models, doses, n = rep(50,6), alpha = 0.05, scal=200)
 plot(plM)
 
-# example, where means are directly specified
-# doses   
+## example, where means are directly specified
+## doses   
 dvec <- c(0, 10, 50, 100)
-# mean vectors
+## mean vectors
 mu1 <- c(1, 2, 2, 2)
 mu2 <- c(1, 1, 2, 2)
 mu3 <- c(1, 1, 1, 2)

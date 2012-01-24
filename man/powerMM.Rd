@@ -22,8 +22,9 @@ powerMM(models, doses, base, maxEff, sigma, lower, upper, step,
   can also be a fullMod object, then the arguments \code{base}, 
   \code{maxEff}, \code{off} and \code{scal} are ignored. }
   \item{doses}{ Dose levels to be administered }
-  \item{base}{ Expected baseline effect }
-  \item{maxEff}{ Expected maximum change from baseline }
+  \item{base}{ Expected placebo effect }
+  \item{maxEff}{ Expected maximum change from placebo (within considered
+  dose range) }
   \item{sigma}{ Expected standard deviation }
   \item{lower, upper}{  Maximum and minimum group sample size for
                         which the power is calculated. }
@@ -86,27 +87,27 @@ models <- list(linear = NULL, emax = 25,
 pM <- powerMM(models, doses, base = 0, maxEff = 0.4, sigma = 1,
             alpha = 0.05, lower = 10, upper = 100, step = 20, scal = 200)         
 pM
-# a graphical display provides plot method
+## a graphical display provides plot method
 plot(pM)                                
-# reproduces plot in JBS 16, p.651      
+## reproduces plot in JBS 16, p.651      
 plot(pM, line.at = 0.8, models = "none")
 
-# the same with fullMod object and default alpha
+## the same with fullMod object and default alpha
 fMod <- fullMod(models, doses, base = 0, maxEff = 0.4, scal=200) 
 pM <- powerMM(fMod, sigma = 1, lower = 10, upper = 100, 
               step = 20, scal = 200)         
 pM
 
-# using unbalanced (but fixed) allocations
+## using unbalanced (but fixed) allocations
 pM <- powerMM(models, doses, base = 0, maxEff = 0.4, sigma = 1,       
                lower = 10, upper = 100, step = 20, scal = 200,
                alRatio = c(3, 2, 2, 1, 1, 1), typeN = "arm") 
 plot(pM, summ = "mean")
 
-# example, where means are directly specified
-# doses   
+## example, where means are directly specified
+## doses   
 dvec <- c(0, 10, 50, 100)
-# mean vectors
+## mean vectors
 mu1 <- c(1, 2, 2, 2)
 mu2 <- c(1, 1, 2, 2)
 mu3 <- c(1, 1, 1, 2)

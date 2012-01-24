@@ -22,8 +22,9 @@ sampSize(models, doses, base, maxEff, sigma, upperN,
   can also be a fullMod object, then the arguments \code{base}, 
   \code{maxEff}, \code{off} and \code{scal} are ignored }
   \item{doses}{ Dose levels to be administered }
-  \item{base}{ Expected baseline effect }
-  \item{maxEff}{ Expected maximum change from baseline }
+  \item{base}{ Expected placebo effect }
+  \item{maxEff}{ Expected maximum change from placebo (in considered
+    dose range) }
   \item{sigma}{ Expected standard deviation }
   \item{upperN, lowerN}{ Upper and lower bound for the target sample size. \code{lowerN} defaults to
                          \code{floor(upperN/2)}. }
@@ -80,31 +81,31 @@ Statistics}, \bold{16}, 639--656
 }
 \seealso{ \code{\link{MCPtest}}, \code{\link{powCalc}}, \code{\link{powerMM}} }
 \examples{
-# example from JBS paper p.651
+## example from JBS paper p.651
 doses <- c(0,10,25,50,100,150)                                         
 models <- list(linear = NULL, emax = c(25),                            
                logistic = c(50, 10.88111), exponential=c(85),          
                betaMod=matrix(c(0.33,2.31,1.39,1.39), byrow=TRUE, nrow=2))
 sampSize(models, doses, base = 0, maxEff = 0.4, sigma = 1,             
          upperN = 80, scal = 200, alpha = 0.05)
-# with different summary function
+## with different summary function
 \dontrun{
 sampSize(models, doses, base = 0, maxEff = 0.4, sigma = 1,             
          upperN = 90, scal = 200, sumFct = median, alpha = 0.05)
 }
-# with unbalanced allocations (twice as many patients in placebo group
-# than in active dose groups)
+## with unbalanced allocations (twice as many patients in placebo group
+## than in active dose groups)
 sampSize(models, doses, base = 0, maxEff = 0.4, sigma = 1,            
        alpha = 0.05, upperN = 80, scal = 200, alRatio=c(2,1,1,1,1,1))
-# iterates total sample size instead of sample size in smallest arm
-# in this case no big difference
+## iterates total sample size instead of sample size in smallest arm
+## in this case no big difference
 \dontrun{
 sampSize(models, doses, base = 0, maxEff = 0.4, sigma = 1,
          alpha = 0.05, upperN = 500, scal = 200, typeN = "total",
          alRatio=c(2,1,1,1,1,1))
 
 
-# sample size calculation for general matrix of means
+## sample size calculation for general matrix of means
 dvec <- c(0, 10, 50, 100)                             
 mu1 <- c(1, 2, 2, 2)                                  
 mu2 <- c(1, 1, 2, 2)                                  

@@ -17,18 +17,22 @@
 }
 \description{
   
-  coef.(g)DRMod - Extract coefficients object, if wanted, the
+  \bold{coef.(g)DRMod} - Extract coefficients object, if wanted, the
   function can separate the coefficients into coefficients of the
   dose-response model and the additional linear coefficients.
   
-  predict.(g)DRMod - Predict a DRMod or gDRMod object
+  \bold{predict.(g)DRMod} - Predict a DRMod or gDRMod object
 
-  intervals.(g)DRMod, vcov.(g)DRMod - Calculate (asymptotic) covariance
-  matrix, confidence intervals for parameters in a DRMod or gDRMod object, based
-  on standard asymptotic theory for nonlinear models, see Seber and Wild
-  (2003).
+  \bold{intervals.(g)DRMod, vcov.(g)DRMod} - Calculate (asymptotic)
+  covariance matrix, confidence intervals for parameters in a DRMod or
+  gDRMod object, based on standard asymptotic theory for nonlinear
+  models, see Seber and Wild (2003). \bold{NOTE:} When bounds are used
+  for the non-linear parameters (the optimizer was "bndnls") the provided
+  approximation is only valid if the true parameter is in the interior
+  of the provided bounds. When the parameter estimate is on the boundary
+  the provided approximation is often not practically useful.
 
-  plot.(g)DRMod - Plot a DRMod or gDRMod object. plot.(g)DRMod displays
+  \bold{plot.(g)DRMod} - Plot a DRMod or gDRMod object. plot.(g)DRMod displays
   either the dose-response effect curve or the full dose-response curve
   for a particular selection of the additional covariates of a DRMod
   object. The plot function (invisibly) returns all information
@@ -149,7 +153,7 @@
   Seber, G.A.F and Wild, C.F. (2003). Nonlinear Regression, Wiley & Sons
 }
 \seealso{
-\code{\link{fitDRModel}}
+\code{\link{fitDRModel}}, \code{\link{gFitDRModel}}
 }
 \examples{
 ## examples for predict method

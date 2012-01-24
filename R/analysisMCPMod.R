@@ -554,7 +554,9 @@ plot.MCPMod <-
   dat <- NULL
   rg <- range(dat[,2], plotMat$pred)
   yl <- c(rg[1] - 0.1*diff(rg), rg[2] + 0.1*diff(rg))
-  panDat <- list(data=dat, clinRel=x$input$clinRel, complData=complData,
+  clinRelp <- ifelse(x$input$direction == "decreasing",
+                     -x$input$clinRel, x$input$clinRel)
+  panDat <- list(data=dat, clinRel=clinRelp, complData=complData,
                  lenDose=lenDose, DoseInd=DoseInd, colors=colors, lg=lg,
                  covars = covars) # data for panels
   ## information for key argument
@@ -796,9 +798,8 @@ ED.DRMod <- function(object, p, doseSeq = NULL, lenDose = 101,
 
 
 ## function to generate DF data
-genDFdata <-
-  function(model, argsMod, doses, n, sigma,
-           mu = NULL, offset = NULL){
+genDFdata <- function(model, argsMod, doses, n, sigma,
+                      mu = NULL, offset = NULL){
   nD <- length(doses)
   dose <- sort(doses)
   if (length(n) == 1) n <- rep(n, nD)

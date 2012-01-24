@@ -235,12 +235,12 @@ getStart <- function(k){
 
 ## function called in the optimization (design criterion is
 ## implemented in C and called "critfunc")
-optFunc <- function(x, xvec, pvec, k, weights, M, n2, nold, bvec, type, trans){
+optFunc <- function(x, xvec, pvec, k, weights, M, n2, nold, bvec, type, trans, stand){
   xtrans <- do.call("trans", list(x, k))
   res <- .C("critfunc", xvec, pvec, double(k), k, weights, M, xtrans, n2,
      nold, double(16), double(4), double(16), double(16),
-     double(40), as.double(1e-15), bvec, type, double(1))
-  res[[18]]
+     double(40), as.double(1e-15), bvec, type, as.integer(stand), double(1))
+  res[[19]]
 }
 
 ## user visible function calling all others
@@ -249,7 +249,7 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
                           type = c("MED", "Dopt", "MED&Dopt", "userCrit"),
                           method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
                           lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
-                          userCrit = NULL, ...){
+                          standDopt = FALSE, userCrit = NULL, ...){
   ## fullModels - list of all model parameters (fullMod object)
   ## weights - vector of weights for all fullModels
   ## clinRel - clinical relevance
@@ -280,6 +280,9 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
       stop("only optimizers solnp or exact can handle additional constraints on weights")
     }
   }
+  if(!is.logical(standDopt))
+    stop("standDopt needs to contain a logical value")
+  stand <- as.integer(standDopt) ## use standardized or non-stand. D-optimality
   k <- length(doses)
   if(is.element(method, c("Nelder-Mead", "nlminb"))){
     transform <- transTrig
@@ -324,6 +327,7 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
               pvec=as.integer(p), k=k, weights=as.double(weights),
               M=M, n2=as.double(n2), nold = as.double(nold),
               bvec=as.double(bvecs), trans = transform,
+              stand = stand,
               type = as.integer(inttype))
     }
   } else {
@@ -390,7 +394,8 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
 calcCrit <- function(design, fullModels, weights, doses, clinRel, 
                      nold = rep(0, length(doses)), n2 = NULL, 
                      scal=1.2*max(doses), off=0.1*max(doses),
-                     type = c("MED", "Dopt", "MED&Dopt")){
+                     type = c("MED", "Dopt", "MED&Dopt"),
+                     standDopt = FALSE){
   if(inherits(design, "design")){
     design <- design$design
   }
@@ -410,6 +415,9 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
     n2 <- 100 # value arbitrary
   }
   type <- match.arg(type)
+  if(!is.logical(standDopt))
+    stop("standDopt needs to contain a logical value")
+  stand <- as.integer(standDopt)
   lst <- calcGradBvec(fullModels, doses, clinRel, off, scal, type)
   M <- as.integer(length(weights))
   k <- as.integer(length(doses))  
@@ -450,7 +458,7 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
                       pvec=as.integer(p), k=k, weights=as.double(weights),
                       M=M, n2=as.double(n2), nold = as.double(nold),
                       bvec=as.double(lst$barray), trans = idtrans,
-                      type = as.integer(type))
+                      stand = stand, type = as.integer(type))
   }
   res
 }

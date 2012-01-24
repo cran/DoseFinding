@@ -19,8 +19,8 @@ non-normal endpoints see \code{gMCPtest} and \code{gFitDRModel}.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.5-6\cr
-Date: \tab 2011-10-19\cr
+Version: \tab 0.5-7\cr
+Date: \tab 2012-01-24\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }
@@ -29,7 +29,7 @@ The main functions are:
 that fits non-linear dose-response models, \bold{calcOptDesign} that
 calculate optimal designs and \bold{MCPMod}, which implements the MCPMod
 methodology. \bold{gMCPtest} and \bold{gFitDRModel} are generalizations
-of \code{MCPtest} and \code{fitDRModel} for non-normal data.
+of \bold{MCPtest} and \bold{fitDRModel} for non-normal data.
 }
 \author{
 Bjoern Bornkamp, Jose Pinheiro, Frank Bretz

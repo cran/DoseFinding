@@ -15,7 +15,7 @@
 calcCrit(design, fullModels, weights, doses, clinRel, 
          nold = rep(0, length(doses)), n2 = NULL, 
          scal=1.2*max(doses), off=0.1*max(doses),
-         type = c("MED", "Dopt", "MED&Dopt"))
+         type = c("MED", "Dopt", "MED&Dopt"), standDopt = FALSE)
 }
 \arguments{
   \item{design}{ 
@@ -59,6 +59,14 @@ calcCrit(design, fullModels, weights, doses, clinRel,
 \item{type}{
   Determines which type of design criterion to calculate. "MED&Dopt" uses both
   optimality criteria with equal weight.
+}
+\item{standDopt}{
+  Logical determining, whether the D-optimality criterion (specifically
+  the log-determinant) should be standardized by the number of
+  parameters in the model or not (only of interest if type = "Dopt" or
+  type = "MED&Dopt"). This is of interest, when there is more than one
+  model class in the candidate model set (traditionally standardization
+  this is done in the optimal design literature). 
 }
 }
 \value{
