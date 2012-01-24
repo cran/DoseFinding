@@ -13,7 +13,8 @@ fullMod(models, doses, base, maxEff, off = 0.1*max(doses), scal = 1.2 * max(dose
   \item{models}{ A list specifying the candidate models. The names of the list entries should
        be equal to the names of the model functions. The list entries should be equal to the guesstimates  }
   \item{doses}{ Dose levels to be administered }
-  \item{base, maxEff}{ Baseline effect and maximum change from baseline to be used for calculating the 
+  \item{base, maxEff}{ Placebo effect and maximum change from placebo
+    (within considered dose range) to be used for calculating the 
                        location and scale parameters of the model }
   \item{off}{ Offset parameter for the linear in log model }
   \item{scal}{ Scale parameter for the beta model }

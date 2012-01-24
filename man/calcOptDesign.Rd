@@ -19,7 +19,7 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
              method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
              lowbnd = rep(0, length(doses)),
              uppbnd = rep(1, length(doses)),
-             userCrit = NULL, ...)
+             standDopt = FALSE, userCrit = NULL, ...)
 }
 \arguments{
   \item{fullModels}{
@@ -99,6 +99,14 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
   limits for the  allocation weights. This option is only available when
   using the "solnp" optimizer.
 }
+\item{standDopt}{
+  Logical determining, whether the D-optimality criterion (specifically
+  the log-determinant) should be standardized by the number of
+  parameters in the model or not (only of interest if type = "Dopt" or
+  type = "MED&Dopt"). This is of interest, when there is more than one
+  model class in the candidate model set (traditionally standardization
+  this is done in the optimal design literature). 
+}
 \item{userCrit}{
   User defined design criterion, should be a function that given a
   vector of allocation weights and the doses returns the criterion
@@ -141,13 +149,11 @@ calcOptDesign(fullModels, weights, doses, clinRel = NULL,
 }
 
 \examples{
-## first example calculate MED optimal design for Emax model
-mods <- list(emax = 25)
-doses <- c(0,150)
-fMod <- fullMod(mods, doses, base=0, maxEff=0.4)
-fMod$emax[2] <- 0.6666667
+## first example calculate MED optimal design for one Emax model
+## fullModel should be a list containing all model parameters
+fMod <- list(emax = c(0, 2/3, 25)) 
 doses <- c(0, 18.75, 150)
-weights <- c(1) # just one model
+weights <- 1 # just one model
 ## by default calculates MED optimal design
 des1 <- calcOptDesign(fMod, weights, doses, clinRel=0.2) 
 des2 <- calcOptDesign(fMod, weights, doses, type = "Dopt")
@@ -172,6 +178,8 @@ des6 <- calcOptDesign(fMod, weights, doses, n2 = 20, clinRel=0.2,
 doses <- c(0, 10, 25, 50, 100, 150)
 mods <- list(linear = NULL, emax = 25, exponential = 85,
                linlog = NULL, logistic = c(50, 10.8811))
+## now use fullMod function to produce the fullModel list
+## from the 'usual' models list
 fMod <- fullMod(mods, doses, base=0, maxEff=0.4, off=1)
 weights <- rep(1/5, 5)
 desMED <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
@@ -183,15 +191,15 @@ desMix <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
 ## allocated 100 persons according to desMix design
 rndDesign(desMix, 100)
 
-########################################################################
+################################################################################
 #### using already allocated patients
 mods <- list(betaMod = c(0.33, 2.31))
-doses <- c(0,150)
-fMod <- fullMod(mods, doses, base=0, maxEff=0.4, scal=200)
 doses <- c(0, 0.49, 25.2, 108.07, 150)
-weights <- c(1)
+fMod <- fullMod(mods, doses, base=0, maxEff=0.4, scal=200)
+weights <- 1
 ## no previously allocated patients
-des <- calcOptDesign(fMod, weights, doses, clinRel=0.1, scal=200, control=list(maxit=1000))
+des <- calcOptDesign(fMod, weights, doses, clinRel=0.1, scal=200,
+                     control=list(maxit=1000))
 
 ## now use previously allocated patients
 nold <- c(45, 50, 0, 0, 0)

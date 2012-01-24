@@ -89,6 +89,8 @@ guesst <- function(d, p, model = c("emax", "exponential", "logistic", "quadratic
          betaMod = {
            if(scal <= dMax)
              stop("scal needs to be larger than dMax to calculate guesstimate")
+           if(dMax > Maxd)
+             stop("dose with maximum effect (dMax) needs to be smaller than maximum dose (Maxd)")
            k <- dMax/(scal-dMax)
            val <- d^k*(scal-d)/(dMax^k*(scal-dMax))
            beta <- log(p)/(log(val))
@@ -174,7 +176,8 @@ planMM <-  function(models, doses, n, off = 0.1*max(doses), scal = 1.2*max(doses
                     std = TRUE, alpha = 0.025,
                     alternative = c("one.sided", "two.sided"),
                     direction = c("increasing", "decreasing"),
-                    control = mvtnorm.control(), cV = TRUE, muMat = NULL, vCov = NULL){
+                    control = mvtnorm.control(), cV = TRUE, muMat = NULL,
+                    vCov = NULL){
   alternative <- match.arg(alternative)
   if (missing(models)) {
     ## may pass necessary information via muMat
@@ -195,13 +198,21 @@ planMM <-  function(models, doses, n, off = 0.1*max(doses), scal = 1.2*max(doses
   if(length(n) > 1){
     if(length(n) != length(doses))
       stop("n needs to be of length 1 or of the same length as doses")
-  }
+  } 
   contMat <- modContr(mu, n, vCov)
-  corMat <- t(contMat)%*%(contMat/n)
-  den  <- sqrt(crossprod(t(colSums(contMat^2/n))))
-  corMat <- corMat / den
+  if(is.null(vCov)){
+    corMat <- t(contMat)%*%(contMat/n)
+    den  <- sqrt(crossprod(t(colSums(contMat^2/n))))
+    corMat <- corMat / den
+    nDF <- NULL # calculate degrees of freedom in critVal
+  } else {
+    corMat <- cov2cor(t(contMat)%*%vCov%*%contMat)
+    nDF <- 0 # assume asymptotic normality
+  }
   if(cV){
-    critV <- critVal(contMat, n, alpha, control = control, alternative = alternative)
+    critV <- critVal(contMat, n, alpha, control = control,
+                     alternative = alternative, corMat = corMat,
+                     nDF = nDF)
   }
   else critV <- NULL
   res <- list(contMat = contMat, critVal = critV, muMat = mu,
@@ -1120,7 +1131,7 @@ plot.LP <- function(x, line = TRUE, type = NULL, spldf = 5, ...){
     val <- 1
     len <- attr(x, "len")
     if(len[1] < 4)
-      stop("at least 4 points needed to obtain smooth curve. Try: line = FALSE")      
+      stop("at least 4 points needed to obtain smooth curve. Try: line = FALSE")
     if (!(spldf > 1 && spldf <= dim(x)[1]))
       warning("you must supply 1 < spldf <= len")
   }

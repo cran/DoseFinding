@@ -106,20 +106,20 @@ calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)),
   dose-response parameter estimates.
 }
 \examples{
-# example 1
+## example 1
 doses <- c(0, 62.5, 125, 250, 500)
 mods <- list(emax = 25, linear = NULL, logistic = c(50, 50), betaMod = c(1, 1))
 clinRel <- 200
 d <- 4
 prior <- list(a=350^2*(d+2), d=d, m=c(60,280), V=matrix(c(100000,0,0,100000),2,2), S=10)
 dats <- genDFdata("emax", c(e0 = 60, eMax = 294, ed50 = 25), doses, rep(46, 5), 350)    
-# calculate posterior means
+## calculate posterior means
 calcBayesEst(dats, mods, prior, weights = rep(1/4, 4), clinRel = clinRel, scal=600)
-# calculate posterior mode
+## calculate posterior mode
 calcBayesEst(dats, mods, prior, weights = rep(1/4, 4), clinRel =
              clinRel, scal=600, meanInd = FALSE)                    
 
-# example 2 (investigate under different prior scenarios)
+## example 2 (investigate under different prior scenarios)
 s2 <- 1
 models <- list(emax = c(7.5), logistic = matrix(c(30,60,4,11), nrow=2), 
                betaMod=c(1,1))

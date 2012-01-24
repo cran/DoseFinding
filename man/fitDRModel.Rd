@@ -135,38 +135,38 @@ fitDRModel(formula, data, model = NULL, addCovars = ~1, na.action = na.fail,
 \code{\link{MED.DRMod}}, \code{\link{ED.DRMod}}
 }
 \examples{
-# Example (i): Overview of capabilities
+## Example (i): Overview of capabilities
 data(biom)
 fitemax <- fitDRModel(resp ~ dose, biom, "emax")
 
-# a lot of things can be done with a DRMod object
-# basic information
+## a lot of things can be done with a DRMod object
+## basic information
 fitemax
-# a bit more information
+## a bit more information
 summary(fitemax)
-# predicting
+## predicting
 predict(fitemax, newdata=data.frame(dose = c(0,0.5,1)))
-# predictions with standard error
+## predictions with standard error
 predict(fitemax, newdata=data.frame(dose = c(0,0.5,1)), se.fit = TRUE)
-# plotting
+## plotting
 plot(fitemax, type = "DRCurve")
 plot(fitemax, type = "EffectCurve") # difference from placebo
-# extracting coefficients
+## extracting coefficients
 coef(fitemax)
-# (asymptotic) covariance matrix of estimates
+## (asymptotic) covariance matrix of estimates
 vcov(fitemax)
-# confidence intervals for estimates
+## confidence intervals for estimates
 intervals(fitemax, level = 0.95)
-# fitted log-likelihood
+## fitted log-likelihood
 logLik(fitemax)
-# extracting AIC (or BIC)
+## extracting AIC (or BIC)
 AIC(fitemax)
-# calculate the minimum effective dose
+## calculate the minimum effective dose
 MED(fitemax, type = "MED2", clinRel = 0.2, gamma = c(0.05, 0.1))
-# calculate effective dose
+## calculate effective dose
 ED(fitemax, p = 0.5)
 
-# quite a few models are built in
+## quite a few models are built in
 fitsigEmax <- fitDRModel(resp ~ dose, biom, "sigEmax")
 plot(fitsigEmax, type = "DRCurve")
 
@@ -176,29 +176,29 @@ plot(fitlog, type = "DRCurve")
 fitQuad <- fitDRModel(resp ~ dose, biom, "quadratic")
 plot(fitQuad, type = "DRCurve")
 
-# need additional scal parameter for beta model
+## need additional scal parameter for beta model
 fitBeta <- fitDRModel(resp ~ dose, biom, "betaMod", scal = 1.2)
 plot(fitBeta, type = "DRCurve")
 
-# additionally there is the exponential, the linear
-# and linear in log model... 
+## additionally there is the exponential, the linear
+## and linear in log model... 
 
-# Example (ii): Fitting with linear covariates
-# specify those via addCovars
+## Example (ii): Fitting with linear covariates
+## specify those via addCovars
 data(IBScovars)
 fitemax <- fitDRModel(resp ~ dose, IBScovars, "emax", addCovars = ~gender)
 plot(fitemax, type = "EffectCurve")
 plot(fitemax, type = "DRCurve", addCovarVals=data.frame(gender = as.factor(1)))
 plot(fitemax, type = "DRCurve", addCovarVals=data.frame(gender = as.factor(2)))
 
-# for logistic model use bndnls (plain nls does not converge)
+## for logistic model use bndnls (plain nls does not converge)
 fitlog <- fitDRModel(resp ~ dose, IBScovars, "logistic", addCovars = ~gender,
                      optimizer = "bndnls", bnds = rbind(c(1,4), c(0,1)))
-# optimum lies on the boundary of bound
+## optimum lies on the boundary of bound
 plot(fitlog, type = "EffectCurve")
 
-# Example (iii): fitting a user model
-# is a cubic polynomial model
+## Example (iii): fitting a user model
+## is a cubic polynomial model
 userModel <- function(dose, par0, par1, par2, par3){
   par0+par1*dose+par2*dose^2+par3*dose^3
 }

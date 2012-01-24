@@ -3,19 +3,24 @@
 \title{Generalized fitting of dose-response models to raw dose-response estimates}
 \description{
   The function fits a dose-response model to raw dose-response estimates
-  (obtained for example from a ANOVA type model), by optimizing the
+  (obtained for example from an ANOVA type model), by optimizing the
   generalized least squares objective function:
   \deqn{
     (f(dose,\theta)-drEst)'vCov^{-1}(f(dose,\theta)-drEst)}{(f(dose,theta)-drEst)'vCov^{-1}(f(dose,theta)-drEst)}
   where \code{drEst} are the response estimates at the dose-levels
-  \code{dose} and \code{vCov} the associated covariance matrix.
-  This approach is rather general: \code{drEst} and \code{vCov} can
-  be the output from another model fitting procedure like generalized
-  linear models, survival models or even mixed models.
-  The underlying optimizer is the same as the \code{bndnls} option in the
-  \code{fitDRModel} function.
-  Inference capabilities (confidence intervals, etc) for \code{gFitDRModel} fits,
-  will be added in later releases of the DoseFinding package.
+  \code{dose} and \code{vCov} the associated covariance matrix.  This
+  approach is rather general: \code{drEst} and \code{vCov} can be the
+  output from another model fitting procedure like generalized linear
+  models, survival models or even mixed models.  The underlying
+  optimizer is similar to the \code{bndnls} option in the
+  \code{fitDRModel} function: First a grid-search optimization is used
+  for the non-linear parameters of the dose-response model, then the
+  \code{nlminb} optimizer starts from the best value found on the
+  grid. \code{gFitDRModel} will always return an estimate (the best of the
+  two optimizations, usually the estimate from \code{nlminb} unless it
+  failed).  Inference capabilities (confidence intervals, etc)
+  for \code{gFitDRModel} fits, will be added in later releases of the
+  DoseFinding package.
   %Under asymptotic normality of \code{drEst} one can also establish
   %confidence intervals for the obtained fit.
 }
@@ -39,13 +44,15 @@
    model. Models without intercept are of interest for example for
    fitting placebo-corrected estimates (note that the linear in log and
    the logistic model cannot be fitted without intercept)
-     }
-  \item{bnds}{ Bounds for the nonlinear parameters, need to be
-    finite. See also the \code{\link{getBnds}} function. }
-  \item{start}{ Optional starting values for the nonlinear parameters of
+ }
+ \item{bnds}{ Bounds for the nonlinear parameters, need to be
+   finite. Per default the bounds are determined with
+   \code{\link{getBnds}} function is used (\code{max(dose)} as input
+   parameter). }
+ \item{start}{ Optional starting values for the nonlinear parameters of
   the dose-response model. If equal to NULL a grid search is first
   performed to find a suitable starting value }
-  \item{gridSize}{
+\item{gridSize}{
     List with two components (dim1, dim2) giving the size of
     the grid used for "bndnls" optimization for 1-dim
     and 2-dim case (in 2-dim case the smallest generalized
@@ -109,7 +116,8 @@
   doseVec <- migraine$dose
   doseVecFac <- as.factor(migraine$dose)
   ## fit logistic regression with dose as factor
-  logfit <- glm(PFrate~doseVecFac-1, family = binomial, weights = migraine$ntrt)
+  logfit <- glm(PFrate~doseVecFac-1, family = binomial,
+                weights = migraine$ntrt)
   drEst <- coef(logfit)
   vCov <- vcov(logfit)
   ## now fit an Emax model (on logit scale)

@@ -138,7 +138,8 @@ pp. 146--171
 }
 \examples{
 ## some beta model example shapes
-betaModList <- list(betaMod = rbind(c(1,1), c(1.5,0.75), c(0.8,2.5), c(0.4,0.9)))
+betaModList <- list(betaMod = rbind(c(1,1), c(1.5,0.75), c(0.8,2.5),
+                    c(0.4,0.9)))
 plotModels(betaModList, c(0,1), base = 0, maxEff = 1, scal = 1.2)
 
 ## some emax example shapes
@@ -146,7 +147,8 @@ emaxModList <- list(emax = c(0.02,0.1,0.5,1))
 plotModels(emaxModList, c(0,1), base = 0, maxEff = 1)
 
 ## some sigmoid emax example shapes
-sigEmaxModList <- list(sigEmax = rbind(c(0.5,1), c(0.5,8), c(0.2,1), c(0.2,8)))
+sigEmaxModList <- list(sigEmax = rbind(c(0.5,1), c(0.5,8), c(0.2,1),
+                       c(0.2,8)))
 plotModels(sigEmaxModList, c(0,1), base = 0, maxEff = 1)
 
 ## some exponential example shapes
@@ -154,7 +156,8 @@ expoModList <- list(exponential = c(0.1,0.25,0.5,2))
 plotModels(expoModList, c(0,1), base = 0, maxEff = 1)
 
 ## some logistic model example shapes
-logistModList <- list(logistic = rbind(c(0.5,0.05), c(0.5,0.15), c(0.2,0.05), c(0.2,0.15)))
+logistModList <- list(logistic = rbind(c(0.5,0.05), c(0.5,0.15),
+                      c(0.2,0.05), c(0.2,0.15)))
 plotModels(logistModList, c(0,1), base = 0, maxEff = 1)
 }
 

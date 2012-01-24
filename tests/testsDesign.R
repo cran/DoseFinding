@@ -228,3 +228,42 @@ for(i in 1:5){
 }
 round(desD, 3)
 round(desM, 2)
+
+################################################################################
+#### look at standardized Dopt and MED&Dopt criteria
+mods1 <- list(sigEmax = rbind(c(25, 5), c(107.14, 2)))
+mods2 <- list(sigEmax = rbind(c(25, 5), c(107.14, 2)), linear = NULL)
+doses <- c(0, 62.5, 125, 250, 500)
+fMod1 <- fullMod(mods1, doses, base=60, maxEff=280)
+fMod2 <- fullMod(mods2, doses, base=60, maxEff=280)
+w1 <- rep(0.5, 2)
+w2 <- rep(1/3, 3)
+## des1 and des2 should be exactly the same
+des1 <- calcOptDesign(fMod1, w1, doses, type = "Dopt", standDopt = FALSE)
+des2 <- calcOptDesign(fMod1, w1, doses, type = "Dopt", standDopt = TRUE)
+
+## des1 and des2 should be different (as linear and emax have
+## different number of parameters)
+des1 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = FALSE,
+                      method = "solnp")
+des2 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = TRUE,
+                      method = "solnp")
+
+## same with MED&Dopt criterion
+## des1 and des2 will differ (due to different scaling
+## of Dopt and MED criteria)
+des1 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
+                      clinRel = 100, standDopt = FALSE,
+                      method = "solnp")
+des2 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
+                      clinRel = 100, standDopt = TRUE,
+                      method = "solnp")
+
+## des1 and des2 should be different (different no of parameters
+## and different scaling of Dopt and MED criteria)
+des1 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
+                      clinRel = 100, standDopt = FALSE,
+                      method = "solnp")
+des2 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
+                      clinRel = 100, standDopt = TRUE,
+                      method = "solnp")

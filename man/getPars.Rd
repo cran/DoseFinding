@@ -21,8 +21,9 @@ getPars(model, doses, initEstim, base, maxEff,
       "base", and "maxEff", in that order (see below for an example).  }
   \item{doses}{  Doses to be used in design   }
   \item{initEstim}{ Vector of guesstimates }
-  \item{base}{ Expected baseline effect }
-  \item{maxEff}{ Expected maximum change from baseline }
+  \item{base}{ Expected placebo effect }
+  \item{maxEff}{ Expected maximum change from placebo (in considered
+    dose range) }
   \item{off}{ Offset parameter for the linear in log model (default 1). }
   \item{scal}{ Scale parameter for the beta model (default: 20 perc. larger than maximum dose).}
 }

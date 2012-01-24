@@ -133,7 +133,7 @@ void critfunc(double *x, int *p, double *xsub, int *k, double *probs, int *M,
               double *w, double *n2, double *nold,
               double *A, double *s, double *U, double *VT,
               double *work, double *tol, double *bvec, int *type,
-              double *res){
+	      int *stand, double *res){
   // x - contains gradient vectors (4 cells reserved for each model)
   // p - number of parameters (dim A)
   // k - number of dose-levels
@@ -143,7 +143,7 @@ void critfunc(double *x, int *p, double *xsub, int *k, double *probs, int *M,
   //    - dim(U)=dim(S): p*p, dim(work): (10p)*(10p) 
   // type - 1: MED, 2: Dopt, 3: MED&Dopt
   int m,incx,incb;
-  double resM=0,resD=0;
+  double resM=0,resD=0,fracp=0;
   *res = 0.0;
   // calculate weight vector
   getweights(w, n2, nold, k);
@@ -160,12 +160,22 @@ void critfunc(double *x, int *p, double *xsub, int *k, double *probs, int *M,
       *res += probs[m]*log(resM);
     }
     if(*type == 2){
-      *res += probs[m]*(-log(resD));
+      if(*stand == 1){
+	fracp = (double) p[m];
+	*res += probs[m]*(-log(resD)/fracp);	
+      } else {
+	*res += probs[m]*(-log(resD));
+      }
     }
     if(*type == 3){
       // calculate quadratic form (for MED designs)
       calcQuadform(bvec, A, &p[m], &resM, &incb);
-      *res += probs[m]*(-0.5*log(resD)+0.5*log(resM));
+      if(*stand == 1){
+	fracp = (double) p[m];
+	*res += probs[m]*(-0.5*log(resD)/fracp+0.5*log(resM));
+      } else {
+	*res += probs[m]*(-0.5*log(resD)+0.5*log(resM));
+      }
     }
   }
 }

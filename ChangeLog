@@ -1,3 +1,17 @@
+2012-01-24 Bjoern Bornkamp (version 0.5-7)
+      * gFitDRModel now always returns an estimate (either the
+      best value from nlminb or from the grid search if nlminb fails)
+      * gMCPtest: use sigma = corMat instead of corr = corMat in
+      p/qmvnorm calls (mvtnorm complained in 1-dimensional case)
+      * gFitDRModel: Introduced default for bnds argument.
+      * plot.MCPMod: Plot clinRel in the right place, when direction is
+      equal to "decreasing" (thanks to Jan Rekowski)
+      * planMM, critVal: When vCov is specified now right correlation 
+      matrix is calculated
+      * calcOptDesign: Additional argument (standDopt) to allow for optional
+      standardization (division of the log determinant by the number 
+      of parameters) of the D-optimal design criterion. 
+
 2011-10-19 Bjoern Bornkamp (version 0.5-6)
     * getGrid corrected bug for Ngrd > 75025
     * calcOptDesign: For method = "exact" and n2 > 0 the function
