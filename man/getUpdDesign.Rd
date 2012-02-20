@@ -82,7 +82,7 @@ getUpdDesign(data = NULL, doses, n2, clinRel = NULL, models, prior, scal = NULL,
 
   Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
   J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
-  to appear in Annals of Applied Statistics
+  Annals of Applied Statistics, 5, 1611-1631
 }
 \author{
  Bjoern Bornkamp

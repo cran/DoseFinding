@@ -74,7 +74,9 @@ gFitModel.bndnls <- function(dose, drEst, invCov, model,
   if(is.null(start)){
     opt <- gOptGrid(model, dim, bnds, gridSize, dose,
                       qrX, resXY, clinvCov, intercept, scal)
-    start <- opt$est;gRSS2 <- opt$gRSS2
+    strt <- opt$est;gRSS2 <- opt$gRSS2
+  } else {
+    strt <- start;gRSS2 <- Inf
   }
   
   ## calculate estimates of linear parameters given nonlinear parameter
@@ -117,18 +119,38 @@ gFitModel.bndnls <- function(dose, drEst, invCov, model,
     -2*as.numeric(crossprod(grd, invCov)%*%(drEst - pred))
   }
 
-  opt <- try(nlminb(start, optFunc,
-                    dose=dose, drEst = drEst, invCov = invCov, 
-                    model = model, clinvCov = clinvCov, intercept = intercept,
-                    scal = scal, lower = bnds[,1], upper = bnds[,2],
-                    gradient = optFuncGrad, control = control))
-  ## use best value as estimate
-  if(opt$objective < gRSS2){ # check whether nlminb found better value
-    est <- opt$par
-    gRSS2 <- opt$objective
-  } else { # something went wrong in nlminb
-    est <- start
+  if(!is.null(start)){
+    lbnd <- bnds[,1]
+    ubnd <- bnds[,2]
+  } else {
+    ## start optimizer with tighter bounds
+    if(dim == 1){ 
+      dif <- (bnds[,2] - bnds[,1])/gridSize$dim1
+    } else {  # more conservative in 2d case (use sqrt in denominator)
+      dif <- (bnds[,2] - bnds[,1])/sqrt(gridSize$dim2)
+    }
+    lbnd <- pmax(c(strt - 1.1 * dif), bnds[,1])
+    ubnd <- pmin(c(strt + 1.1 * dif), bnds[,2])
   }
+  opt <- try(nlminb(strt, optFunc, dose = dose, drEst = drEst, 
+                invCov = invCov, model = model, clinvCov = clinvCov,
+                intercept = intercept, scal = scal, lower = lbnd,
+                upper = ubnd, gradient = optFuncGrad, control = control))
+  ## use best value as estimate
+  optval <- opt$objective
+  if(!is.finite(optval) | is.na(optval)){ # something went wrong in nlminb
+    est <- strt
+  } else {
+    if(optval < gRSS2){ # check whether nlminb found better value
+      est <- opt$par
+      gRSS2 <- optval
+    } else { # if not use value from grid-search
+      est <- strt
+    }
+  }
+  if(!is.finite(gRSS2))
+    warning("algorithm did not converge, return starting value")
+  
   ## collect information for output
   out <- list()
   nam0 <- switch(model, emax = c("eMax", "ed50"), sigEmax = c("eMax", 
@@ -299,31 +321,31 @@ print.summary.gDRMod <- function(x, digits = 4, ...){
 }
 
 vcov.gDRMod <- function(object, ...){
-    if (length(object) == 1) {
-        warning("DRMod object does not contain a converged fit")
-        return(NA)
-    }
-    ## REMOVE NEXT LINE LATER (also uncomment relevent tests in tests/)
-    stop("currently not implemented")
-    model <- attr(object, "model")
-    intercept <- attr(object, "intercept")
-    if(!intercept){ # no intercept
-      par <- c(0, object$coefs)
-    } else {
-      par <- object$coefs
-    }
-    dose <- object$data$dose
-    invCov <- solve(object$data$vCov)
-    off <- attr(object, "off")
-    scal <- attr(object, "scal")
-    grd <- gradCalc(model, par, dose=dose, scal=scal, off=off)
-    if(!intercept)
-      grd <- grd[,-1]
-    covMat <- try(solve(t(grd)%*%invCov%*%grd), silent = TRUE)
-    if (!inherits(covMat, "matrix")) {
-      stop("cannot calculate covariance matrix. singular matrix in calculation of covariance matrix.")
-    }
-    covMat
+  if (length(object) == 1) {
+    warning("DRMod object does not contain a converged fit")
+    return(NA)
+  }
+  model <- attr(object, "model")
+  intercept <- attr(object, "intercept")
+  if(!intercept){ # no intercept
+    par <- c(0, object$coefs)
+  } else {
+    par <- object$coefs
+  }
+  dose <- object$data$dose
+  invCov <- solve(object$data$vCov)
+  off <- attr(object, "off")
+  scal <- attr(object, "scal")
+  grd <- gradCalc(model, par, dose=dose, scal=scal, off=off)
+  if(!intercept)
+    grd <- grd[,-1]
+  covMat <- try(solve(t(grd)%*%invCov%*%grd), silent = TRUE)
+  if(!inherits(covMat, "matrix")) {
+    warning("cannot calculate covariance matrix. singular matrix in calculation of covariance matrix.")
+    nrw <- length(grd[1,])
+    covMat <- matrix(NA, nrow=nrw, ncol=nrw)
+  }
+  covMat
 }
 
 coef.gDRMod <- function(object, ...){
@@ -336,16 +358,7 @@ coef.gDRMod <- function(object, ...){
 
 predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"), 
                            doseSeq = NULL, se.fit = FALSE, lenSeq = 101, ...){
-  ## REMOVE NEXT 4 LINES LATER  (also uncomment relevent tests in tests/)
-  if(se.fit){
-    message("se.fit = TRUE currently not implemented")
-    se.fit = FALSE
-  }
-  
-  if(length(object) == 1){
-    warning("DRMod object does not contain a converged fit")
-    return(NA)
-  }
+
   scal <- attr(object, "scal")
   off <- attr(object, "off")
   model <- attr(object, "model")
@@ -365,6 +378,8 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
       return(as.numeric(mn))
     } else {
       covMat <- vcov(object)
+      if(any(is.na(covMat)))
+        return(rep(NA, length(doseSeq)))
       grd <- gradCalc(model, DRpars, doseSeq, off=off, scal=scal)
       cholcovMat <- try(chol(covMat), silent = TRUE)
       if(!inherits(cholcovMat, "matrix")){
@@ -395,6 +410,8 @@ predict.gDRMod <- function(object, type = c("fullModel", "EffectCurve"),
       return(as.numeric(mn))
     } else {
       covMat <- vcov(object)
+      if(any(is.na(covMat)))
+        return(rep(NA, length(doseSeq)))
       if(intercept)
         covMat <- covMat[-1,-1]
       cholcovMat <- try(chol(covMat), silent = TRUE)
@@ -532,8 +549,6 @@ intervals.gDRMod <- function(object, level = 0.95, ...){
     warning("DRMod object does not contain a converged fit")
     return(NA)
   }
-  ## REMOVE NEXT LINE LATER  (also uncomment relevent tests in tests/)
-  stop("currently not implemented")
   V <- vcov(object)
   vars <- diag(V)
   mns <- coef(object)

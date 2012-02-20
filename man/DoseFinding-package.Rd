@@ -19,8 +19,8 @@ non-normal endpoints see \code{gMCPtest} and \code{gFitDRModel}.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.5-7\cr
-Date: \tab 2012-01-24\cr
+Version: \tab 0.6-1\cr
+Date: \tab 2012-02-20\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }
@@ -38,7 +38,7 @@ Maintainer: Bjoern Bornkamp <bornkamp@statistik.tu-dortmund.de>
 } \references{ 
   Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
   J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
-  to appear in \emph{Annals of Applied Statistics}
+  \emph{Annals of Applied Statistics}, \bold{5}, 1611--1631
   
   Bornkamp B., Pinheiro J. C., and Bretz, F. (2009). MCPMod: An
   R Package for the Design and Analysis of Dose-Finding Studies,
