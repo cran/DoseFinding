@@ -1,3 +1,9 @@
+2012-02-20 Bjoern Bornkamp (version 0.6-1)
+      * vcov.gDRMod is now functional, predict.gDRMod now allows
+      calculation of confidence intervals
+      * gFitDRModel minor changes in underlying optimizer
+      * explicitly export the gradients of the model functions now
+
 2012-01-24 Bjoern Bornkamp (version 0.5-7)
       * gFitDRModel now always returns an estimate (either the
       best value from nlminb or from the grid search if nlminb fails)

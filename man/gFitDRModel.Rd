@@ -104,11 +104,15 @@
   ## now fit an emax model to these estimates
   gfit <- gFitDRModel(dose, drFit, vCov, model = "emax",
                       bnds = c(0.01, 2))
-  ## a lot of things can be done
+  ## a lot of things can be done with gDRMod objects
   print(gfit)
-  predict(gfit)
+  summary(gfit)
   coef(gfit)
-  plot(gfit)
+  ## see ?vcov.gDRMod for the caveats of the asymptotic
+  ## inference statements
+  vcov(gfit)
+  predict(gfit, se.fit = TRUE)
+  plot(gfit, CI=TRUE, plotData = "meansCI")
 
   ## example for binary data (migraine)
   data(migraine)

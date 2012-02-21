@@ -89,7 +89,7 @@ calcBayesEst(data, models, prior, bnds = getBnds(mD = max(data$dose)),
 \references{
   Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
   J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
-  to appear in Annals of Applied Statistics
+  Annals of Applied Statistics, 5, 1611-1631
 
   O'Hagan, A. and Forster, J. (2006) Kendall's Advanced Theory of
   Statistics 2B: Bayesian Inference, 2nd edition, Arnold, London

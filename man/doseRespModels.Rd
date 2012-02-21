@@ -8,19 +8,19 @@
 \alias{linear}
 \alias{linlog}
 \alias{quadratic}
+\alias{betaModGrad}
+\alias{emaxGrad}
+\alias{sigEmaxGrad}
+\alias{exponentialGrad}
+\alias{logisticGrad}
+\alias{linearGrad}
+\alias{linlogGrad}
+\alias{quadraticGrad}
 \title{ Built-in dose-response models in DoseFinding }
 \description{
-  Below are the model functions:
+  Dose-response model functions and gradients.
   
-  \bold{Beta model}
-  \deqn{
-    f(d,\theta)=E_0+E_{max}B(\delta_1,\delta_2)(d/scal)^{\delta_1}(1-d/scal)^{\delta_2}
-  }{f(d,theta)=E0+Emax B(delta1,delta2)(d/scal)^delta1(1-d/scal)^delta2}
-  here
-  \deqn{B(\delta_1,\delta_2)=(\delta_1+\delta_2)^{\delta_1+\delta_2}/(\delta_1^{\delta_1}
-    \delta_2^{\delta_2})}{B(delta1,delta2)=(delta1+delta2)^(delta1+delta2)/(delta1^delta1
-    delta2^delta2).}
-  and \eqn{scal}{scal} is a scale parameter that is not estimated in the code.
+  Below are the definitions of the model functions:
   
   \bold{Emax model}
   \deqn{
@@ -34,6 +34,16 @@
   \deqn{
     f(d,\theta)=E_0+E_1(exp(d/\delta)-1)}{f(d,theta)=E0+E1 (exp(d/delta)-1).}
 
+  \bold{Beta model}
+  \deqn{
+    f(d,\theta)=E_0+E_{max}B(\delta_1,\delta_2)(d/scal)^{\delta_1}(1-d/scal)^{\delta_2}
+  }{f(d,theta)=E0+Emax B(delta1,delta2)(d/scal)^delta1(1-d/scal)^delta2}
+  here
+  \deqn{B(\delta_1,\delta_2)=(\delta_1+\delta_2)^{\delta_1+\delta_2}/(\delta_1^{\delta_1}
+    \delta_2^{\delta_2})}{B(delta1,delta2)=(delta1+delta2)^(delta1+delta2)/(delta1^delta1
+    delta2^delta2).}
+  and \eqn{scal}{scal} is a scale parameter that is not estimated in the code.
+  
   \bold{Linear Model}
  \deqn{
   f(d,\theta)=E_0+\delta d}{f(d,theta)=E0+delta d.}
@@ -53,21 +63,29 @@
 
 }
 \usage{
-betaMod(dose, e0, eMax, delta1, delta2, scal)
-
 emax(dose, e0, eMax, ed50)
+emaxGrad(dose, eMax, ed50, ...)
 
 sigEmax(dose, e0, eMax, ed50, h)
+sigEmaxGrad(dose, eMax, ed50, h, ...)
 
 exponential(dose, e0, e1, delta)
-
-linear(dose, e0, delta)
-
-linlog(dose, e0, delta, off = 1)
-
-logistic(dose, e0, eMax, ed50, delta)
+exponentialGrad(dose, e1, delta, ...)
 
 quadratic(dose, e0, b1, b2)
+quadraticGrad(dose, ...)
+
+betaMod(dose, e0, eMax, delta1, delta2, scal)
+betaModGrad(dose, eMax, delta1, delta2, scal, ...)
+
+linear(dose, e0, delta)
+linearGrad(dose, ...)
+
+linlog(dose, e0, delta, off = 1)
+linlogGrad(dose, off, ...)
+
+logistic(dose, e0, eMax, ed50, delta)
+logisticGrad(dose, eMax, ed50, delta, ...)
 }
 \arguments{
   \item{dose}{ Dose variable }
@@ -91,17 +109,16 @@ quadratic(dose, e0, b1, b2)
   \item{off}{ Offset value to avoid problems with dose=0 (treated as a
     fixed value in the code) }
   \item{scal}{ Scale parameter (treated as a
-    fixed value in the code) }
+    fixed value in the code)}
+  \item{...}{
+    Just included for convenience in the gradient functions, so that for example
+    \code{quadratic(dose, e0=0, b1=1, b2=3)} will not throw an error
+    (although the gradient of the quadratic model is independent of e0,
+    b1 and b2).
+  }
+
 }
 \details{
-The \bold{beta model} is intended to capture non-monotone
-dose-response relationships and is more flexible than the quadratic model.
-The kernel of the beta model function consists of the kernel of the
-density function of a beta distribution on the interval [0,scal]. The parameter
-scal is not estimated but needs to be set to a value 
-larger than the maximum dose via the argument \code{scal} (a reasonable
-value is often 1.2*(maximum dose)).
-
 The \bold{Emax model} is used to represent monotone, concave dose-response shapes.
 To distinguish it from the more general sigmoid emax model it is sometimes 
 also called hyperbolic emax model.
@@ -111,8 +128,19 @@ additional parameter h, that determines the steepness of the curve
 at the ed50 value. The sigmoid Emax model describes monotonic, sigmoid dose-response
 relationships.
 
+The \bold{quadratic} model is intended to capture a possible
+non-monotonic dose-response relationship.
+
 The \bold{exponential model} is intended to capture a possible sub-linear or a
 convex dose-response relationship. 
+
+The \bold{beta model} is intended to capture non-monotone
+dose-response relationships and is more flexible than the quadratic model.
+The kernel of the beta model function consists of the kernel of the
+density function of a beta distribution on the interval [0,scal]. The parameter
+scal is not estimated but needs to be set to a value 
+larger than the maximum dose via the argument \code{scal} (a reasonable
+value is often 1.2*(maximum dose)).
 
 The \bold{linear in log-dose} model is intended to capture concave
 shapes. The parameter \code{off} is not estimated in the code
@@ -121,12 +149,9 @@ but set to a pre-specified value.
 The \bold{logistic model} is intended to capture general monotone, 
 sigmoid dose-response relationships.
 
-The \bold{quadratic} model is intended to capture a possible
-non-monotonic dose-response relationship.
-
 }
 \value{
- Response value
+ Response value for model functions or matrix containing the gradient evaluations.
 }
 \references{ 
 MacDougall, J. (2006). Analysis of dose-response studies - Emax model,\emph{in} N. Ting (ed.),
@@ -137,28 +162,34 @@ approaches, \emph{in} N. Ting (ed.). \emph{Dose Finding in Drug Development}, Sp
 pp. 146--171
 }
 \examples{
-## some beta model example shapes
-betaModList <- list(betaMod = rbind(c(1,1), c(1.5,0.75), c(0.8,2.5),
-                    c(0.4,0.9)))
-plotModels(betaModList, c(0,1), base = 0, maxEff = 1, scal = 1.2)
-
 ## some emax example shapes
 emaxModList <- list(emax = c(0.02,0.1,0.5,1))
 plotModels(emaxModList, c(0,1), base = 0, maxEff = 1)
+## example for gradient
+emaxGrad(dose = (0:4)/4, eMax = 1, ed50 = 0.5)
 
 ## some sigmoid emax example shapes
 sigEmaxModList <- list(sigEmax = rbind(c(0.5,1), c(0.5,8), c(0.2,1),
                        c(0.2,8)))
 plotModels(sigEmaxModList, c(0,1), base = 0, maxEff = 1)
+sigEmaxGrad(dose = (0:4)/4, eMax = 1, ed50 = 0.5, h = 8)
 
 ## some exponential example shapes
 expoModList <- list(exponential = c(0.1,0.25,0.5,2))
 plotModels(expoModList, c(0,1), base = 0, maxEff = 1)
+exponentialGrad(dose = (0:4)/4, e1 = 1, delta = 2)
+
+## some beta model example shapes
+betaModList <- list(betaMod = rbind(c(1,1), c(1.5,0.75), c(0.8,2.5),
+                    c(0.4,0.9)))
+plotModels(betaModList, c(0,1), base = 0, maxEff = 1, scal = 1.2)
+betaModGrad(dose = (0:4)/4, eMax = 1, delta1 = 1, delta2 = 1, scal = 5)
 
 ## some logistic model example shapes
 logistModList <- list(logistic = rbind(c(0.5,0.05), c(0.5,0.15),
                       c(0.2,0.05), c(0.2,0.15)))
 plotModels(logistModList, c(0,1), base = 0, maxEff = 1)
+logisticGrad(dose = (0:4)/4, eMax = 1, ed50 = 0.5, delta = 0.05)
 }
 
 \seealso{ \code{\link{fitDRModel}}, \code{\link{gFitDRModel}} }

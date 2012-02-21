@@ -14,43 +14,94 @@
 
 ## build in dose-response models
 
-linear <-
-  function(dose, e0, delta) e0 + delta * dose
-
-linlog <-
-  function(dose, e0, delta, off = 1) linear(log(dose + off), e0, delta)
-
-emax <-  function(dose, e0, eMax, ed50){
-  sigEmax(dose, e0, eMax, ed50, 1)
+linear <- function(dose, e0, delta){
+  e0 + delta * dose
 }
 
-quadratic <-
-  function(dose, e0, b1, b2) e0 + b1 * dose + b2 * dose^2
+linlog <- function(dose, e0, delta, off = 1){
+  linear(log(dose + off), e0, delta)
+}
+
+emax <-  function(dose, e0, eMax, ed50){
+  e0 + eMax*dose/(ed50 + dose)
+}
+
+quadratic <- function(dose, e0, b1, b2){
+  e0 + b1 * dose + b2 * dose^2
+}
 
 exponential <- function(dose, e0, e1, delta){
   e0 + e1*(exp(dose/delta) - 1)
 }
 
-logistic <-
-  function(dose, e0, eMax, ed50, delta)
-{ 
+logistic <- function(dose, e0, eMax, ed50, delta){ 
   e0 + eMax/(1 + exp((ed50 - dose)/delta))
 }
 
-betaMod <-
-  function(dose, e0, eMax, delta1, delta2, scal)
-{
+betaMod <- function(dose, e0, eMax, delta1, delta2, scal){
   maxDens <- (delta1^delta1)*(delta2^delta2)/
     ((delta1 + delta2)^(delta1+delta2))
   dose <- dose/scal
   e0 + eMax/maxDens * (dose^delta1) * (1 - dose)^delta2
 }
 
-sigEmax <- 
-  function(dose, e0, eMax, ed50, h)
-{
+sigEmax <- function(dose, e0, eMax, ed50, h){
   e0 + eMax*dose^h/(ed50^h + dose^h)
 }
+
+## gradients of built-in model functions
+
+linearGrad <- function(dose, ...){
+  cbind(e0=1, delta=dose)
+}
+
+linlogGrad <- function(dose, off, ...){
+  cbind(e0=1, delta=log(dose+off))
+}
+
+quadraticGrad <- function(dose, ...){
+  cbind(e0=1, b1 = dose, b2 = dose^2)
+}
+
+emaxGrad <- function(dose, eMax, ed50, ...){
+  cbind(e0=1, eMax=dose/(ed50 + dose), ed50=-eMax * dose/(dose + ed50)^2)
+}
+
+exponentialGrad <- function(dose, e1, delta, ...){
+  cbind(e0=1, e1=exp(dose/delta)-1, delta=-exp(dose/delta) * dose * e1/delta^2)
+}
+
+logisticGrad <- function(dose, eMax, ed50, delta, ...){
+  den <- 1 + exp((ed50 - dose)/delta)
+  g1 <- -eMax * (den - 1)/(delta * den^2)
+  g2 <- eMax * (den - 1) * (ed50 - dose)/(delta^2 * den^2)
+  cbind(e0=1, eMax=1/den, ed50=g1, delta=g2)
+}
+
+betaModGrad <- function(dose, eMax, delta1, delta2, scal, ...){
+  lg2 <- function(x) ifelse(x == 0, 0, log(x))
+  dose <- dose/scal
+  if(any(dose > 1)) {
+    stop("doses cannot be larger than scal in betaModel")
+  }
+  maxDens <- (delta1^delta1) * (delta2^delta2)/((delta1 + 
+                                                 delta2)^(delta1 + delta2))
+  g1 <- ((dose^delta1) * (1 - dose)^delta2)/maxDens
+  g2 <- g1 * eMax * (lg2(dose) + lg2(delta1 + delta2) - lg2(delta1))
+  g3 <- g1 * eMax * (lg2(1 - dose) + lg2(delta1 + delta2) - lg2(delta2))
+  cbind(e0=1, eMax=g1, delta1=g2, delta2=g3)
+}
+
+sigEmaxGrad <- function(dose, eMax, ed50, h, ...){
+  lg2 <- function(x) ifelse(x == 0, 0, log(x))
+  den <- (ed50^h + dose^h)
+  g1 <- dose^h/den
+  g2 <- -ed50^(h - 1) * dose^h * h * eMax/den^2
+  g3 <- eMax * dose^h * ed50^h * lg2(dose/ed50)/den^2
+  cbind(e0=1, eMax=g1, ed50=g2, h=g3)
+}
+
+
 
 ## get starting values for built-in models (only needed for nls function)
 getInit <- function (data, model = c("emax", "exponential", "logistic", 
@@ -1145,65 +1196,34 @@ getGrad <- function(object, dose, uGrad = NULL){
   gradCalc(model, cf, dose, uGrad, off, scal, addArgs)
 }
 
-## actual formulas for gradient
 gradCalc <- function(model, cf, dose, uGrad = NULL, off, scal, addArgs){
-  lg2 <- function(x) ifelse(x == 0, 0, log(x))
-  res <- switch(model, linear = {
-      cbind(e0=1, delta=dose)
-  }, linlog = {
-      cbind(e0=1, delta=log(dose+off))
-  }, quadratic = {
-      cbind(e0=1, b1 = dose, b2 = dose^2)
-  }, emax = {
-      eMax <- cf[2]
-      ed50 <- cf[3]
-      cbind(e0=1, eMax=dose/(ed50 + dose), ed50=-eMax * dose/(dose + ed50)^2)
-  }, logistic = {
-      eMax <- cf[2]
-      ed50 <- cf[3]
-      delta <- cf[4]
-      den <- 1 + exp((ed50 - dose)/delta)
-      g1 <- -eMax * (den - 1)/(delta * den^2)
-      g2 <- eMax * (den - 1) * (ed50 - dose)/(delta^2 * den^2)
-      cbind(e0=1, eMax=1/den, ed50=g1, delta=g2)
-  }, sigEmax = {
-      eMax <- cf[2]
-      ed50 <- cf[3]
-      h <- cf[4]
-      den <- (ed50^h + dose^h)
-      g1 <- dose^h/den
-      g2 <- -ed50^(h - 1) * dose^h * h * eMax/den^2
-      g3 <- eMax * dose^h * ed50^h * lg2(dose/ed50)/den^2
-      cbind(e0=1, eMax=g1, ed50=g2, h=g3)
-  }, betaMod = {
-      dose <- dose/scal
-      if(any(dose > 1)) {
-        stop("doses cannot be larger than scal in betaModel")
-      }
-      delta1 <- cf[3]
-      delta2 <- cf[4]
-      eMax <- cf[2]
-      maxDens <- (delta1^delta1) * (delta2^delta2)/((delta1 + 
-         delta2)^(delta1 + delta2))
-      g1 <- ((dose^delta1) * (1 - dose)^delta2)/maxDens
-      g2 <- g1 * eMax * (lg2(dose) + lg2(delta1 + delta2) - 
-           lg2(delta1))
-        g3 <- g1 * eMax * (lg2(1 - dose) + lg2(delta1 + delta2) - 
-           lg2(delta2))
-      cbind(e0=1, eMax=g1, delta1=g2, delta2=g3)
-  }, exponential = {
-      delta <- cf[3]
-      e1 <- cf[2]
-      cbind(e0=1, e1=exp(dose/delta)-1, delta=-exp(dose/delta) * dose * 
-          e1/delta^2)
-  }, {
-      if(is.null(uGrad)) {
-        stop("user-defined gradient needs to be specified")
-      }
-      out <- do.call(uGrad, c(list(dose), cf, addArgs))
-      colnames(out) <- names(cf)
-      out
-  })
+  ## calculate gradient
+  builtIn <- c("linlog", "linear", "quadratic", "emax",
+               "exponential","logistic", "betaMod", "sigEmax")
+  if(is.element(model, builtIn)){
+    cf <- as.numeric(cf) ## delete potential names
+    pars <- switch(model, linlog = {
+      c(off=off)
+    }, emax = {
+      c(eMax = cf[2], ed50 = cf[3])
+    }, logistic = {
+      c(eMax = cf[2], ed50 = cf[3], delta = cf[4])
+    }, sigEmax = {
+      c(eMax = cf[2], ed50 = cf[3], h = cf[4])
+    }, betaMod = {
+      c(eMax = cf[2], delta1 = cf[3], delta2 = cf[4], scal = scal)
+    }, exponential = {
+      c(delta = cf[3], e1 = cf[2])
+    })
+    callMod <- paste(model, "Grad", sep="")
+    res <- do.call(callMod, c(list(dose), as.list(pars)))
+  } else {
+    if(is.null(uGrad)) {
+      stop("user-defined gradient needs to be specified")
+    }
+    res <- do.call(uGrad, c(list(dose), cf, addArgs))
+    colnames(res) <- names(cf)
+  }
   res
 }
 
@@ -1230,8 +1250,11 @@ vcov.DRMod <- function(object, data = getData(object), uGrad = NULL, ...){
   covMat <- try(solve(JtJ)*RSS/df, silent=TRUE)
   if(!inherits(covMat, "matrix")){
     covMat <- try(chol2inv(qr.R(qr(J)))*RSS/df, silent=TRUE) # more stable (a little slower)
-    if(!inherits(covMat, "matrix"))
-      stop("cannot calculate covariance matrix. singular matrix in calculation of covariance matrix.")
+    if(!inherits(covMat, "matrix")){
+      warning("cannot calculate covariance matrix. singular matrix in calculation of covariance matrix.")
+      nrw <- length(grd[1,])
+      covMat <- matrix(NA, nrow=nrw, ncol=nrw)
+    }
     dimnames(covMat) <- dimnames(JtJ)
   }
   covMat

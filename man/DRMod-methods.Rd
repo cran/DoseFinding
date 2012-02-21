@@ -27,10 +27,11 @@
   covariance matrix, confidence intervals for parameters in a DRMod or
   gDRMod object, based on standard asymptotic theory for nonlinear
   models, see Seber and Wild (2003). \bold{NOTE:} When bounds are used
-  for the non-linear parameters (the optimizer was "bndnls") the provided
-  approximation is only valid if the true parameter is in the interior
-  of the provided bounds. When the parameter estimate is on the boundary
-  the provided approximation is often not practically useful.
+  for the non-linear parameters (i.e., when the optimizer was "bndnls"
+  or \code{gFitDRModel} was used) the provided approximation is only
+  valid if the true parameter is in the interior of the provided
+  bounds. When the parameter estimate is on the boundary the provided
+  approximation is often not practically useful.
 
   \bold{plot.(g)DRMod} - Plot a DRMod or gDRMod object. plot.(g)DRMod displays
   either the dose-response effect curve or the full dose-response curve
