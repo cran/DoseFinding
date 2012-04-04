@@ -244,26 +244,26 @@ des2 <- calcOptDesign(fMod1, w1, doses, type = "Dopt", standDopt = TRUE)
 
 ## des1 and des2 should be different (as linear and emax have
 ## different number of parameters)
-des1 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = FALSE,
-                      method = "solnp")
-des2 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = TRUE,
-                      method = "solnp")
+## des1 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = FALSE,
+##                       method = "solnp")
+## des2 <- calcOptDesign(fMod2, w2, doses, type = "Dopt", standDopt = TRUE,
+##                       method = "solnp")
 
 ## same with MED&Dopt criterion
 ## des1 and des2 will differ (due to different scaling
 ## of Dopt and MED criteria)
-des1 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
-                      clinRel = 100, standDopt = FALSE,
-                      method = "solnp")
-des2 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
-                      clinRel = 100, standDopt = TRUE,
-                      method = "solnp")
+## des1 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
+##                       clinRel = 100, standDopt = FALSE,
+##                       method = "solnp")
+## des2 <- calcOptDesign(fMod1, w1, doses, type = "MED&Dopt",
+##                       clinRel = 100, standDopt = TRUE,
+##                       method = "solnp")
 
 ## des1 and des2 should be different (different no of parameters
 ## and different scaling of Dopt and MED criteria)
-des1 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
-                      clinRel = 100, standDopt = FALSE,
-                      method = "solnp")
-des2 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
-                      clinRel = 100, standDopt = TRUE,
-                      method = "solnp")
+## des1 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
+##                       clinRel = 100, standDopt = FALSE,
+##                       method = "solnp")
+## des2 <- calcOptDesign(fMod2, w2, doses, type = "MED&Dopt",
+##                       clinRel = 100, standDopt = TRUE,
+##                       method = "solnp")
