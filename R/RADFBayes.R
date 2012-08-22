@@ -148,7 +148,7 @@ calcBayesEst <- function(data, models, prior, bnds = getBnds(mD = max(data$dose)
               as.integer(length(sm$grpmean)), as.double(sm$grpmean), as.double(sm$yDinvy), 
               as.double(sm$s2), as.double(linpar), as.double(sm$doses), as.integer(sm$nVec),
               as.integer(sum(sm$nVec)), as.double(scalPars),
-              as.double(1:length(sm$grpmean)), intlik=as.double(0), mn=as.double(rep(0, 2)))
+              as.double(1:length(sm$grpmean)), intlik=as.double(0), mn=as.double(rep(0, 2)), PACKAGE = "DoseFinding")
        res <- do.call(".C", call)
        xMED <- existsMED(nm, doses, res$mn, clinRel, off, scal)
        Pars <- res$mn
@@ -176,7 +176,7 @@ calcBayesEst <- function(data, models, prior, bnds = getBnds(mD = max(data$dose)
               as.integer(sm$nVec),
               as.integer(sum(sm$nVec)), as.double(sm$scal),
               as.double(1:length(sm$grpmean)), intlik=as.double(0), mn=as.double(rep(0, 3)),
-              as.integer(meanInd))
+              as.integer(meanInd), PACKAGE = "DoseFinding")
          res <- do.call(".C", call)
          if(nmod > 1){
            xMED[i] <- existsMED(nm, doses, res$mn, clinRel, off, scal)
@@ -210,7 +210,7 @@ calcBayesEst <- function(data, models, prior, bnds = getBnds(mD = max(data$dose)
                   as.double(sm$s2), as.double(c(linpar,betaPars)), as.double(sm$doses),
                   as.integer(sm$nVec),
                   as.integer(sum(sm$nVec)), as.double(scalPars), as.double(1:length(sm$grpmean)), 
-                  intlik=as.double(0), mn=as.double(rep(0, 4)), as.integer(meanInd))
+                  intlik=as.double(0), mn=as.double(rep(0, 4)), as.integer(meanInd), PACKAGE = "DoseFinding")
          res <- do.call(".C", call)
          if(nmod > 1){
            xMED[i] <- existsMED(nm, doses, res$mn, clinRel, off, scal)
