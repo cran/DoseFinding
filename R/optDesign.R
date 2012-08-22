@@ -225,7 +225,7 @@ optFunc <- function(x, xvec, pvec, nD, weights, M, n2, nold, bvec, type,
   xtrans <- do.call("trans", list(x, nD))
   res <- .C("critfunc", xvec, pvec, nD, weights, M, xtrans, n2,
             nold, double(16), as.double(1e-15), bvec, type, stand,
-            double(1))
+            double(1), PACKAGE = "DoseFinding")
   res[[14]]
 }
 

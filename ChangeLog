@@ -1,3 +1,6 @@
+2012-08-22 Bjoern Bornkamp (version 0.6-3)
+      * Added PACKAGE = "DoseFinding" to ".C" calls
+
 2012-04-04 Bjoern Bornkamp (version 0.6-2)
       * calcOptDesign partial rewrite of optDes.c and optDesign.R
       to fix segfault bug.

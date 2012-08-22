@@ -19,8 +19,8 @@ non-normal endpoints see \code{gMCPtest} and \code{gFitDRModel}.
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.6-2\cr
-Date: \tab 2012-04-04\cr
+Version: \tab 0.6-3\cr
+Date: \tab 2012-08-22\cr
 License: \tab GPL-3\cr
 LazyLoad: \tab yes\cr
 }

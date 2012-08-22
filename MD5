@@ -1,14 +1,14 @@
-46f014b443b887509d52cfc88eaa6c07 *ChangeLog
-235673656182207c9421bba2ab892e1d *DESCRIPTION
+0767a7f6882e67c2811de8f2791f17e3 *ChangeLog
+3a20880946bd0a9520f6533a8e826249 *DESCRIPTION
 a13b314e20ccd88679d8a549c6241f02 *INDEX
 202d5e514b2e8e317c41ab211fca2225 *NAMESPACE
 85662d8ce647213986976db97e3fd4b0 *R/MCP.R
-cda2208998a5a43037f132f658476a48 *R/RADFBayes.R
+120796735b512bf0b51c7d51f79a0f7b *R/RADFBayes.R
 7d8e3389476471d349a3d9eadf68e2f5 *R/analysisMCPMod.R
 4da760046b5be7756f12e42afb124e33 *R/bootMCPMod.R
 c9182e2c14bfbce37fc26f286ad08f2c *R/fitModel.R
 f03f0d8d923b0da19983eb1ec9dea6ac *R/genFitCode.R
-828fb71bbe044b083e7b9e1c2b722fc6 *R/optDesign.R
+004191184ffb592cd2a39ce3cba91fc7 *R/optDesign.R
 659fea67c8e1c96cb051cbc123b3023a *R/planMCPMod.R
 56964e3c5003f67c3547ba82bfc84931 *ToDo
 2d194be9eb8c254714aad0e93152aa4e *data/IBScovars.RData
@@ -17,7 +17,7 @@ b3adf55d634d7f586cda3619fc708a6b *data/migraine.txt.gz
 055b5120a35585052841919e6aa1bfe7 *man/AIC.DRMod.Rd
 e6ce48476a8d4b2dbaffaa2800236acb *man/DRMod-methods.Rd
 43541b5942c6d98002834c1be8c11020 *man/DoseFinding-internal.Rd
-6b413b0d8a2e50bca42165eb7dcf072a *man/DoseFinding-package.Rd
+5ef3a77438fff2add678e2a33cc32de8 *man/DoseFinding-package.Rd
 144426e7c4179fb1fb634e4346f72828 *man/ED.DRMod.Rd
 c28409c50ec333a8aae80b2bd6939cf0 *man/IBScovars.Rd
 c903a3994fa1a49917fbab1516516a47 *man/LP.Rd
@@ -63,7 +63,7 @@ d36102efb4ef2a57b1253ac82b377131 *man/sampSize.Rd
 a88e53b74a60c1baabec86e91a09dd3e *src/calcBayesEst.c
 166f68c2f9e592fa8294c4f4c16eea27 *src/optDes.c
 4554d9386716e2fd51ff2b87a004cf13 *tests/testgFit.R
-b4281eaba76f46507dcf8bbdb91790d2 *tests/testsDesign.R
+ff5b240f7c141f6a74f2b10080f5fab9 *tests/testsDesign.R
 93d11852eae7612ba84e80ccb51645e4 *tests/testsFitting.R
 105f6659ae562d78c96b304cd612d746 *tests/testsMCP.R
 2673663e0d2223faec07ea77be02235a *tests/testsMCPMod.R
