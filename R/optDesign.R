@@ -1,167 +1,45 @@
-#######################################################################
-## This program is Open Source Software: you can redistribute it
-## and/or modify it under the terms of the GNU General Public License
-## as published by the Free Software Foundation, either version 3 of
-## the License, or (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-## General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program. If not, see http://www.gnu.org/licenses/.
+## optimal designs for model-fitting
 
-## calculate gradient of MED estimate approximation see Dette, Bretz et al (2008) JASA
-calcMEDgrad <- function(dose, cf, clinRel, model, off, scal){
-  res <-
-    switch(model,
-           "linear" = {
-             c(0, -clinRel/cf[2]^2)
-           },
-           "linlog" = {
-             ## version assuming off unknown
-             ##c(0, -clinRel*off*exp(clinRel/cf[2])/cf[2]^2, exp(clinRel/cf[2])-1)
-             c(0, -clinRel*off*exp(clinRel/cf[2])/cf[2]^2)
-           },
-           "quadratic" = {
-             squrt <- sqrt(4*clinRel*cf[3]+cf[2]^2)
-             .p1 <- -(squrt-cf[2])/(2*cf[3]*squrt)
-             .p2 <- cf[2]*squrt-2*clinRel*cf[3]-cf[2]^2
-             .p2 <- .p2/(2*cf[3]^2*squrt)
-             c(0, .p1, .p2)
-           },
-           "emax" = {
-             .p1 <- -clinRel*cf[3]/(cf[2]-clinRel)^2
-             .p2 <- -clinRel/((clinRel/cf[2]-1)*cf[2])
-             c(0, .p1, .p2)
-           },
-           "logistic" = {
-             et2t3 <- exp(cf[3]/cf[4])
-             t1 <- (1/(1+et2t3)+clinRel/cf[2])
-             t2 <- (1/t1-1)
-             .p1 <- -clinRel*cf[4]/(cf[2]^2*t1^2*t2)
-             .p2 <- 1-et2t3/((et2t3+1)^2*t1^2*t2)
-             .p3 <- cf[3]*et2t3/(cf[4]*(et2t3+1)^2*t1^2*t2)-log(t2)
-             c(0, .p1, .p2, .p3)
-           },
-           "sigEmax" = {
-             brack <- (clinRel*cf[3]^cf[4]/(cf[2]-clinRel))^(1/cf[4])
-             .p1 <- -brack/((cf[2]-clinRel)*cf[4])
-             .p2 <- brack/cf[3]
-             inbrack <- log(clinRel*cf[3]^cf[4]/(cf[2]-clinRel))-log(cf[3])*cf[4]
-             .p3 <- -brack*inbrack/cf[4]^2
-             c(0, .p1, .p2, .p3)
-           },
-           "betaMod" = {
-             require(numDeriv, quietly = TRUE)
-             f0 <- function(x, d1, d2, S){
-               B <- (d1+d2)^(d1+d2)/(d1^d1*d2^d2)
-               B*(x/S)^d1*(1-x/S)^d2
-             }
-             h0 <- function(cf, S, clinRel){
-               foo <- function(x, d1, d2, cf1, S, clinRel){
-                 f0(x, d1, d2, S)-clinRel/cf1
-               }
-               mode <- cf[3]/(cf[3]+cf[4])*S
-               uniroot(foo, lower=0, upper=mode, d1=cf[3], d2=cf[4],
-                       cf1=cf[2], S=S, clinRel=clinRel)$root
-             }
-             grad(h0, cf[1:4], S=scal, clinRel=clinRel)
-           },
-           "exponential" = {
-             .p1 <- -clinRel*cf[3]/(cf[2]*clinRel+cf[2]^2)
-             .p2 <- log(clinRel/cf[2] + 1)
-             c(0, .p1, .p2)
-           }
-           )
-  res
-}
-
-## check for valid fullModels and doses arguments
-## MED optimal designs need existing MED and D-optimal designs
-## need non-singular Fisher matrix to calculate determinant
-checkDoseModArgs <- function(model, doses, pars, clinRel, off, scal, type){
-  if(type == "MED" | type == "MED&Dopt"){ # check whether MED exists
-    ind1 <- existsMED(model, doses, pars, clinRel, off, scal)
-    if(!ind1){
-      stop("MED does not exist for ", model, " model, cannot calculate design.")
-    }
-  }
-  if(type == "Dopt" | type == "MED&Dopt"){ # check whether Fisher matrix can be singular
-    ind2 <- length(pars) <= length(doses)
-    if(!ind2){
-      stop("need more dose levels to calculate Dopt design.")
-    }
-  }
-}
-
-
-## checks whether MED exists
-existsMED <- function(model, doses, pars, clinRel, off, scal){
-  ## checks whether MED exists
-  ## if clinRel = NULL return TRUE
-  if(!is.null(clinRel)){
-    ds <- seq(min(doses), max(doses), length = 101)
-    pars <- c(pars, if(model == "linlog") off else if(model == "betaMod") scal else NULL)
-    if(model == "betaMod"){ # add a small amount for betaMod 
-      eps <- 0.01*clinRel # (-> some additional space necessary for calculation of numerical deriv of bvec of beta model)
-    } else {
-      eps <- 0
-    }
-    pars <- c(list(ds), as.list(pars))
-    mm <- do.call(model, pars)
-    if(any(mm-mm[1] > clinRel+eps))
-      return(TRUE)
-    else
-      return(FALSE)
-  } else {
-    return(TRUE)
-  }
-}
-  
-## calculate gradient of model and gradient of MED
-calcGrads <- function(fullModels, doses, clinRel, off, scal, type){
-  modgrad <- MEDgrad <- nPar <- list()
+## calculate gradient of model and gradient of TD
+calcGrads <- function(fmodels, doses, weights,
+                      Delta, off, scal, direction,
+                      designCrit){
+  modgrad <- TDgrad <- nPar <- list()
   z <- 1
-  for(nam in names(fullModels)){
-    pars <- fullModels[[nam]]
+  for(nam in names(fmodels)){
+    pars <- fmodels[[nam]]
     if(is.matrix(pars)){
       for(i in 1:nrow(pars)){
-        checkDoseModArgs(nam, doses, pars[i,], clinRel, off, scal, type)
-        modgrad[[z]] <- t(gradCalc(nam, pars[i,], doses, off=off, scal=scal))
-        if(type != "Dopt"){
-          MEDgrad[[z]] <- calcMEDgrad(doses, pars[i,], clinRel, nam, off, scal)
-        }
+        modgrad[[z]] <- t(gradCalc(nam, pars[i,], doses, off=off, scal=scal)*sqrt(weights))
+        if(designCrit != "Dopt")
+          TDgrad[[z]] <- calcTDgrad(nam, pars[i,], Delta, direction, off, scal)
         nPar[[z]] <- nPars(nam)
         z <- z+1
       }
     } else {
-      checkDoseModArgs(nam, doses, pars, clinRel, off, scal, type)      
-      modgrad[[z]] <- t(gradCalc(nam, pars, doses, off=off, scal=scal))
-      if(type != "Dopt"){      
-        MEDgrad[[z]] <- calcMEDgrad(doses, pars, clinRel, nam, off, scal)
-      }
+      modgrad[[z]] <- t(gradCalc(nam, pars, doses, off=off, scal=scal)*sqrt(weights))
+      if(designCrit != "Dopt")
+        TDgrad[[z]] <- calcTDgrad(nam, pars, Delta, direction, off, scal)
       nPar[[z]] <- nPars(nam)
       z <- z+1        
     }
   }
   modgrads <- do.call("c", modgrad)
-  MEDgrad <- do.call("c", MEDgrad)
+  TDgrad <- do.call("c", TDgrad)
   nPar <- do.call("c", nPar)
 
-  list(modgrads=modgrads, MEDgrad=MEDgrad, nPar=nPar)
+  list(modgrads=modgrads, TDgrad=TDgrad, nPar=nPar)
 }
 
 
 ## returns the number of parameters (needed for C call)
 nPars <- function(mods){
   builtIn <- c("linlog", "linear", "quadratic", 
-             "emax", "exponential", "logistic", 
-             "betaMod", "sigEmax")
+               "emax", "exponential", "logistic", 
+               "betaMod", "sigEmax")
   ind <- match(mods, builtIn)
   if(any(is.na(ind))){
-    stop("only built in models allowed in calcOptDesign")
+    stop(mods[which(is.na(ind))], " model not allowed in optDesign")
   }
   c(2,2,3,3,3,4,4,4)[ind]
 }
@@ -220,142 +98,174 @@ getStart <- function(k){
 
 ## function called in the optimization (design criterion is
 ## implemented in C and called "critfunc")
-optFunc <- function(x, xvec, pvec, nD, weights, M, n2, nold, bvec, type,
-                    trans, stand){
+optFunc <- function(x, xvec, pvec, nD, probs, M, n, nold, bvec, designCrit,
+                    trans, standInt){
   xtrans <- do.call("trans", list(x, nD))
-  res <- .C("critfunc", xvec, pvec, nD, weights, M, xtrans, n2,
-            nold, double(16), as.double(1e-15), bvec, type, stand,
+  res <- .C("critfunc", xvec, pvec, nD, probs, M, xtrans, n,
+            nold, double(16), as.double(1e-15), bvec, designCrit, standInt,
             double(1), PACKAGE = "DoseFinding")
   res[[14]]
 }
 
 ## user visible function calling all others
-calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep(0, length(doses)),
-                          n2 = NULL, control=list(), scal=1.2*max(doses), off=0.1*max(doses),
-                          type = c("MED", "Dopt", "MED&Dopt", "userCrit"),
-                          method = c("Nelder-Mead", "nlminb", "solnp", "exact"),
-                          lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
-                          standDopt = FALSE, userCrit = NULL, ...){
-  ## fullModels - list of all model parameters (fullMod object)
-  ## weights - vector of weights for all fullModels
-  ## clinRel - clinical relevance
-  ## nold - vector containing current group sample sizes
-  ## n2 - individuals to be allocated in next phase
-
+optDesign <- function(fmodels, probs, doses,
+                      designCrit = c("Dopt", "TD", "Dopt&TD", "userCrit"),
+                      Delta, standDopt = TRUE, weights,
+                      nold = rep(0, length(doses)),  n,
+                      direction = c("increasing", "decreasing"),
+                      control=list(), 
+                      optimizer = c("Nelder-Mead", "nlminb", "solnp", "exact"),
+                      lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
+                      userCrit, ...){
+  if(!missing(fmodels)){
+    if(!inherits(fmodels, "fullMod"))
+      stop("\"fmodels\" needs to be of class c(Mods, fullMod)")
+    off <- attr(fmodels, "off")
+    scal <- attr(fmodels, "scal")
+    if(missing(doses))
+      doses <- attr(fmodels, "doses")
+  } else {
+    if(missing(userCrit))
+      stop("either \"fmodels\" or \"userCrit\" need to be specified")
+    if(missing(doses))
+      stop("For userCrit one always needs to specify doses")
+  }
   ## check arguments
-  type <- match.arg(type)
-  method <- match.arg(method)
-  if(is.null(n2)){
-    if(method == "exact")
-      stop("need to specify sample size via n2 argument")
+  designCrit <- match.arg(designCrit)
+  optimizer <- match.arg(optimizer)
+  direction <- match.arg(direction)  
+  if(missing(n)){
+    if(optimizer == "exact")
+      stop("need to specify sample size via n argument")
     if(any(nold > 0))
-      stop("need to specify sample size for next cohort via n2 argument")
-    n2 <- 100
+      stop("need to specify sample size for next cohort via n argument")
+    n <- 1 ## value is arbitrary in this case
+  } else {
+    if(length(n) > 1)
+      stop("n needs to be of length 1")
   }
-  if(is.null(clinRel) & substr(type, 1, 3) == "MED"){
-    stop("need to specify clinical relevance parameter")
+  if(missing(Delta)){
+    if(substr(designCrit, 1, 3) == "TD")
+      stop("need to specify target difference \"Delta\"")
+  } else {
+    if(Delta <= 0)
+      stop("\"Delta\" needs to be > 0, if curve decreases use \"direction = decreasing\"")
   }
-  if(length(lowbnd) != length(doses)){
+  if(missing(weights)){
+    weights <- rep(1, length(doses))
+  } else {
+    if(length(weights) != length(doses))
+      stop("weights and doses need to be of equal length")
+  }
+  if(length(lowbnd) != length(doses))
     stop("lowbnd needs to be of same length as doses")
-  }
-  if(length(uppbnd) != length(doses)){
+  if(length(uppbnd) != length(doses))
     stop("uppbnd needs to be of same length as doses")
-  }  
   if(any(lowbnd > 0) | any(uppbnd < 1)){
-    if(method != "solnp" & method != "exact"){
-      stop("only optimizers solnp or exact can handle additional constraints on weights")
-    }
+    if(optimizer != "solnp" & optimizer != "exact")
+      stop("only optimizers solnp or exact can handle additional constraints on allocations")
   }
   if(!is.logical(standDopt))
     stop("standDopt needs to contain a logical value")
-  stand <- as.integer(standDopt) # use standardized or non-stand. D-optimality
+  standInt <- as.integer(standDopt) # use standardized or non-stand. D-optimality
   nD <- length(doses)
-  if(is.element(method, c("Nelder-Mead", "nlminb"))){ # use transformation
+  if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
+    tdMods <- TD(fmodels, Delta, "continuous", direction)
+    tdMods[tdMods > max(doses)] <- NA
+    if(any(is.na(tdMods)))
+      stop("TD does not exist for ",
+           paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
+  }
+  if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
+    np <- nPars(names(fmodels))
+    if(max(np) > length(doses))
+      stop("need at least as many dose levels as there are parameters to calculate Dopt design.")
+  } 
+
+  ## use transformation for Nelder-Mead and nlminb
+  if(is.element(optimizer, c("Nelder-Mead", "nlminb"))){ 
     transform <- transTrig
   } else {
     transform <- idtrans
   }
-  if(type != "userCrit"){
+  
+  if(designCrit != "userCrit"){ # prepare criterion function
     ## check arguments
-    if(abs(sum(weights)-1) > sqrt(.Machine$double.eps)){
-      stop("weights need to sum to 1")
+    if(abs(sum(probs)-1) > sqrt(.Machine$double.eps)){
+      stop("probs need to sum to 1")
     }
     ## prepare criterion function
-    lst <- calcGrads(fullModels, doses, clinRel, off, scal, type)
+    lst <- calcGrads(fmodels, doses, weights,
+                     Delta, off, scal, direction, designCrit)
     ## check for invalid values (NA, NaN and +-Inf)
-    checkInvalid <- function(x){
-      if(!is.null(x))
-        any(is.na(x)|(is.nan(x)|!is.finite(x)))
-    }
+    checkInvalid <- function(x)
+      any(is.na(x)|(is.nan(x)|!is.finite(x)))
     grInv <- checkInvalid(lst$modgrads)
-    if(type != "Dopt"){
-      MvInv <- checkInvalid(lst$MEDgrad)
-    } else {
-      MvInv <- FALSE
-    }
-    if(grInv | MvInv){
-      stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
-        too extreme parameter values in argument 'fullModels'")
-    }
-    M <- as.integer(length(weights))
+    MvInv <- ifelse(designCrit != "Dopt", checkInvalid(lst$TDgrad), FALSE)
+    if(grInv | MvInv)
+      stop("NA, NaN or +-Inf in gradient or bvec")
+    ## prepare arguments before passing to C
+    M <- as.integer(length(probs))
     if(M != length(lst$nPar))
-      stop("Weights of wrong length")
+      stop("probs of wrong length")
     if(length(lst$modgrads) != length(doses)*sum(lst$nPar))
       stop("Gradient of wrong length.")
     if(length(nold) != nD)
       stop("Either nold or doses of wrong length.")
     nD <- as.integer(nD)
     p <- as.integer(lst$nPar)
-    inttype <- match(type, c("MED", "Dopt", "MED&Dopt"))
+    intdesignCrit <- match(designCrit, c("TD", "Dopt", "Dopt&TD"))
     objFunc <- function(par){
       optFunc(par, xvec=as.double(lst$modgrads),
-              pvec=as.integer(p), nD=nD, weights=as.double(weights),
-              M=M, n2=as.double(n2), nold = as.double(nold),
-              bvec=as.double(lst$MEDgrad), trans = transform,
-              stand = stand,type = as.integer(inttype))
+              pvec=as.integer(p), nD=nD, probs=as.double(probs),
+              M=M, n=as.double(n), nold = as.double(nold),
+              bvec=as.double(lst$TDgrad), trans = transform,
+              standInt = standInt,designCrit = as.integer(intdesignCrit))
     }
   } else { # user criterion
-    if(is.null(userCrit))
+    if(missing(userCrit))
       stop("need design criterion in userCrit when specified")
     if(!is.function(userCrit))
       stop("userCrit needs to be a function")
     objFunc <- function(par){
       par2 <- do.call("transform", list(par, nD))
-      userCrit((par2*n2+nold)/(sum(nold)+n2), doses, ...)
+      userCrit((par2*n+nold)/(sum(nold)+n), doses, ...)
     }
   }
 
-  if(method != "exact"){ # use callOptim function
-    res <- callOptim(objFunc, method, nD, control, lowbnd, uppbnd)
-    if(method == "Nelder-Mead" | method == "nlminb"){ # transform results back
+  ## perform actual optimization
+  if(optimizer != "exact"){ # use callOptim function
+    res <- callOptim(objFunc, optimizer, nD, control, lowbnd, uppbnd)
+    if(optimizer == "Nelder-Mead" | optimizer == "nlminb"){ # transform results back
       des <- transTrig(res$par, length(doses))
-      if(method == "Nelder-Mead"){
+      if(optimizer == "Nelder-Mead"){
         crit <- res$value
       } else {
         crit <- res$objective
       }
     }
-    if(method == "solnp"){ # no need to transform back
+    if(optimizer == "solnp"){ # no need to transform back
       des <- res$pars
       crit <- res$values[length(res$values)]
     }
     if(res$convergence){
-      warning("algorithm indicates no convergence, the 'optimizerResults'
+      message("Message: algorithm indicates no convergence, the 'optimizerResults'
                attribute of the returned object contains more details.")
     }
-  } else { # do not use callOptim
+  } else { # exact criterion (enumeration of all designs)
     ## enumerate possible exact designs
     require(partitions, quietly = TRUE)
-    con <- list(maxvls1 = 1e6, maxvls2 = 1e5, blockSize = 1)
+    con <- list(maxvls1 = 1e6, maxvls2 = 1e5, groupSize = 1)
     con[(namc <- names(control))] <- control    
-    mat <- getDesMat(n2, nD, lowbnd, uppbnd,
-                     con$blockSize, con$maxvls1, con$maxvls2)
-    designmat <- sweep(mat*n2, 2, nold, "+")
-    res <- sweep(designmat, 2, n2+sum(nold), "/")
+    mat <- getDesMat(n, nD, lowbnd, uppbnd,
+                     con$groupSize, con$maxvls1, con$maxvls2)
+    designmat <- sweep(mat*n, 2, nold, "+")
+    res <- sweep(designmat, 2, n+sum(nold), "/")
     ## evaluate criterion function
-    if(type != "userCrit"){
-      critv <- calcCrit(res, fullModels, weights, doses,
-                        clinRel, nold, n2, scal, off, type)
+    if(designCrit != "userCrit"){
+      critv <- calcCrit(res, fmodels, probs, doses,
+                        designCrit, Delta, standDopt,
+                        weights, nold, n, direction)
     } else {
       critv <- apply(res, 1, objFunc)
     }
@@ -366,73 +276,94 @@ calcOptDesign <- function(fullModels, weights, doses, clinRel = NULL, nold = rep
   out$crit <- crit
   out$design <- des
   out$doses <- doses
-  out$n2 <- n2
+  out$n <- n
   out$nold <- nold
-  out$type <- type
+  out$designCrit <- designCrit
   attr(out, "optimizerResults") <- res
-  class(out) <- "design"
+  class(out) <- "DRdesign"
   out
 }
 
-calcCrit <- function(design, fullModels, weights, doses, clinRel, 
-                     nold = rep(0, length(doses)), n2 = NULL, 
-                     scal=1.2*max(doses), off=0.1*max(doses),
-                     type = c("MED", "Dopt", "MED&Dopt"),
-                     standDopt = FALSE){
-  if(inherits(design, "design")){
+calcCrit <- function(design, fmodels, probs, doses, 
+                     designCrit = c("TD", "Dopt", "Dopt&TD"),
+                     Delta, standDopt = TRUE, weights,
+                     nold = rep(0, length(doses)), n,
+                     direction = c("increasing", "decreasing")){
+  if(!inherits(fmodels, "fullMod"))
+    stop("\"fmodels\" needs to be of class c(Mods, fullMod)")
+  off <- attr(fmodels, "off")
+  scal <- attr(fmodels, "scal")
+  if(missing(doses))
+    doses <- attr(fmodels, "doses")  
+  ## extract design
+  if(inherits(design, "DRdesign"))
     design <- design$design
-  }
-  if(!is.numeric(design)){
+  if(!is.numeric(design))
     stop("design needs to be numeric")
-  }
-  if(!is.matrix(design)){
+  if(!is.matrix(design))
     design <- matrix(design, ncol = length(design))
-  }
-  if(ncol(design) != length(doses)){
+  if(ncol(design) != length(doses))
     stop("design and doses should be of the same length")      
-  }
-  if(any(abs(rowSums(design)-1) > 0.001)){
+  if(any(abs(rowSums(design)-1) > 0.001))
     stop("design needs to sum to 1")
+  if(missing(n)){
+    n <- 1 # value arbitrary
+  } else {
+    if(length(n) > 1)
+      stop("n needs to be of length 1")
   }
-  if(is.null(n2)){
-    n2 <- 100 # value arbitrary
+  if(missing(weights)){
+    weights <- rep(1, length(doses))
+  } else {
+    if(length(weights) != length(doses))
+      stop("weights and doses need to be of equal length")
   }
-  type <- match.arg(type)
+  designCrit <- match.arg(designCrit)
+  if(missing(Delta) & substr(designCrit, 1, 3) == "TD")
+    stop("need to specify clinical relevance parameter")
+
+
+  if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
+    tdMods <- TD(fmodels, Delta, "continuous", direction)
+    tdMods[tdMods > max(doses)] <- NA
+    if(any(is.na(tdMods)))
+      stop("TD does not exist for ",
+           paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
+  }
+  if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
+    np <- nPars(names(fmodels))
+    if(max(np) > length(doses))
+      stop("need more dose levels to calculate Dopt design.")
+  }
   if(!is.logical(standDopt))
     stop("standDopt needs to contain a logical value")
-  stand <- as.integer(standDopt)
-  lst <- calcGrads(fullModels, doses, clinRel, off, scal, type)
+  standInt <- as.integer(standDopt)
+  lst <- calcGrads(fmodels, doses, weights, Delta, off, scal,
+                   direction, designCrit)
   ## check for invalid values (NA, NaN and +-Inf)
-  checkInvalid <- function(x){
-    if(!is.null(x))
-      any(is.na(x)|(is.nan(x)|!is.finite(x)))
-  }
+  checkInvalid <- function(x)
+    any(is.na(x)|(is.nan(x)|!is.finite(x)))
   grInv <- checkInvalid(lst$modgrads)
-  if(type != "Dopt"){
-    MvInv <- checkInvalid(lst$MEDgrad)
-  } else {
-    MvInv <- FALSE
-  }
-  if(grInv | MvInv){
-    stop("NA, NaN or +-Inf in gradient or bvec, most likely caused by
-        too extreme parameter values in argument 'fullModels'")
-  }
-  M <- as.integer(length(weights))
+  MvInv <- ifelse(designCrit != "Dopt", checkInvalid(lst$TDgrad), FALSE)
+  if(grInv | MvInv)
+    stop("NA, NaN or +-Inf in gradient or bvec")
+  ## prepare for input into C
+  M <- as.integer(length(probs))
   nD <- as.integer(length(doses))
   if(M != length(lst$nPar))
-    stop("Weights of wrong length")
+    stop("Probs of wrong length")
   if(length(lst$modgrads) != length(doses)*sum(lst$nPar))
     stop("Gradient of wrong length.")
   
   if(length(nold) != nD)
     stop("Either nold or doses of wrong length.")
   p <- as.integer(lst$nPar)
-  inttype <- match(type, c("MED", "Dopt", "MED&Dopt"))
+  intdesignCrit <- match(designCrit, c("TD", "Dopt", "Dopt&TD"))
   res <- numeric(nrow(design))
   ## check for sufficient number of design points
   iter <- 1:nrow(design)
   count <- apply(design, 1, function(x) sum(x > 0.0001))
-  ind <- count < max(p)
+  ind <- count < max(p[probs > 0])
   if(any(ind)){
     iter <- iter[!ind]
     res[ind] <- NA
@@ -441,24 +372,25 @@ calcCrit <- function(design, fullModels, weights, doses, clinRel,
   }
   for(i in iter){
     res[i] <- optFunc(design[i,], xvec=as.double(lst$modgrads),
-                      pvec=as.integer(p), nD=nD, weights=as.double(weights),
-                      M=M, n2=as.double(n2), nold = as.double(nold),
-                      bvec=as.double(lst$MEDgrad), trans = idtrans,
-                      stand = stand,type = as.integer(inttype))
+                      pvec=as.integer(p), nD=nD, probs=as.double(probs),
+                      M=M, n=as.double(n), nold = as.double(nold),
+                      bvec=as.double(lst$TDgrad), trans = idtrans,
+                      standInt = standInt, designCrit = as.integer(intdesignCrit))
   }
   res
 }
 
 ## print designs
-print.design <- function(x, digits = 5, ...){
-  nam <- switch(x$type,
-                "MED" = "MED",
+print.DRdesign <- function(x, digits = 5, eps = 0.001, ...){
+  nam <- switch(x$designCrit,
+                "TD" = "TD",
                 "Dopt" = "D",
-                "MED&Dopt" = "MED and D mixture",
+                "Dopt&TD" = "TD and D mixture",
                 "userCrit" = "userCrit")
   cat("Calculated", nam, "- optimal design:\n")
-  vec <- x$design
-  names(vec) <- x$doses
+  ind <- x$design > eps
+  vec <- x$design[ind]
+  names(vec) <- x$doses[ind]
   print(round(vec, digits = digits))
 }
 
@@ -471,31 +403,31 @@ which.is.max <- function (x){
 }
 
 ## efficient rounding (see Pukelsheim (1993), Ch. 12)
-rndDesign <- function(w, N, eps = 0.0001){
+rndDesign <- function(design, n, eps = 0.0001){
 
-  N <- round(N) # ensure N is an integer (at least numerically)
-  if(inherits(w, "design")){
-    w <- w$design
+  n <- round(n) # ensure n is an integer (at least numerically)
+  if(inherits(design, "DRdesign")){
+    design <- design$design
   }
-  if(!inherits(w, "numeric"))
-    stop("w needs to be a numeric vector.")
-  zeroind <- w < eps
+  if(!inherits(design, "numeric"))
+    stop("design needs to be a numeric vector.")
+  zeroind <- design < eps
   if(any(zeroind)){
-    w <- w[!zeroind]/sum(w[!zeroind])
+    design <- design[!zeroind]/sum(design[!zeroind])
   }
   l <- sum(!zeroind)
-  nn <- ceiling((N-0.5*l)*w)
-  while(sum(nn)!=N){
-    if(sum(nn)<N){
-      indmin <- which.is.max(-nn/w)
+  nn <- ceiling((n-0.5*l)*design)
+  while(sum(nn)!=n){
+    if(sum(nn)<n){
+      indmin <- which.is.max(-nn/design)
       nn[indmin] <- nn[indmin]+1
     } else {
-      indmax <- which.is.max((nn-1)/w)
+      indmax <- which.is.max((nn-1)/design)
       nn[indmax] <- nn[indmax]-1
     }
   }
   if(any(zeroind)){
-    out <- numeric(length(w))
+    out <- numeric(length(design))
     out[zeroind] <- 0
     out[!zeroind] <- nn
     return(out)
@@ -504,19 +436,19 @@ rndDesign <- function(w, N, eps = 0.0001){
   }
 }
 
-## calculate all possible compositions of n2 patients to nDoses groups
+## calculate all possible compositions of n patients to nDoses groups
 ## (assuming a certain block-size) upper and lower bounds on the
 ## allocations can also be specified
-getDesMat <- function(n2, nDoses, lowbnd = rep(0, nDoses), 
-                      uppbnd = rep(1, nDoses), blockSize,
+getDesMat <- function(n, nDoses, lowbnd = rep(0, nDoses), 
+                      uppbnd = rep(1, nDoses), groupSize,
                       maxvls1, maxvls2){
-  if(n2 %% blockSize)
-    stop("n2 needs to be divisible by blockSize")
-  nG <- n2/blockSize
+  if(n %% groupSize)
+    stop("n needs to be divisible by groupSize")
+  nG <- n/groupSize
   combn <- choose(nG+nDoses-1,nDoses-1)
   if(combn > maxvls1)
-    stop(paste(combn, "(unrestricted) combinations, increase maxvls1 in control 
-         argument if you really want to perform this calculation"))
+    stop(combn, " (unrestricted) combinations, increase maxvls1 in control 
+         argument if this calculation should be performed")
 
   desmat <- t(compositions(nG, nDoses))/nG
  
@@ -531,7 +463,37 @@ getDesMat <- function(n2, nDoses, lowbnd = rep(0, nDoses),
       stop("no design is compatible with bounds specified in lowbnd and uppbnd")
   }
   if(nrow(desmat) > maxvls2)
-    stop(paste(nrow(desmat), "combinations, increase maxvls2 in control argument if
-         you really want to perform this calculation"))
+    stop(nrow(desmat), " combinations, increase maxvls2 in control argument if
+         this calculation should be performed")
   desmat
+}
+
+## plot method for design objects
+plot.DRdesign <- function(x, fmodels, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...){
+  if(missing(fmodels))
+    stop("need object of class c(\"Mods\", \"fullMod\") to produce plot")
+  plot(fmodels, ...)
+  layoutmat <- trellis.currentLayout()
+  nc <- ncol(layoutmat)
+  nr <- nrow(layoutmat)
+  total <- sum(layoutmat > 0)
+  z <- 1
+  for(i in 1:nc){
+    for(j in 1:nr){
+      if(z > total)
+        break
+      trellis.focus("panel", i, j)
+      args <- trellis.panelArgs()
+      miny <- min(args$y)
+      maxy <- max(args$y)
+      dy <- maxy-miny
+      for(k in 1:length(x$doses)){
+        yy <- c(0,(x$design*dy)[k])+miny
+        xx <- rep(x$doses[k],2)
+        panel.xyplot(xx, yy, type="l", col = colDes, lwd = lwdDes)
+      }
+      z <- z+1
+      trellis.unfocus()
+    }
+  }
 }

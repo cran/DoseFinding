@@ -1,53 +1,44 @@
 import(mvtnorm, lattice)
 
-export(fitDRModel, MCPtest, betaMod, critVal, emax, exponential,
-       linear, linlog, logistic, modelMeans, getBnds, 
-       mvtnorm.control, quadratic, sigEmax, MCPtest, intervals,
-       ED, MED, LP, planMM, plotModels, powCalc, powerMM, powerScenario,
-       sampSize, getPars, guesst, fullMod, MCPMod,
-       genDFdata, calcOptDesign, rndDesign, bootMCPMod, calcCrit,
-       getGrad, calcBayesEst, getUpdDesign, gFitDRModel, gMCPtest,
+export(fitMod, defBnds, bFitMod, MCTtest, MCPMod,
+       betaMod, quadratic, emax, exponential,linear, linlog, logistic, sigEmax, linInt,
        betaModGrad, quadraticGrad, emaxGrad, exponentialGrad,
-       linearGrad, linlogGrad, logisticGrad, sigEmaxGrad)
+       linearGrad, linlogGrad, logisticGrad, sigEmaxGrad, linIntGrad,
+       Mods, getResp, TD, ED,
+       guesst, MCTtest, gAIC,
+       mvtnorm.control, 
+       optContr, powMCT, sampSize,
+       optDesign, calcCrit, rndDesign)
 
+S3method(predict, MCPMod)
+S3method(print, MCPMod)
+S3method(print, sampSize)
+S3method(plot, MCPMod)
+S3method(summary, MCPMod)
+S3method(print, summary.MCPMod)
 S3method(summary, DRMod)
 S3method(print, summary.DRMod)
 S3method(print, DRMod)
 S3method(plot, DRMod)
-S3method(intervals, DRMod)
 S3method(vcov, DRMod)
 S3method(coef, DRMod)
 S3method(predict, DRMod)
+S3method(print, MCTtest)
+S3method(print, DRdesign)
+S3method(plot, DRdesign)
+S3method(print, optContr)
+S3method(summary, optContr)
+S3method(print, summary.optContr)
+S3method(plot, optContr)
+S3method(plot, Mods)
 S3method(AIC, DRMod)
+S3method(gAIC, DRMod)
 S3method(logLik, DRMod)
-S3method(ED, DRMod)
-S3method(MED, DRMod)
-S3method(print, MCPtest)
-S3method(print, doseEst)
-S3method(print, sampSize)
-S3method(print, planMM)
-S3method(print, LP)
-S3method(print, design)
-S3method(plot, powerMM)
-S3method(plot, LP)
-S3method(plot, fullMod)
-S3method(plot, planMM)
-S3method(plot, MCPMod)
-S3method(print, MCPMod)
-S3method(print, summary.MCPMod)
-S3method(summary, MCPMod)
-S3method(predict, MCPMod)
-S3method(print, bootMCPMod)
-S3method(print, powerScen)
-S3method(print, gDRMod)
-S3method(summary, gDRMod)
-S3method(print, summary.gDRMod)
-S3method(vcov, gDRMod)
-S3method(coef, gDRMod)
-S3method(predict, gDRMod)
-S3method(plot, gDRMod)
-S3method(intervals, gDRMod)
-S3method(print, gMCPtest)
+S3method(gAIC, DRMod)
 
+S3method(predict, bFitMod)
+S3method(plot, bFitMod)
+S3method(print, bFitMod)
 
 useDynLib(DoseFinding)
+

@@ -14,25 +14,25 @@ guesst(d, p, model = c("emax", "exponential", "logistic", "quadratic",
   \item{d}{ Vector containing dose value(s). }
   \item{p}{ Vector of expected percentages of the maximum effect achieved at d. }
   \item{model}{ Character string. Should be one of "emax", "exponential",
-               "quadratic", "betaMod", "sigEmax". }
+               "quadratic", "betaMod", "sigEmax", "logistic". }
   \item{less}{ Logical, only needed in case of quadratic model.
-            Determines if d is smaller (\code{less=TRUE}) or larger (\code{less=FALSE})
+            Determines if d is smaller (\samp{less=TRUE}) or larger (\samp{less=FALSE})
             than dopt (see Pinheiro et al. (2006) for details).}
   \item{local}{ Logical indicating whether local or asymptotic version
-           of guesstimate should be derived (defaults to \code{FALSE}).
+           of guesstimate should be derived (defaults to \samp{FALSE}).
            Only needed for emax, logistic and sigEmax model. 
-           When \code{local=TRUE} the maximum dose must be provided via 
-           \code{Maxd}.}
+           When \samp{local=TRUE} the maximum dose must be provided via 
+           \samp{Maxd}.}
   \item{dMax}{ Dose at which maximum effect occurs, only needed for the beta model }
   \item{Maxd}{ Maximum dose to be administered in the trial }
   \item{scal}{ Scale parameter, only needed for the beta model }
 }
 \details{
-Calculates guesstimates for the parameters of the standardized
-model function based on the prior expected percentage of the maximum effect at 
-certain dose levels. Note that this function should be used together with the \code{plotModels}
-function to ensure that the guesstimates are reflecting the prior
-beliefs.
+Calculates guesstimates for the parameters \eqn{\theta_2}{theta2} of the
+standardized model function based on the prior expected percentage of
+the maximum effect at certain dose levels. Note that this function
+should be used together with the \code{\link{plot.Mods}} function to
+ensure that the guesstimates are reflecting the prior beliefs.
 
 For the logistic and sigmoid emax models at least two pairs (d,p) need to
 be specified. 
@@ -77,8 +77,8 @@ emx1 <- guesst(d=0.3, p=0.8, model="emax")
 ## local approach
 emx2 <- guesst(d=0.3, p=0.8, model="emax", local = TRUE, Maxd = 1)
 ## plot models
-models <- list(emax=c(emx1, emx2))
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(emax=c(emx1, emx2), doses=c(0,1))
+plot(models)
 
 ## Logistic model
 ## Select two (d,p) pairs (0.2, 0.5) and (0.6, 0.95)
@@ -87,16 +87,16 @@ lgc1 <- guesst(d = c(0.2, 0.5), p = c(0.6, 0.95), "logistic")
 lgc2 <- guesst(d = c(0.2, 0.5), p = c(0.6, 0.95), "logistic", 
                local = TRUE, Maxd = 1)
 ## plot models
-models <- list(logistic = matrix(c(lgc1, lgc2), byrow = TRUE, nrow = 2))
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(logistic = rbind(lgc1, lgc2), doses=c(0,1))
+plot(models)
 
 ## Beta Model
 ## Select one pair (d,p): (0.5,0.5)
 ## dose, where maximum occurs: 0.8
 bta <- guesst(d=0.5, p=0.5, model="betaMod", dMax=0.8, scal=1.2, Maxd=1)
 ## plot
-models <- list(betaMod = bta)
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(betaMod = bta, doses=c(0,1), addArgs = list(scal = 1.2))
+plot(models)
 
 ## Sigmoid Emax model
 ## Select two (d,p) pairs (0.2, 0.5) and (0.6, 0.95)
@@ -104,25 +104,25 @@ sgE1 <- guesst(d = c(0.2, 0.5), p = c(0.6, 0.95), "sigEmax")
 ## local approach
 sgE2 <- guesst(d = c(0.2, 0.5), p = c(0.6, 0.95), "sigEmax",
                local = TRUE, Maxd = 1)
-models <- list(sigEmax = matrix(c(sgE1, sgE2), byrow = TRUE, nrow = 2))
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(sigEmax = rbind(sgE1, sgE2), doses=c(0,1))
+plot(models)
 
 ## Quadratic model
 ## For the quadratic model it is assumed that the maximum effect occurs at 
 ## dose 0.7
 quad <- guesst(d = 0.7, p = 1, "quadratic")
-models <- list(quadratic = quad)
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(quadratic = quad, doses=c(0,1))
+plot(models)
 
 ## exponential model
 ## (d,p) = (0.8,0.5)
 expo <- guesst(d = 0.8, p = 0.5, "exponential", Maxd=1)
-models <- list(exponential = expo)
-plotModels(models, c(0,1), base= 0, maxEff = 1)
+models <- Mods(exponential = expo, doses=c(0,1))
+plot(models)
 }
 \seealso{ \code{\link{emax}}, \code{\link{logistic}}, \code{\link{betaMod}},
           \code{\link{sigEmax}}, 
           \code{\link{quadratic}}, \code{\link{exponential}},
-          \code{\link{plotModels}}
+          \code{\link{plot.Mods}}
           }
-\keyword{ models }
+

@@ -3,18 +3,14 @@
 \docType{data}
 \title{ Irritable Bowel Syndrome Dose Response data with covariates }
 \description{
-A subset of the data used by (Biesheuvel and Hothorn, 2002). 
-The data are part of a dose ranging trial on a compound for the treatment of the
-irritable bowel syndrome with four active treatment arms,
-corresponding to doses 1,2,3,4 and placebo. Note that the original dose levels
-have been blinded in this data set for confidentiality. The primary endpoint
+A subset of the data used by (Biesheuvel and Hothorn, 2002).  The data
+are part of a dose ranging trial on a compound for the treatment of the
+irritable bowel syndrome with four active treatment arms, corresponding
+to doses 1,2,3,4 and placebo. Note that the original dose levels have
+been blinded in this data set for confidentiality. The primary endpoint
 was a baseline adjusted abdominal pain score with larger values
 corresponding to a better treatment effect. In total 369 patients
-completed the study, with nearly balanced allocation across the
-doses.
-
-The difference to the IBS data set (in the MCPMod package)
-is the inclusion of the gender column.
+completed the study, with nearly balanced allocation across the doses.
 }
 \usage{data(IBScovars)}
 \format{
