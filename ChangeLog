@@ -1,3 +1,16 @@
+2013-01-09 Bjoern Bornkamp (version 0.9-1)
+      * Complete re-structuring and tidying up of the package. 
+	Main ideas: (i) smoother integration of g-functions (ii) focus on
+	core functionality (iii) more general code/easier extensibility.
+      * New features: Bayesian dose-response fitting, nicer plots,
+	optimal designs for non-normal responses, ...
+      * Special Thanks to Tobias Mielke for testing of the package and 
+	numerous bug reports.
+      * Previous versions of the source are available under 
+	http://cran.r-project.org/package=DoseFinding under 
+	"Old sources", a Windows binary of the last version 
+	before the changes is available under http://goo.gl/p1UZ7.
+
 2012-08-22 Bjoern Bornkamp (version 0.6-3)
       * Added PACKAGE = "DoseFinding" to ".C" calls
 

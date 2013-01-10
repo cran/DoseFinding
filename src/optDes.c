@@ -131,7 +131,7 @@ void setzero(double *x, int nPar){
   }
 }
 
-void critfunc(double *grad, int *nPar, int *nD, double *weights, int *M,
+void critfunc(double *grad, int *nPar, int *nD, double *probs, int *M,
               double *design, double *n2, double *nold,
               double *A, double *tol, double *MEDgrad, int *type,
 	      int *stand, double *res){
@@ -164,23 +164,23 @@ void critfunc(double *grad, int *nPar, int *nD, double *weights, int *M,
 		tol, type, &resD);
     if(*type == 1){  // calculate quadratic form (for MED designs)
       calcQuadform(MEDgrad, A, &nPar[m], &resM, &incb);
-      *res += weights[m]*log(resM);
+      *res += probs[m]*log(resM);
     }
     if(*type == 2){
       if(*stand == 1){
 	fracp = (double) nPar[m];
-	*res += weights[m]*(-log(resD)/fracp);	
+	*res += probs[m]*(-log(resD)/fracp);	
       } else {
-	*res += weights[m]*(-log(resD));
+	*res += probs[m]*(-log(resD));
       }
     }
     if(*type == 3){  // calculate quadratic form (for MED designs)
       calcQuadform(MEDgrad, A, &nPar[m], &resM, &incb);
       if(*stand == 1){
 	fracp = (double) nPar[m];
-	*res += weights[m]*(-0.5*log(resD)/fracp+0.5*log(resM));
+	*res += probs[m]*(-0.5*log(resD)/fracp+0.5*log(resM));
       } else {
-	*res += weights[m]*(-0.5*log(resD)+0.5*log(resM));
+	*res += probs[m]*(-0.5*log(resD)+0.5*log(resM));
       }
     }
   }

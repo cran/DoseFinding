@@ -1,5 +1,4 @@
 library(DoseFinding)
-
 data(IBScovars)
 lmfit <- lm(resp~factor(dose)+gender, data=IBScovars)
 cf <- coef(lmfit)[-c(6)]
@@ -10,36 +9,93 @@ vcv2 <- vcov(lmfit2)[-c(6), -c(6)]
 dose <- c(0:4)
 
 ## test fitting all available models
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="linear", intercept=FALSE)
-gFitDRModel(dose, cf2, vcv2, model="linear", intercept=TRUE)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="quadratic", intercept=FALSE)
-gFitDRModel(dose, cf2, vcv2, model="quadratic", intercept=TRUE)
-gFitDRModel(dose, cf2, vcv2, model="linlog", intercept=TRUE, off=0.01*max(dose))
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="emax", intercept=FALSE, bnds=getBnds(max(dose))$emax)
-gFitDRModel(dose, cf2, vcv2, model="emax", intercept=TRUE, bnds=getBnds(max(dose))$emax)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="sigEmax", intercept=FALSE, bnds=getBnds(max(dose))$sigEmax)
-gFitDRModel(dose, cf2, vcv2, model="sigEmax", intercept=TRUE, bnds=getBnds(max(dose))$sigEmax)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="exponential", intercept=FALSE, bnds=getBnds(max(dose))$exponential)
-gFitDRModel(dose, cf2, vcv2, model="exponential", intercept=TRUE, bnds=getBnds(max(dose))$exponential)
-gFitDRModel(dose, cf2, vcv2, model="logistic", intercept=TRUE, bnds=getBnds(max(dose))$logistic)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="betaMod", intercept=FALSE, bnds=getBnds(max(dose))$betaMod, scal=1.2*4)
-gFitDRModel(dose, cf2, vcv2, model="betaMod", intercept=TRUE, bnds=getBnds(max(dose))$betaMod, scal=1.2*4)
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="linear", placAdj=TRUE,type="general")
+fitMod(dose, cf2, S=vcv2, model="linear", placAdj=FALSE,type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="quadratic", placAdj=TRUE,type="general")
+fitMod(dose, cf2, S=vcv2, model="quadratic", placAdj=FALSE,type="general")
+fitMod(dose, cf2, S=vcv2, model="linlog", placAdj=FALSE,
+       addArgs=list(off=0.01*max(dose)),type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="emax", placAdj=TRUE,
+       bnds=defBnds(max(dose))$emax,type="general")
+fitMod(dose, cf2, S=vcv2, model="emax", placAdj=FALSE,
+       bnds=defBnds(max(dose))$emax,type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="sigEmax", placAdj=TRUE,
+       bnds=defBnds(max(dose))$sigEmax,type="general")
+fitMod(dose, cf2, S=vcv2, model="sigEmax", placAdj=FALSE,
+       bnds=defBnds(max(dose))$sigEmax,type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="exponential",
+       placAdj=TRUE, bnds=defBnds(max(dose))$exponential,type="general")
+fitMod(dose, cf2, S=vcv2, model="exponential", placAdj=FALSE,
+       bnds=defBnds(max(dose))$exponential,type="general")
+fitMod(dose, cf2, S=vcv2, model="logistic", placAdj=FALSE,
+       bnds=defBnds(max(dose))$logistic,type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="betaMod", placAdj=TRUE,
+       bnds=defBnds(max(dose))$betaMod, addArgs=list(scal=1.2*4),type="general")
+fitMod(dose, cf2, S=vcv2, model="betaMod", placAdj=FALSE,
+       bnds=defBnds(max(dose))$betaMod, addArgs=list(scal=1.2*4),type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="linInt", placAdj=TRUE, type="general")
+fitMod(dose, cf2, S=vcv2, model="linInt", placAdj=FALSE, type="general")
 ## test using starting value (instead of grid search)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="emax", intercept=FALSE, bnds=getBnds(max(dose))$emax, start = 0.5)
-gFitDRModel(dose, cf2, vcv2, model="emax", intercept=TRUE, bnds=getBnds(max(dose))$emax, start = 0.9)
-gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="betaMod", intercept=FALSE, bnds=getBnds(max(dose))$betaMod, scal=1.2*4)
-gFitDRModel(dose, cf2, vcv2, model="betaMod", intercept=TRUE, bnds=getBnds(max(dose))$betaMod, start = c(1, 1), scal=1.2*4)
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="emax",
+       placAdj=TRUE, bnds=defBnds(max(dose))$emax, start = 0.5,type="general")
+fitMod(dose, cf2, S=vcv2, model="emax", placAdj=FALSE,
+       bnds=defBnds(max(dose))$emax, start = 0.2,type="general")
+fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="betaMod",
+       placAdj=TRUE, bnds=defBnds(max(dose))$betaMod,
+       addArgs=list(scal=1.2*4),type="general")
+fitMod(dose, cf2, S=vcv2, model="betaMod", placAdj=FALSE,
+       bnds=defBnds(max(dose))$betaMod, start = c(1, 1),
+       addArgs=list(scal=1.2*4),type="general")
 
 ## test predict, vcov, coef, intervals, plot, summary
-ggI <- gFitDRModel(dose, cf2, vcv2, model="betaMod", intercept=TRUE, bnds=getBnds(max(dose))$betaMod, scal=1.2*4)
-ggNI <- gFitDRModel(dose[-1], cf[-1], vcv[-1,-1], model="betaMod",
-                    intercept=FALSE, bnds=getBnds(max(dose))$betaMod, scal=1.2*4)
-predict(ggI, se.fit=TRUE, type = "E")
-predict(ggNI, se.fit=TRUE)
+ggI <- fitMod(dose, cf2, S=vcv2, model="betaMod",
+              placAdj=FALSE, bnds=defBnds(max(dose))$betaMod,
+              addArgs=list(scal=1.2*4),type="general")
+ggNI <- fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="betaMod",
+               placAdj=TRUE, bnds=defBnds(max(dose))$betaMod,
+               addArgs=list(scal=1.2*4),type="general")
+predict(ggI, se.fit=TRUE, predType = "e")
+predict(ggNI, se.fit=TRUE, predType = "e")
 vcov(ggI)
 vcov(ggNI)
-intervals(ggI)
-intervals(ggNI)
 plot(ggI, CI=T, plotData = "meansCI")
 plot(ggNI, CI=T, plotData = "meansCI")
-plot(ggI, CI=T, plotData = "meansCI", type = "E")
+
+ggI <- fitMod(dose, cf2, S=vcv2, model="linInt",
+              placAdj=FALSE,type="general")
+ggNI <- fitMod(dose[-1], cf[-1], S=vcv[-1,-1], model="linInt",
+               placAdj=TRUE,type="general")
+predict(ggI, se.fit=TRUE, predType = "full-model")
+predict(ggI, se.fit=TRUE, predType = "effect-curve")
+predict(ggNI, se.fit=TRUE, predType = "full-model")
+vcov(ggI)
+vcov(ggNI)
+plot(ggI, CI=T, plotData = "meansCI")
+plot(ggNI, CI=T, plotData = "meansCI")
+
+## even more tests for the linInt model
+data(IBScovars)
+## without covariates
+fit <- fitMod(dose, resp, data=IBScovars, model="linInt")
+plot(fit, CI=TRUE, plotData="meansCI")
+fit <- fitMod(dose, resp, data=IBScovars, model="linInt",
+                  addCovars=~gender)
+plot(fit, CI=TRUE, plotData="meansCI")
+vcov(fit)
+fit <- lm(resp~as.factor(dose)-1, data=IBScovars)
+cf <- coef(fit)
+vc <- vcov(fit)
+doseVec <- 0:4
+fit <- fitMod(doseVec, cf, model="linInt", S=vc, type = "general")
+plot(fit, CI=TRUE, plotData="meansCI")
+vcov(fit)
+fit <- lm(resp~as.factor(dose)+gender, data=IBScovars)
+cf <- coef(fit)[2:5]
+vc <- vcov(fit)[2:5,2:5]
+doseVec <- 1:4
+fit <- fitMod(doseVec, cf, model="linInt", S=vc, type = "general", placAdj=TRUE)
+vcov(fit)
+plot(fit, CI=TRUE, plotData="meansCI")
+predict(fit, predType = "effect-curve", se.fit=TRUE)
+
+

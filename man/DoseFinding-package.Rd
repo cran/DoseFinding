@@ -1,42 +1,42 @@
 \name{DoseFinding-package}
-\Rdversion{1.1}
 \alias{DoseFinding-package}
 \alias{DoseFinding}
 \docType{package}
 \title{
-Package overview
+  Design and Analysis of dose-finding studies
 }
 \description{
-The DoseFinding package provides functions for the design and analysis
-of dose-finding experiments (for example pharmaceutical Phase II
-clinical trials). It provides functions for: multiple contrast tests
-(\code{MCPtest}), fitting non-linear dose-response models
-(\code{fitDRModel}), calculating optimal designs (\code{calcOptDesign})
-and an implementation of the MCPMod methodology (\code{MCPMod}). For
-non-normal endpoints see \code{gMCPtest} and \code{gFitDRModel}.
+  The DoseFinding package provides functions for the design and analysis
+  of dose-finding experiments (for example pharmaceutical Phase II
+  clinical trials). It provides functions for: multiple contrast tests
+  (\code{MCTtest}), fitting non-linear dose-response models
+  (\code{fitMod}), a combination of testing and dose-response modelling
+  (\code{MCPMod}), and calculating optimal designs (\code{optDesign}),
+  both for normal and general endpoints.
 }
 \details{
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.6-3\cr
-Date: \tab 2012-08-22\cr
-License: \tab GPL-3\cr
-LazyLoad: \tab yes\cr
+Version: \tab 0.9-1\cr
+Date: \tab 2013-01-09\cr
+License: \tab GPL-3
 }
-The main functions are:
-\bold{MCPtest}, implementing multiple contrast tests, \bold{fitDRModel}
-that fits non-linear dose-response models, \bold{calcOptDesign} that
-calculate optimal designs and \bold{MCPMod}, which implements the MCPMod
-methodology. \bold{gMCPtest} and \bold{gFitDRModel} are generalizations
-of \bold{MCPtest} and \bold{fitDRModel} for non-normal data.
+The main functions are:\cr
+\bold{MCTtest}: Implements a multiple contrast tests\cr
+\bold{powMCT}: Power calculations for multiple contrast tests\cr
+\bold{fitMod}: Fits non-linear dose-response models\cr
+\bold{optDesign}: Calculates optimal designs for dose-response models\cr
+\bold{MCPMod}: Performs MCPMod methodology\cr
+\bold{sampSize}: General function for sample size calculation\cr
 }
 \author{
 Bjoern Bornkamp, Jose Pinheiro, Frank Bretz
-  
-Maintainer: Bjoern Bornkamp <bornkamp@statistik.tu-dortmund.de>
-} \references{ 
-  Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
+
+Maintainer: Bjoern Bornkamp <bbnkmp@gmail.com>
+}
+\references{
+    Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
   J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
   \emph{Annals of Applied Statistics}, \bold{5}, 1611--1631
   
@@ -60,43 +60,31 @@ Maintainer: Bjoern Bornkamp <bornkamp@statistik.tu-dortmund.de>
   Seber, G.A.F. and Wild, C.J. (2003). Nonlinear Regression, Wiley
 }
 \keyword{ package }
-\keyword{ models  }
-\keyword{ regression }
-\keyword{ nonlinear }
 \examples{
 data(IBScovars)
 
-# perform (model based) multiple contrast test
-modlist <- list(linear = NULL, emax = 0.2, quadratic = -0.17)
-# plot model shapes (need to specify base and maxEff additionally)
-plotModels(modlist, c(0,4), base = 0, maxEff = 1)
-fittest <- MCPtest(resp ~ dose, IBScovars, modlist, addCovars = ~ gender)
+## perform (model based) multiple contrast test
+## define candidate dose-response shapes
+models <- Mods(linear = NULL, emax = 0.2, quadratic = -0.17,
+               doses = c(0, 1, 2, 3, 4))
+## plot model shapes (need to specify placEff and maxEff)
+plot(models, placEff = 0, maxEff = 1)
+## perform multiple contrast test
+test <- MCTtest(dose, resp, IBScovars, models=models,
+                addCovars = ~ gender)
 
-# fit non-linear dose-response model
-fitemax <- fitDRModel(resp ~ dose, IBScovars, "emax")
-# display fitted dose-effect curve
-plot(fitemax)
-# estimate minimum effective dose
-MED(fitemax, clinRel = 0.25)
+## fit non-linear emax dose-response model
+fitemax <- fitMod(dose, resp, data=IBScovars, model="emax",
+                  bnds = c(0.01,5))
+## display fitted dose-effect curve
+plot(fitemax, CI=TRUE, plotData="meansCI")
 
-# MCP-Mod is a combination of (model based) multiple contrast tests
-# and nonlinear regression
-models <- list(linear = NULL, emax = 0.2, quadratic = -0.17)
-dfe <- MCPMod(resp ~ dose, IBScovars, models, addCovars = ~gender,
-              pVal = TRUE, selModel = "maxT",
-              doseEst = "MED2", clinRel = 0.25)
-# detailed information is available via summary
-summary(dfe)
-# plots data with selected model function
-plot(dfe)
-
-# Calculate optimal designs for MED estimation
+## Calculate optimal designs for target dose (TD) estimation
 doses <- c(0, 10, 25, 50, 100, 150)
-mods <- list(linear = NULL, emax = 25, exponential = 85,
-               linlog = NULL, logistic = c(50, 10.8811))
-fMod <- fullMod(mods, doses, base=0, maxEff=0.4, off=1)
-weights <- rep(1/5, 5)
-desMED <- calcOptDesign(fMod, weights, doses, clinRel=0.2, scal=200,
-                        off=1, method = "nlminb")
+fmodels <- Mods(linear = NULL, emax = 25, exponential = 85,
+                logistic = c(50, 10.8811),
+                doses = doses, placEff=0, maxEff=0.4)
+plot(fmodels, plotTD = TRUE, Delta = 0.2)
+weights <- rep(1/4, 4)
+desTD <- optDesign(fmodels, weights, Delta=0.2, designCrit="TD")
 }
-
