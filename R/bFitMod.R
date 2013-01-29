@@ -85,7 +85,8 @@ bFitMod <- function(dose, resp, model, S, placAdj = FALSE,
       res <- res[,-1]
   } else { ## bootstrap
     res <- bFitMod.bootstrap(dose, resp, S, model, placAdj,
-                             nSim, control, bnds, off, scal)
+                             nSim, control, bnds, off, scal,
+                             nodes)
   }
   
   out <- list()
@@ -208,7 +209,8 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
 }
 
 bFitMod.bootstrap <- function(dose, resp, S, model, placAdj,
-                              nSim, control, bnds, off, scal){
+                              nSim, control, bnds, off, scal,
+                              nodes){
   ##
   if(model %in% c("emax", "exponential", "betaMod", "logistic", "sigEmax")){
     if(missing(bnds)){
@@ -220,9 +222,11 @@ bFitMod.bootstrap <- function(dose, resp, S, model, placAdj,
   ## same arguments as in gFitDRModel function
   sims <- rmvnorm(nSim, resp, S)
   func <- function(x){
-    fit <- fitMod(dose, x, S=S, model=model, type="general",
-                  placAdj=placAdj, bnds=bnds, control=control,
-                  addArgs=list(off=off, scal=scal))
+    fit <- fitMod.raw(dose, x, S=S, model=model, type="general",
+                      placAdj=placAdj, bnds=bnds, control=control,
+                      off=off, scal=scal, nodes=nodes,
+                      covarsUsed = FALSE, df = Inf,
+                      doseNam = "dose", respNam = "resp")
     coef(fit)
   }
   t(apply(sims, 1, func))

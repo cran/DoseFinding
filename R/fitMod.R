@@ -1,5 +1,4 @@
 ## functions related to fitting dose-response models using ML or generalized approach
-
 defBnds <- function(mD, emax = c(0.001, 1.5)*mD,
                     exponential = c(0.1, 2)*mD, 
                     logistic = matrix(c(0.001, 0.01, 1.5, 1/2)*mD, 2),
@@ -83,12 +82,13 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
   doseNam <- lst$doseNam;respNam <- lst$respNam
   dose <- lst$dd[[doseNam]];type <- lst$type
   resp <- lst$dd[[respNam]];data <- lst$dd
-   
+  covarsUsed <- addCovars != ~1
+  
   ## check type related arguments
   if(type == "general"){
     if(placAdj & model %in% c("linlog", "logistic")) # stop as fitting algorithm assumes f^0(0) = 0
       stop("logistic and linlog models cannot be fitted to placebo adjusted data") 
-    if(addCovars != ~1)
+    if(covarsUsed)
       stop("addCovars argument ignored for type == \"general\"")
     if(is.null(df))
       df <- Inf
@@ -138,13 +138,14 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
                     addCovars, placAdj, bnds, df, start,
                     na.action, control, doseNam=doseNam,
                     respNam=respNam, off = off, scal = scal,
-                    nodes=nodes)
+                    nodes=nodes, covarsUsed)
   out
 }
 
 fitMod.raw <- function(dose, resp, data, model, S, type,
                        addCovars = ~1, placAdj = FALSE, bnds, df, start = NULL,
-                       na.action = na.fail, control, doseNam, respNam, off, scal, nodes){
+                       na.action = na.fail, control, doseNam, respNam,
+                       off, scal, nodes, covarsUsed){
   ## fit model but do not check for arguments (for use in MCPMod function)!
   ## differences to fitMod:
   ## - dose, resp need to be vectors containing the data
@@ -153,7 +154,6 @@ fitMod.raw <- function(dose, resp, data, model, S, type,
                "exponential", "logistic", "betaMod", "sigEmax")
   modelNum <- match(model, builtIn)
 
-  covarsUsed <- addCovars != ~1
   weights <- NULL;clinS <- NULL
   ## package data for model-fitting
   if(type == "general"){ # general approach
@@ -345,7 +345,7 @@ fitModel.bndnls <- function(dataFit, model, addCovars, type, bnds, control,
                  exponential = c("e1", "delta"),
                  betaMod = c("eMax", "delta1", "delta2"))
   ## recover all parameters from nonlin parameter and return results
-  f0 <- do.call(model, c(list(dose), as.list(c(0,1,opt2$coefs,scal))))
+  f0 <- getStandDR(model, dose, opt2$coefs, scal)
   if(type == "general"){ # return "generalized" sum of squares
     if(placAdj){ # no intercept
       par0 <- sum((clinS %*% f0) * (clinS%*%resp))/sum((clinS %*% f0)^2)
@@ -407,9 +407,8 @@ optGrid <- function(model, dim, bnds, gridSize, dose, type,
 }
 
 getZmat <- function(x, nodes, model, dim, scal=NULL){
-  getPred <- function(vec, x, model, scal){
-    do.call(model, c(list(x), as.list(c(0, 1, vec, scal))))
-  }
+  getPred <- function(vec, x, model, scal)
+    getStandDR(model, x, vec, scal)
   xU <- sort(unique(x))
   n <- as.numeric(table(x))
   args <- nodes
@@ -420,31 +419,42 @@ getZmat <- function(x, nodes, model, dim, scal=NULL){
 
 getZmat.weighted <- function(x, nodes, model, dim, scal){
   # does not exploit repeated observations
-  getPred <- function(vec, x, model, scal=NULL){
-    do.call(model, c(list(x), as.list(c(0, 1, vec, scal))))
-  }
+  getPred <- function(vec, x, model, scal)
+    getStandDR(model, x, vec, scal)
   args <- nodes
   Zmat <- apply(args, 1, getPred, x=x, model=model, scal=scal)
   Zmat
+}
+
+getStandDR <- function(model, x, nl, scal){
+  ## calculate standardized response for nonlinear models
+  switch(model,
+         emax = emax(x, 0, 1, nl),
+         sigEmax = sigEmax(x, 0, 1, nl[1], nl[2]),
+         exponential = exponential(x, 0, 1, nl),
+         logistic = logistic(x, 0, 1, nl[1], nl[2]),
+         betaMod = betaMod(x, 0, 1, nl[1], nl[2], scal))
 }
 
 optLoc <- function(model, dim, bnds, dose, qrX, resXY, start, scal,
                    placAdj, type, tol, N, nlminbcontrol, clinS){
   ## function to calculate ls residuals (to be optimized)
   optFunc <- function(nl, x, qrX, resXY, model, scal, clinS){
-    Z <- do.call(model, c(list(x), as.list(c(0,1,nl,scal))))
+    Z <- getStandDR(model, x, nl, scal)
     if(!is.null(clinS)){
       Z <- clinS%*%Z
     }
-    if(placAdj & type == "general")
+    if(placAdj & type == "general"){
       resXZ <- Z
-    else
+    } else {
       resXZ <- try(qr.resid(qrX, Z)) # might be NaN if function is called on strange parameters
-    if(inherits(resXZ, "try-error")) return(NA)
+      if(inherits(resXZ, "try-error"))
+        return(NA)
+    }
     sumrsXYrsXZ <- sum(resXY*resXZ)
     sum(resXY*resXY) - sumrsXYrsXZ*sumrsXYrsXZ/sum(resXZ*resXZ)
   }
-  
+
   if(dim == 1){ # one-dimensional models
     dif <- (bnds[2]-bnds[1])/N # distance between grid points
     lbnd <- max(c(start-1.1*dif), bnds[1])
@@ -651,24 +661,26 @@ vcov.DRMod <- function(object, ...){
 
 gradCalc <- function(model, cf, dose, off, scal, nodes){
   ## wrapper function to calculate gradient
-  cf <- as.numeric(cf) ## delete potential names
-  pars <- switch(model, linlog = {
-    c(off=off)
-  }, emax = {
-    c(eMax = cf[2], ed50 = cf[3])
-  }, logistic = {
-    c(eMax = cf[2], ed50 = cf[3], delta = cf[4])
-  }, sigEmax = {
-    c(eMax = cf[2], ed50 = cf[3], h = cf[4])
-  }, betaMod = {
-    c(eMax = cf[2], delta1 = cf[3], delta2 = cf[4], scal = scal)
-  }, exponential = {
-    c(delta = cf[3], e1 = cf[2])
-  }, linInt = {
-    list(cf, nodes)
-  })
-  callMod <- paste(model, "Grad", sep="")
-  do.call(callMod, c(list(dose), as.list(pars)))
+  switch(model,
+         linear = {
+           linearGrad(dose)
+         }, linlog = {
+           linlogGrad(dose, off=off)
+         }, quadratic = {
+           quadraticGrad(dose)
+         }, emax = {
+           emaxGrad(dose, eMax = cf[2], ed50 = cf[3])
+         }, logistic = {
+           logisticGrad(dose, eMax = cf[2], ed50 = cf[3], delta = cf[4])
+         }, sigEmax = {
+           sigEmaxGrad(dose, eMax = cf[2], ed50 = cf[3], h = cf[4])
+         }, betaMod = {
+           betaModGrad(dose, eMax = cf[2], delta1 = cf[3], delta2 = cf[4], scal = scal)
+         }, exponential = {
+           exponentialGrad(dose, e1 = cf[2], delta = cf[3])
+         }, linInt = {
+           linIntGrad(dose, resp=cf, nodes=nodes)
+         })
 }
 
 predict.DRMod <- function(object, predType = c("full-model", "ls-means", "effect-curve"),

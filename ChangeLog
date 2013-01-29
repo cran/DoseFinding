@@ -1,3 +1,14 @@
+2013-01-29 Bjoern Bornkamp (version 0.9-3)
+      * fitMod Improvements of efficiency (removed calls to do.call 
+	in optLoc)
+      * MCPMod passes direction argument now also to TD
+      * optDesign solnp is now the default optimizer
+      * calcCrit default for arg designCrit in calcCrit changed (to harmonize
+	calcCrit and optDesign)
+      * bFitMod use fitMod.raw in bFitMod.bootstrap (for efficiency)
+      * critVal Remove contMat argument (was unused)
+      * powMCT Allow power calculation for placebo adjusted data
+
 2013-01-09 Bjoern Bornkamp (version 0.9-1)
       * Complete re-structuring and tidying up of the package. 
 	Main ideas: (i) smoother integration of g-functions (ii) focus on

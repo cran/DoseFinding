@@ -18,8 +18,8 @@
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-1\cr
-Date: \tab 2013-01-09\cr
+Version: \tab 0.9-3\cr
+Date: \tab 2013-01-29\cr
 License: \tab GPL-3
 }
 The main functions are:\cr
@@ -29,6 +29,13 @@ The main functions are:\cr
 \bold{optDesign}: Calculates optimal designs for dose-response models\cr
 \bold{MCPMod}: Performs MCPMod methodology\cr
 \bold{sampSize}: General function for sample size calculation\cr
+\cr
+Note that version 0.9-1 of the DoseFinding package introduced several
+new features and backwards incompatible changes.  Previous versions of
+the source package are available under
+http://cran.r-project.org/package=DoseFinding, a Windows binary of the
+last version before the changes is available under http://goo.gl/p1UZ7.
+
 }
 \author{
 Bjoern Bornkamp, Jose Pinheiro, Frank Bretz

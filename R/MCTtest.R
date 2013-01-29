@@ -65,8 +65,7 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
       stop("either p-values or critical value need to be calculated.")
     }
   } else if(is.logical(critV) & critV == TRUE){
-    critV <- critVal(contMat, corMat, alpha, df, 
-                     alternative, mvtcontrol)  
+    critV <- critVal(corMat, alpha, df, alternative, mvtcontrol)  
     attr(critV, "Calc") <- TRUE # determines whether cVal was calculated
   } else { 
     pVal <- FALSE # pvals are not calculated if critV is supplied
@@ -120,13 +119,11 @@ print.MCTtest <- function(x, digits = 4, ...){
   }
 }
 
-critVal <- function(contMat, corMat, alpha = 0.025, df,
+critVal <- function(corMat, alpha = 0.025, df,
                     alternative = c("one.sided", "two.sided"),
                     control = mvtnorm.control()){
   ## calculate critical value
   alternative <- match.arg(alternative)
-  nD <- nrow(contMat)
-  nMod <- ncol(contMat)
   if(missing(corMat))
     stop("corMat needs to be specified")
   if(missing(df))

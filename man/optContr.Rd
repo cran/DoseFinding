@@ -11,10 +11,13 @@
   of maximizing the non-centrality parameter of the underlying contrast
   test statistic:
   \deqn{\frac{c'\mu}{\sqrt{c'Sc}}}{c'mu/sqrt(c'Sc).}
-  Here \eqn{\mu}{mu} is the mean vector under the alternative and S the
-  covariance matrix associated with the estimate of \eqn{\mu}{mu}. Note
-  that there is a closed form solution for the optimal contrasts, see
-  Pinheiro et al. (2013).
+  Here \eqn{\mu}{mu} is the mean vector under the alternative and \eqn{S}{S} the
+  covariance matrix associated with the estimate of \eqn{\mu}{mu}.
+  The optimal contrast is given by 
+  \deqn{
+    c^{opt} \propto S^{-1}\left(\mu - \frac{\mu^{\prime}S^{-1}
+      1}{1^\prime S^{-1} 1}\right),}{c propto S^(-1) (mu - mu'S^(-1)1)/(1'S^(-1)1),}
+  see Pinheiro et al. (2013).
 }
 \usage{
 optContr(models, doses, weights, S, placAdj = FALSE,
@@ -36,18 +39,19 @@ optContr(models, doses, weights, S, placAdj = FALSE,
     in the \samp{c("Mods", "standMod")} object specified in \samp{models} is used.
   }
 \item{weights, S}{
-  Arguments determining the matrix S used in the non-centrality
-  parameter to optimize. Exactly one of \samp{weights} and \samp{S} has
+  Arguments determining the matrix S used in the formula for the optimal
+  contrasts. Exactly one of \samp{weights} and \samp{S} has
   to be specified. Note that \samp{weights} and \samp{S} only have to be
   specified up to proportionality \cr
-
-  \samp{weights}: Vector specifying weights for the different doses,
-  which determines the covariance matrix to use as S=diag(1/weights),
-  (e.g. in a homoscedastic case with unequal sample sizes,
-  \samp{weights} should be proportional to the group sample sizes). \cr
-
-  \samp{S}: Directly specify a matrix proportional to the covariance
-  matrix to use.
+  \itemize{
+    \item{weights}{Vector specifying weights for the different doses,
+      in the formula for calculation of the optimal contrasts. Specifying a weights
+      vector is equivalent to specifying S=diag(1/weights)
+      (e.g. in a homoscedastic case with unequal sample sizes,
+      \samp{weights} should be proportional to the group sample sizes).}
+    \item{S}{Directly specify a matrix proportional to the covariance
+    matrix to use.}
+  }
 }
 \item{placAdj}{
   Logical determining, whether the contrasts should be

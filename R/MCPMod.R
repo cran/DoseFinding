@@ -84,7 +84,7 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
   if(doseType == "TD"){
     if(missing(Delta))
       stop("\"Delta\" needs to be specified for TD estimation")
-    tds <- sapply(mods, TD, Delta=Delta)
+    tds <- sapply(mods, TD, Delta=Delta, direction = direction)
     attr(tds, "addPar") <- Delta
   }
   if(doseType == "ED"){
