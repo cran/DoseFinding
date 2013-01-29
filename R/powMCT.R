@@ -38,17 +38,22 @@ powCalc <- function(alternative, critV, df, corMat, deltaMat, control){
 }
 
 powMCT <- function(contMat, alpha = 0.025, altModels,
-                   n, sigma, S,
+                   n, sigma, S, placAdj = FALSE,
                    alternative = c("one.sided", "two.sided"),
                    df, critV = TRUE,
                    control = mvtnorm.control()){
   alternative <- match.arg(alternative)
-  if(inherits(contMat, "optContr"))
+  if(inherits(contMat, "optContr")){
+    if(attr(contMat, "placAdj") != placAdj){
+      message("using \"placAdj\" specification from contMat object")
+      placAdj <- attr(contMat, "placAdj")
+    }
     contMat <- contMat$contMat
-  nD <- nrow(contMat) # nr of doses
-  nC <- ncol(contMat) # nr of contrasts
+  }
   if(!is.matrix(contMat))
     stop("contMat needs to be a matrix")
+  nD <- nrow(contMat) # nr of doses
+  nC <- ncol(contMat) # nr of contrasts
   ## extract covariance matrix
   if(missing(S)){
     if(missing(n) | missing(sigma))
@@ -56,7 +61,7 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
     if(length(n) == 1)
       n <- rep(n, nD)
     if(length(n) != nD)
-      stop("n needs to be of length nrow(contMat) (i.e. number of doses)")
+      stop("n needs to be of length nrow(contMat)")
     S <- sigma^2*diag(1/n)
     df <- sum(n) - nD
   } else {
@@ -71,8 +76,10 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
   if(missing(altModels))
     stop("altModels argument needs to be specified")
   muMat <- getResp(altModels)
-  if(!is.matrix(muMat))
-    stop("muMat needs to be a matrix")
+  if(placAdj){
+    muMat <- muMat - muMat[1,] # remove placebo column
+    muMat <- muMat[-1,]
+  }
   if(nrow(muMat) != nD)
     stop("Incompatible contMat and muMat")
   ## extract df
@@ -95,8 +102,7 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
     df <- 0
   ## calculate critical value
   if(is.logical(critV) & critV == TRUE){
-    critV <- critVal(contMat, corMat, alpha, df, 
-                     alternative, control)
+    critV <- critVal(corMat, alpha, df, alternative, control)
   } # else assume critV already contains critical value
   res <- powCalc(alternative, critV, df, corMat, deltaMat, control)
   ## class(res) <-  "powMCT"
@@ -110,4 +116,3 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
 ##   attributes(x)[2:5] <- NULL
 ##   print(x)
 ## }
-

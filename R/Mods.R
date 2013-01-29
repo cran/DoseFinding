@@ -101,7 +101,7 @@ Mods <- function(..., doses, placEff, maxEff, addArgs = NULL){
   lst <- getAddArgs(addArgs, doses)
   ## check for adequate addArgs
   if(lst$scal < max(doses))
-    stop("\"scal\" parameter needs to be < max(doses)")
+    stop("\"scal\" parameter needs to be >= max(doses)")
   if(lst$scal < 0)
     stop("\"scal\" parameter needs to be positive")    
   if(lst$off < 0)

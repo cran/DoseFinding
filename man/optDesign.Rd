@@ -25,14 +25,14 @@ optDesign(fmodels, probs, doses,
           nold = rep(0, length(doses)),  n,
           direction = c("increasing", "decreasing"),
           control=list(), 
-          optimizer = c("Nelder-Mead", "nlminb", "solnp", "exact"),
+          optimizer = c("solnp", "Nelder-Mead", "nlminb", "exact"),
           lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
           userCrit, ...)
 
 \method{plot}{DRdesign}(x, fmodels, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...)
 
 calcCrit(design, fmodels, probs, doses, 
-         designCrit = c("TD", "Dopt", "Dopt&TD"),
+         designCrit = c("Dopt", "TD", "Dopt&TD"),
          Delta, standDopt = TRUE, weights,
          nold = rep(0, length(doses)), n,
          direction = c("increasing", "decreasing"))

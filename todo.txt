@@ -1,4 +1,6 @@
-to do:
+to do: 
+- Add more sample size and power calculation convenience functions for
+  sampSizeMCT, powMCT (and others later)
 - simulator function
 - can only use one linear model in Mods (what if we have two different
   max effects?)!

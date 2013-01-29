@@ -114,7 +114,7 @@ optDesign <- function(fmodels, probs, doses,
                       nold = rep(0, length(doses)),  n,
                       direction = c("increasing", "decreasing"),
                       control=list(), 
-                      optimizer = c("Nelder-Mead", "nlminb", "solnp", "exact"),
+                      optimizer = c("solnp", "Nelder-Mead", "nlminb", "exact"),
                       lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
                       userCrit, ...){
   if(!missing(fmodels)){
@@ -285,7 +285,7 @@ optDesign <- function(fmodels, probs, doses,
 }
 
 calcCrit <- function(design, fmodels, probs, doses, 
-                     designCrit = c("TD", "Dopt", "Dopt&TD"),
+                     designCrit = c("Dopt", "TD", "Dopt&TD"),
                      Delta, standDopt = TRUE, weights,
                      nold = rep(0, length(doses)), n,
                      direction = c("increasing", "decreasing")){

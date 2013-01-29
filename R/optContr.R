@@ -81,6 +81,7 @@ optContr <-  function(models, doses, weights, S, placAdj = FALSE,
   contMat <- modContr(mu, Sinv=Sinv, placAdj = placAdj)
   rownames(contMat) <- doses
   res <- list(contMat = contMat, muMat = mu)
+  attr(res, "placAdj") <- placAdj
   class(res) <- "optContr"
   res
 }

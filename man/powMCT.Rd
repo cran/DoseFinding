@@ -7,7 +7,7 @@
   Calculate the power for a multiple contrast test. 
 }
 \usage{
-powMCT(contMat, alpha = 0.025, altModels, n, sigma, S,
+powMCT(contMat, alpha = 0.025, altModels, n, sigma, S, placAdj=FALSE,
        alternative = c("one.sided", "two.sided"), df, critV,
        control = mvtnorm.control())
 }
@@ -31,7 +31,15 @@ powMCT(contMat, alpha = 0.025, altModels, n, sigma, S,
     degrees of freedom are calculated as \code{sum(n)-nrow(contMat)}.\cr
 
     When \samp{S} is specified this will be used as covariance matrix.
-}
+  }
+  \item{placAdj}{
+    Logical, if true, it is assumed that the standard deviation or variance
+    matrix of the placebo-adjusted estimates are specified in
+    \samp{sigma} or \samp{S}, respectively. The contrast matrix has to be
+    produced on placebo-adjusted scale, see \code{\link{optContr}}, so
+    that the coefficients are no longer contrasts (i.e. do not sum to
+    0). 
+  }
 \item{alternative}{
   Character determining the alternative for the multiple contrast
   trend test. 
@@ -82,7 +90,7 @@ plot(fmodels)
 contMat <- optContr(fmodels, weights = 1)
 powMCT(contMat, altModels = fmodels, n = 50, alpha = 0.05, sigma = 1)
 
-## now compare to power under the Dunnett test
+## power under the Dunnett test
 ## contrast matrix for Dunnett test with informative names
 contMatD <- rbind(-1, diag(5))
 rownames(contMatD) <- doses
@@ -96,6 +104,18 @@ altFmods <- Mods(linInt = rbind(c(0, 1, 1, 1, 1),
 plot(altFmods)
 powMCT(contMat, altModels = altFmods, n = 50, alpha = 0.05, sigma = 1)
 
+## now the first example but assume information only on the
+## placebo-adjusted scale
+## for balanced allocations and 50 patients with sigma = 1 one obtains
+## the following covariance matrix
+S <- 1^2/50*diag(6)
+## now calculate variance of placebo adjusted estimates
+CC <- cbind(-1,diag(5))
+V <- (CC)\%*\%S\%*\%t(CC)
+linMat <- optContr(fmodels, doses = c(10,25,50,100,150),
+                   S = V, placAdj = TRUE)
+powMCT(linMat, altModels = fmodels, placAdj=TRUE,
+       alpha = 0.05, S = V, df=6*50-6) # match df with the df above
 }
 
-% __ONLY ONE__ keyword per line
+
