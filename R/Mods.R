@@ -91,6 +91,10 @@ Mods <- function(..., doses, placEff, maxEff, addArgs = NULL){
   if(missing(doses))
     stop("Need to specify dose levels")
   doses <- sort(doses)
+  if(doses[1] < -.Machine$double.eps ^ 0.5)
+    stop("Only dose-levels >= 0 allowed")
+  if(abs(doses[1]) > .Machine$double.eps ^ 0.5)
+    stop("Need to include placebo dose")
   modL <- list(...)
   nams <- names(modL)
   ## perform some simple check for a valid standModel list
@@ -409,13 +413,16 @@ calcTD <- function(model, pars, Delta, TDtype = c("continuous", "discrete"),
       return(cf[3]*log(Delta/cf[2]+1))
     }
     if(model == "linInt"){
-      indx <- 1:max(which(cf==max(cf)))
-      ind <- max(indx[cf[indx] < cf[1] + Delta])
+      inds <- cf < cf[1] + Delta
+      if(all(inds))
+        return(NA)
+      ind <- min((1:length(cf))[!inds])-1
       tmp <- (cf[1]+Delta-cf[ind])/(cf[ind+1]-cf[ind])
       td <- nodes[ind] + tmp*(nodes[ind+1]-nodes[ind])
       if(td > 0)
         return(td)
-      return(NA)
+      else
+        return(NA)
     }
   }
   if(TDtype == "discrete"){
@@ -475,11 +482,14 @@ TD <- function(object, Delta, TDtype = c("continuous", "discrete"),
   if(inherits(object, "DRMod")){ # if fmodel is a DRMod object
     nam <- attr(object, "model")
     par <- sepCoef(object)$DRpars
-    if(attr(object, "placAdj"))
-      par <- c(0, par)
     scal <- attr(object, "scal")
     off <- attr(object, "off")
     nodes <- attr(object, "nodes")
+    if(attr(object, "placAdj")){
+      par <- c(0, par)
+      if(nam == "linInt")
+        nodes <- c(0, nodes)
+    }
     td <- calcTD(nam, par, Delta, TDtype, direction, doses, off, scal, nodes)
     names(td) <- NULL
     return(td)
@@ -489,6 +499,10 @@ TD <- function(object, Delta, TDtype = c("continuous", "discrete"),
     scal <- attr(object, "scal")
     off <- attr(object, "off")
     nodes <- attr(object, "nodes")
+    if(attr(object, "placAdj")){
+      if(nam == "linInt")
+        nodes <- c(0, nodes)
+    }
     td <- apply(object$samples, 1, function(x){
       if(attr(object, "placAdj")){
         par <- c(0, x)
@@ -666,7 +680,7 @@ calcED <- function(model, pars, p, maxD, EDtype = c("continuous", "discrete"),
       resp <- abs(do.call(model, c(list(doses), as.list(pars)))-resp0)
     } else {
       resp0 <- do.call(model, c(list(0), as.list(list(pars, nodes))))
-      resp <- abs(do.call(model, c(list(doses), as.list(list(pars, nodes))))-resp0)
+      resp <- do.call(model, c(list(doses), as.list(list(pars, nodes))))-resp0
     }
     ## calculate maximum response
     if(model %in% c("betaMod", "quadratic")){
@@ -724,11 +738,14 @@ ED <- function(object, p, EDtype = c("continuous", "discrete"), doses){
     par <- sepCoef(object)$DRpars
     doseNam <- attr(object, "doseRespNam")[1]
     maxD <- max(attr(object,"data")[[doseNam]])
-    if(attr(object, "placAdj"))
-      par <- c(0, par)
     scal <- attr(object, "scal")
     off <- attr(object, "off")
     nodes <- attr(object, "nodes")
+    if(attr(object, "placAdj")){
+      par <- c(0, par)
+      if(nam == "linInt")
+        nodes <- c(0, nodes)
+    }
     ed <- calcED(nam, par, p, maxD, EDtype, doses, off, scal, nodes)
     names(ed) <- NULL
     return(ed)
@@ -738,6 +755,10 @@ ED <- function(object, p, EDtype = c("continuous", "discrete"), doses){
     scal <- attr(object, "scal")
     off <- attr(object, "off")
     nodes <- attr(object, "nodes")
+    if(attr(object, "placAdj")){
+      if(nam == "linInt")
+        nodes <- c(0, nodes)
+    }
     doseNam <- attr(object, "doseRespNam")[1]
     maxD <- max(attr(object,"data")[[doseNam]])
     ed <- apply(object$samples, 1, function(x){
@@ -746,7 +767,7 @@ ED <- function(object, p, EDtype = c("continuous", "discrete"), doses){
       } else {
         par <- x
       }
-      calcED(nam, par, p, maxD, EDtype = "continuous", doses, off, scal, nodes)
+      calcED(nam, par, p, maxD, EDtype, doses, off, scal, nodes)
     })
     return(ed)
   }

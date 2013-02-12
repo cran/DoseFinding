@@ -116,10 +116,6 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
       }
     }
   }
-  ## check for placebo dose, if placAdj = TRUE
-  if(placAdj & any(dose == 0))
-    stop("If placAdj == TRUE there should be no placebo group")
-  
   ## addArgs argument
   scal <- off <- nodes <- NULL
   if(model %in% c("linlog", "betaMod")){

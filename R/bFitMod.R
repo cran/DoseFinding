@@ -82,7 +82,7 @@ bFitMod <- function(dose, resp, model, S, placAdj = FALSE,
                          off, scal, nPar, modNr)
     res <- matrix(res, nrow = nSim, ncol = nPar)
     if(placAdj & model != "linInt")
-      res <- res[,-1]
+      res <- res[,-1, drop = FALSE]
   } else { ## bootstrap
     res <- bFitMod.bootstrap(dose, resp, S, model, placAdj,
                              nSim, control, bnds, off, scal,
@@ -239,6 +239,8 @@ ess.mcmc <- function(series, lag.max = NULL){
   ## sum of even and un-even autocorrelations (gamma)
   ## needs to be positive and monotone decreasing
   N <- length(series)
+  if(length(unique(series)) == 1)
+    return(NA)
   if(is.null(lag.max))
     lag.max <- 10*log10(N)
   ac <- acf(series, plot=FALSE, lag.max=lag.max)$acf[2:(lag.max+1),,1]
@@ -264,13 +266,22 @@ print.bFitMod <- function(x, digits = 3, ...){
   names(resp) <- attr(x, "data")$dose
   cat("Dose Response Model\n\n")
   cat(paste("Model:", attr(x, "model")), "\n\n")
-  cat("Summary of posterior draws\n")
-  func <- function(x){
-    c(mean=mean(x), sdev=sd(x),
-      quantile(x, c(0.025, 0.25, 0.5, 0.75, 0.975)),
-      n.eff=ess.mcmc(x))
+  if(attr(x, "type") == "Bayes"){
+    cat("Summary of posterior draws\n")
+    func <- function(x){
+      c(mean=mean(x), sdev=sd(x),
+        quantile(x, c(0.025, 0.25, 0.5, 0.75, 0.975)),
+        n.eff=ess.mcmc(x))
+    }
+    print(t(apply(x$samples, 2, func)), digits=digits)
+  } else {
+    cat("Summary of bootstrap draws\n")
+    func <- function(x){
+      c(mean=mean(x), sdev=sd(x),
+        quantile(x, c(0.025, 0.25, 0.5, 0.75, 0.975)))
+    }
+    print(t(apply(x$samples, 2, func)), digits=digits)
   }
-  print(t(apply(x$samples, 2, func)), digits=digits)
   cat("\nFitted to:\n")
   print(signif(resp, digits+2))
 }

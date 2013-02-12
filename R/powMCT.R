@@ -78,7 +78,7 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
   muMat <- getResp(altModels)
   if(placAdj){
     muMat <- muMat - muMat[1,] # remove placebo column
-    muMat <- muMat[-1,]
+    muMat <- muMat[-1, , drop=FALSE]
   }
   if(nrow(muMat) != nD)
     stop("Incompatible contMat and muMat")

@@ -1,4 +1,8 @@
 to do: 
+- Allow to plot raw data for plot.fitMod (for type = "normal" and
+  addCovars = ~1)
+- Add function to plot sample size against power (or any other summary
+  measure), as old powerMM
 - Add more sample size and power calculation convenience functions for
   sampSizeMCT, powMCT (and others later)
 - simulator function

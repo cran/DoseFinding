@@ -20,7 +20,7 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
   if(!is.null(pvals)){
     tstat <- tstat[pvals < alpha]
   } else {
-    tstat <- tstat[tstat < test$critVal]
+    tstat <- tstat[tstat > test$critVal]
   }
   if(length(tstat) == 0) ## stop if no model significant
     return(list(MCTtest = test, mods = NULL, modcrit = NULL, selMod = NULL, TD = NULL))
@@ -133,6 +133,7 @@ print.MCPMod <- function(x, ...){
       cat(" (alpha = ", xx$alpha, ",", vec[twoSide + 1], 
           sep = "")
     }
+    cat("\n")
   }
   cat("\n")
 
