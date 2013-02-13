@@ -234,9 +234,13 @@ dose <- sort(unique(IBScovars$dose))[-1] # no estimate for placebo
 ## candidate models
 models <- Mods(emax = c(0.5, 1), betaMod=c(1,1), doses=c(0,4))
 ## hand over placebo-adjusted estimates drFit to MCPMod
-MM2 <- MCPMod(dose, drFit, S=vCov, models = models, type = "general",
+MM3 <- MCPMod(dose, drFit, S=vCov, models = models, type = "general",
               placAdj = TRUE, Delta=0.2)
-plot(MM2, plotData="meansCI")
+plot(MM3, plotData="meansCI")
+
+## The first example, but with critical value handed over
+## this is useful, e.g. in simulation studies
+MM4 <- MCPMod(dose, resp, biom, models, Delta=0.5, critV = 2.31)
 }
 
 

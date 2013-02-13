@@ -151,6 +151,12 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
     stop("addCovars argument needs to be of class formula")
   if(class(placAdj) != "logical")
     stop("placAdj argument needs to be of class logical")
+  if(placAdj){
+    if(type == "normal")
+      stop("\"placAdj == TRUE\" only allowed for type = \"general\"")
+    if(any(dose == 0))
+      stop("If placAdj == TRUE there should be no placebo group")
+  }
   if(!missing(data)){ # data handed over in data frame
     if(!is.data.frame(data))
       stop("data argument needs to be a data frame")

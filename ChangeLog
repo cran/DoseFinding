@@ -1,3 +1,15 @@
+2013-02-12 Bjoern Bornkamp (version 0.9-4)
+      * TD, ED Fixed bug for model = linInt and placAdj = TRUE
+      * powMCT Fixed bug for nr(altModels)=1 in case placAdj=TRUE
+      * Mods Add requirement that placebo dose needs to be included
+      * print.bFitMod Do not show n.eff for bootstrap samples
+      * ess.mcmc return NA, if there is just one unique value in chain
+      * fitMod, MCTtest catch situations, where type = "normal" and 
+	placAdj	= TRUE
+      * bFitMod fixed bug for column names of linear model in case of
+	placAdj = TRUE
+      * MCPMod: Fixed sign error in model selection, when critV was specified
+
 2013-01-29 Bjoern Bornkamp (version 0.9-3)
       * fitMod Improvements of efficiency (removed calls to do.call 
 	in optLoc)

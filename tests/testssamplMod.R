@@ -89,3 +89,31 @@ vCov <- vcov(anMod)
 bnds <- matrix(c(0.001, 0.5, 1.5, 10), 2, 2)
 res <- bFitMod(dose, drFit, vCov, model = "sigEmax", nSim = 100, bnds=bnds,
                type = "bootstrap")
+
+########################################################################
+## test dose calculations, when model = "linInt" and placAdj=TRUE
+
+data(IBScovars)
+anovaMod <- lm(resp~factor(dose)+gender, data=IBScovars)
+drFit <- coef(anovaMod)[2:5] # placebo adjusted estimates at doses
+vCov <- vcov(anovaMod)[2:5,2:5]
+dose <- sort(unique(IBScovars$dose))[-1]
+fm <- fitMod(dose, drFit, S=vCov, model = "linInt", type = "general", placAdj=TRUE)
+ED(fm, 0.25)
+ED(fm, 0.5)
+ED(fm, 0.75)
+ED(fm, 0.95)
+TD(fm, 0.2)
+TD(fm, 0.3)
+TD(fm, 0.4)
+
+prior <- list(norm = c(0,1000), norm = c(0,1000),
+              norm = c(0,1000), norm = c(0,1000))
+gsample <- bFitMod(dose, drFit, vCov, model = "linInt", placAdj=TRUE,
+                   start = c(1, 1, 1, 1), nSim = 1000, prior = prior)
+td1 <- TD(gsample, 0.3)
+td2 <- TD(gsample, 0.3, TDtype="d", doses = seq(0,4,length=101))
+ed1 <- ED(gsample, 0.8)
+ed2 <- ED(gsample, 0.8, EDtype="d", doses = seq(0,4,length=101))
+
+
