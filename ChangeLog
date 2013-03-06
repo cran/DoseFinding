@@ -1,3 +1,12 @@
+2013-03-06 Bjoern Bornkamp (version 0.9-5)
+      * targN, powN added function targN to evaluate a target function
+	(e.g. power) for different sample sizes (similar to the old
+	powerMM function). powN is a convenience function for 
+	multiple contrast tests using the power.
+      * sampSizeMCT added convenience function for sample size calculation
+	for multiple contrast tests using the power.
+      * optContr Re-named "weights" argument to "w"
+	
 2013-02-12 Bjoern Bornkamp (version 0.9-4)
       * TD, ED Fixed bug for model = linInt and placAdj = TRUE
       * powMCT Fixed bug for nr(altModels)=1 in case placAdj=TRUE

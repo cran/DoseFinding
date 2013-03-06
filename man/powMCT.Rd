@@ -72,7 +72,8 @@ Statistics}, \bold{16}, 639--656
   Bjoern Bornkamp
 }
 \seealso{
-  \code{\link{MCTtest}}, \code{\link{optContr}}, \code{\link{Mods}}
+  \code{\link{powN}}, \code{\link{sampSizeMCT}}, \code{\link{MCTtest}},
+  \code{\link{optContr}}, \code{\link{Mods}}
 }
 \examples{
 ## look at power under some dose-response alternatives
@@ -87,7 +88,7 @@ fmodels <- Mods(linear = NULL, emax = 25,
 ## plot alternatives
 plot(fmodels)
 ## power for to detect a trend
-contMat <- optContr(fmodels, weights = 1)
+contMat <- optContr(fmodels, w = 1)
 powMCT(contMat, altModels = fmodels, n = 50, alpha = 0.05, sigma = 1)
 
 ## power under the Dunnett test

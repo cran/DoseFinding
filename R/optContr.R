@@ -29,7 +29,7 @@ modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE){
   }
 }
 
-optContr <-  function(models, doses, weights, S, placAdj = FALSE,
+optContr <-  function(models, doses, w, S, placAdj = FALSE,
                       direction = c("increasing", "decreasing")){
   ## calculate optimal contrasts and critical value
   if(!(inherits(models, "Mods")))
@@ -61,16 +61,16 @@ optContr <-  function(models, doses, weights, S, placAdj = FALSE,
   if(any(doses == 0) & placAdj)
     stop("If placAdj == TRUE there should be no placebo group in \"doses\"")
   ## check for n and vCov arguments 
-  if(!xor(missing(weights), missing(S)))
-    stop("Need to specify exactly one of \"weights\" or \"S\"")
-  if(!missing(weights)){
-    if(length(weights) == 1){ # assume equal weights
+  if(!xor(missing(w), missing(S)))
+    stop("Need to specify exactly one of \"w\" or \"S\"")
+  if(!missing(w)){
+    if(length(w) == 1){ # assume equal weights
       S <- Sinv <- diag(length(doses))
     } else {
-      if(length(weights) != length(doses))
-        stop("weights needs to be of length 1 or of the same length as doses")
-      S <- diag(1/weights)
-      Sinv <- diag(weights)
+      if(length(w) != length(doses))
+        stop("w needs to be of length 1 or of the same length as doses")
+      S <- diag(1/w)
+      Sinv <- diag(w)
     }
   } else { 
     if(!is.matrix(S))

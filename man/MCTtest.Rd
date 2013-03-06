@@ -166,7 +166,7 @@ plot(models)
 ## now calculate optimal contrasts for these means
 ## use weights from actual sample sizes
 weights <- as.numeric(table(biom$dose))
-contMat <- optContr(models, weights = weights)
+contMat <- optContr(models, w = weights)
 ## plot contrasts
 plot(contMat)
 ## perform multiple contrast test
