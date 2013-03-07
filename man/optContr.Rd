@@ -20,7 +20,7 @@
   see Pinheiro et al. (2013).
 }
 \usage{
-optContr(models, doses, weights, S, placAdj = FALSE,
+optContr(models, doses, w, S, placAdj = FALSE,
          direction = c("increasing", "decreasing"))
 
 \method{plot}{optContr}(x, superpose = TRUE, xlab = "Dose",
@@ -38,18 +38,20 @@ optContr(models, doses, weights, S, placAdj = FALSE,
     Optional argument. If this argument is missing the doses attribute
     in the \samp{c("Mods", "standMod")} object specified in \samp{models} is used.
   }
-\item{weights, S}{
+\item{w, S}{
   Arguments determining the matrix S used in the formula for the optimal
-  contrasts. Exactly one of \samp{weights} and \samp{S} has
-  to be specified. Note that \samp{weights} and \samp{S} only have to be
+  contrasts. Exactly one of \samp{w} and \samp{S} has
+  to be specified. Note that \samp{w} and \samp{S} only have to be
   specified up to proportionality \cr
   \itemize{
-    \item{weights}{Vector specifying weights for the different doses,
+    \item{w}{
+      Vector specifying weights for the different doses,
       in the formula for calculation of the optimal contrasts. Specifying a weights
-      vector is equivalent to specifying S=diag(1/weights)
+      vector is equivalent to specifying S=diag(1/w)
       (e.g. in a homoscedastic case with unequal sample sizes,
-      \samp{weights} should be proportional to the group sample sizes).}
-    \item{S}{Directly specify a matrix proportional to the covariance
+      \samp{w} should be proportional to the group sample sizes).}
+    \item{S}
+    {Directly specify a matrix proportional to the covariance
     matrix to use.}
   }
 }
@@ -101,7 +103,7 @@ models <- Mods(linear = NULL, emax = 25,
                logistic = c(50, 10.88111), exponential= 85,
                betaMod=rbind(c(0.33,2.31), c(1.39,1.39)),
                doses = doses, addArgs = list(scal = 200))
-contMat <- optContr(models, weights = rep(50,6))
+contMat <- optContr(models, w = rep(50,6))
 plot(contMat)
 
 ## now we would like the "contrasts" for placebo adjusted estimates

@@ -65,6 +65,8 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
     S <- sigma^2*diag(1/n)
     df <- sum(n) - nD
   } else {
+    if(!missing(n)|!missing(sigma))
+      stop("Need to specify exactly one of \"S\" or \"n\" and \"sigma\"")
     if(nrow(S) != ncol(S))
       stop("S needs to be a square matrix")
     if(nrow(S) != nD)
