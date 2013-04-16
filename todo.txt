@@ -1,17 +1,12 @@
 to do: 
-- Allow to plot raw data for plot.fitMod (for type = "normal" and
-  addCovars = ~1)
-- Add function to plot sample size against power (or any other summary
-  measure), as old powerMM
-- Add more sample size and power calculation convenience functions for
-  sampSizeMCT, powMCT (and others later)
-- simulator function
+- Write new plot function for DRMod and MCPMod
+  - based on lattice graphics
+  - Allow to plot raw data for plot.fitMod (for type = "normal" and
+    addCovars = ~1)
+- include simulator function: planMod
 - can only use one linear model in Mods (what if we have two different
   max effects?)!
 - allow for dose finding with active control  
-- write planMod: function to calculate approximate sample size for dose-response
-  modelling (criteria: significance of slope, significance of maximum
-  contrast, probability of identifying the ED50)
 - function to interactively choose guesstimates (use the slider
   function from the TeachingDemos package and wrap the plotModels
   function in it). Input: up to 9 model names, then create (up to 9)

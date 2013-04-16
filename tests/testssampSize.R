@@ -1,3 +1,25 @@
+library(DoseFinding)
+
+S <- diag(rep(1,4))/c(5,6,7,8)
+contrastModels <- Mods(emax=c(0.25,0.01),exponential=c(1.5),
+                       doses=seq(0,1,length=5))
+contMat <- optContr(contrastModels,c(0.25,0.5,0.75,1),S=S,placAdj=TRUE)$contMat
+
+## power scenario 1
+models <- Mods(linear=NULL,emax=c(0.25,0.01),doses=seq(0,1,length=5),
+               placEff=c(0.5,0.6,0.7),maxEff=0.5)
+power1 <- powMCT(contMat, alpha = 0.025, altModels=models, S=S, placAdj = TRUE,
+                 alternative = c("one.sided"),df=Inf, critV = TRUE)
+
+## power scenario 2: placebo Effect smaller for linear model.
+models <- Mods(linear=NULL,emax=c(0.25,0.01),
+               doses=seq(0,1,length=5),placEff=c(0.1,0.6,0.7),maxEff=0.5)
+power2 <- powMCT(contMat, alpha = 0.025, altModels=models, S=S, placAdj = TRUE,
+                 alternative = c("one.sided"),df=Inf, critV = TRUE)
+
+## resulting values:
+any(abs(power1-power2) > 0.05)
+
 ## ## everything commented out here, for time reasons
 
 ## ## first define the target function

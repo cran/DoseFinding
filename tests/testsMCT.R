@@ -146,7 +146,7 @@ dePar <- coef(logReg)
 vCov <- vcov(logReg)
 dose <- sort(unique(dd$x))
 obj <- MCTtest(dose, dePar, S=vCov, models=models, type="general",
-               df=Inf, pVal = T, direction = "increasing")
+               df=Inf, pVal = T)
 dd2 <- dd;dd2$x <- as.factor(dd$x)
 fit <- glm(y~x-1, family = binomial, data=dd2, weights = n)
 mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")
@@ -158,14 +158,14 @@ dd <- getDFdataSet.bin()
 bet <- guesst(0.9*max(dd$x), p=0.8, "betaMod", scal = 1.2*max(dd$x),
               dMax = 0.7*max(dd$x), Maxd = max(dd$x))
 sE <- guesst(c(0.5*max(dd$x), 0.7*max(dd$x)) , p=c(0.5, 0.9), "sigEmax")
-models <- Mods(linear = NULL, betaMod = bet, sigEmax = sE,
+models <- Mods(linear = NULL, betaMod = bet, sigEmax = sE,direction = "decreasing",
                    addArgs=list(scal = 1.2*max(dd$x)), doses = sort(unique(dd$x)))
 logReg <- glm(y~as.factor(x)-1, family=binomial, data=dd, weights = n)
 dePar <- coef(logReg)
 vCov <- vcov(logReg)
 dose <- sort(unique(dd$x))
 obj <- MCTtest(dose, dePar, S=vCov, models=models, type = "general",
-               pVal = T, direction = "decreasing", df=Inf)
+               pVal = TRUE, df=Inf)
 dd2 <- dd;dd2$x <- as.factor(dd$x)
 fit <- glm(y~x-1, family = binomial, data=dd2, weights = n)
 mcp <- glht(fit, linfct = mcp(x = t(obj$contMat)), alternative = "greater")

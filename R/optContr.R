@@ -29,8 +29,7 @@ modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE){
   }
 }
 
-optContr <-  function(models, doses, w, S, placAdj = FALSE,
-                      direction = c("increasing", "decreasing")){
+optContr <-  function(models, doses, w, S, placAdj = FALSE){
   ## calculate optimal contrasts and critical value
   if(!(inherits(models, "Mods")))
     stop("models needs to be of class Mods")
@@ -39,25 +38,7 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE,
   scal <- attr(models, "scal")
   off <- attr(models, "off")
   nodes <- attr(models, "doses")
-  if(inherits(models, "fullMod")){
-    if(!missing(direction))
-      message("argument \"direction\" ignored: Inferred from fullMod object")
-    if(all(attr(models, "maxEff") >= 0))
-      direction <- "increasing"
-    if(all(attr(models, "maxEff") <= 0))
-      direction <- "decreasing"
-    mu <- getResp(models, doses)
-  }
-  direction <- match.arg(direction)
-  if(inherits(models, "standMod")){ ## need to update to fullMod
-    addArgs <- list(scal=attr(models, "scal"), off=attr(models, "off"))
-    models <- do.call("Mods", c(models, list(doses=attr(models, "doses"),
-                                             placEff=0,
-                                             maxEff=1, addArgs=addArgs)))
-    mu <- getResp(models, doses)
-    if(direction[1] == "decreasing")
-      mu <- -mu
-  }
+  mu <- getResp(models, doses)
   if(any(doses == 0) & placAdj)
     stop("If placAdj == TRUE there should be no placebo group in \"doses\"")
   ## check for n and vCov arguments 

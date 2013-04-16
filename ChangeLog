@@ -1,3 +1,23 @@
+2013-04-16 Bjoern Bornkamp (version 0.9-6)
+      * optDesign Re-named "fmodels" argument to "models".
+      * optDesign for solnp if lowbnd and uppbnd are specified now use a
+	feasible starting value (otherwise solnp might get into problems).
+      * plot.DRMod, plot.MCPMod now use lattice graphics
+      * powMCT removed bug in case of placAdj = TRUE (thanks to Tobias
+	Mielke for reporting this)
+      * ess.mcmc minor change to avoid occasional NA's
+      * Mods removed class c("Mods", "standMod"), now there is only a
+	class "Mods", this changes the API of MCTtest, optContr and
+	MCPMod function (direction argument no longer needed, as this info is now 
+	contained in the "Mods" object).
+      * neurodeg added the simulated longitudinal dose-finding data set neurodeg
+      * targN catch incorrect matrix dimension, when in case of only
+	one alternative model
+      * fitModel.bndnls old version used narrowed bnds for 1-dim model, when a
+	starting value was supplied manually (instead of calculated via
+	optGrid); fixed.
+      * MCTtest re-name of p-value column to "adj-p".
+
 2013-03-06 Bjoern Bornkamp (version 0.9-5)
       * targN, powN added function targN to evaluate a target function
 	(e.g. power) for different sample sizes (similar to the old

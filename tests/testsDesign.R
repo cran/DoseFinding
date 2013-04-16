@@ -183,9 +183,9 @@ fm <- Mods(sigEmax = c(4, 5), doses = 0:8,
            placEff=0, maxEff=-1.65)
 fm$sigEmax <- c(0, -1.70, 4, 5)
 ## compare to Figure 1, p. 841
-desSED <- optDesign(fm, 1, doses=doses, designCrit="Dopt", optimizer = "solnp")
-desSEM <- optDesign(fm, 1, doses=doses, Delta = 1.3, designCrit = "TD",
-                    optimizer = "solnp", direction = "decreasing")
+desSED <- optDesign(fm, 1, designCrit="Dopt", optimizer = "solnp")
+desSEM <- optDesign(fm, 1, Delta = 1.3, designCrit = "TD",
+                    optimizer = "solnp")
 
 ## designs underlying Table 2, p. 843 (from an e-mail of Vlad)
 ## I cannot reproduce the displayed efficiencies exactly
@@ -213,7 +213,7 @@ fm[[5]] <- Mods(sigEmax = c(0.74, 1.18), doses=doses, placEff=0, maxEff=-1.65);f
 desD <- desM <- matrix(ncol = 9, nrow = 5)
 for(i in 1:5){
   cc1 <- optDesign(fm[[i]], 1, doses=doses, designCrit = "TD", optimizer = "solnp",
-                   Delta = 1.3, direction = "decreasing")
+                   Delta = 1.3)
   cc2 <- optDesign(fm[[i]], 1, doses=doses, designCrit="Dopt", optimizer = "solnp")
   desM[i,] <- cc1$design
   desD[i,] <- cc2$design
@@ -222,11 +222,10 @@ round(desD, 3)
 round(desM, 2)
 
 ## compare criterion for TD design under model 2
-crDrag <- calcCrit(c(0.49,0.02,0,0.15,0.34,0,0,0,0), fmodels=fm[[2]],
-                   probs=1, doses=doses, designCrit="TD", Delta=1.3,
-                   direction="decreasing")
+crDrag <- calcCrit(c(0.49,0.02,0,0.15,0.34,0,0,0,0), models=fm[[2]],
+                   probs=1, doses=doses, designCrit="TD", Delta=1.3)
 crDF <- optDesign(fm[[i]], 1, doses=doses, designCrit = "TD", optimizer = "solnp",
-                  Delta = 1.3, direction = "decreasing")$crit
+                  Delta = 1.3)$crit
 exp(crDF-crDrag) ## design calculated by P and Dragalin only has 88% efficacy?
 
 
@@ -277,3 +276,15 @@ des2 <- optDesign(fMod, pp, doses, designCrit = "TD", Delta=0.2,
                   optimizer = "solnp", weights = weights)
 des3 <- optDesign(fMod, pp, doses, Delta=0.2, designCrit = "Dopt&TD",
                   optimizer = "solnp", weights = weights)
+
+########################################################################
+#### code using lower and upper bound (previous to version 0.9-6 this
+#### caused problems as the starting value for solnp rep(0.2, 5) was
+#### on the boundary, now a feasible starting values is used
+doses <- seq(0, 1, length=5)
+nold <- rep(0, times=5)
+lowbnd <- c(0.2,0.0,0.0,0.0,0.2)
+uppbnd <- c(1.0,0.3,1.0,1.0,1.0)
+trueModels <- Mods(linear=NULL, doses=doses, placEff = 0, maxEff = 1)
+optDesign(models=trueModels, probs=1, doses=doses, designCrit="Dopt",
+          lowbnd=lowbnd,uppbnd=uppbnd)

@@ -19,28 +19,26 @@
   finite sample size.
 }
 \usage{
-optDesign(fmodels, probs, doses,
+optDesign(models, probs, doses,
           designCrit = c("Dopt", "TD", "Dopt&TD", "userCrit"),
           Delta, standDopt = TRUE, weights,
           nold = rep(0, length(doses)),  n,
-          direction = c("increasing", "decreasing"),
           control=list(), 
           optimizer = c("solnp", "Nelder-Mead", "nlminb", "exact"),
           lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
           userCrit, ...)
 
-\method{plot}{DRdesign}(x, fmodels, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...)
+\method{plot}{DRdesign}(x, models, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...)
 
-calcCrit(design, fmodels, probs, doses, 
+calcCrit(design, models, probs, doses, 
          designCrit = c("Dopt", "TD", "Dopt&TD"),
          Delta, standDopt = TRUE, weights,
-         nold = rep(0, length(doses)), n,
-         direction = c("increasing", "decreasing"))
+         nold = rep(0, length(doses)), n)
 
 rndDesign(design, n, eps = 0.0001)
 }
 \arguments{
-  \item{fmodels}{
+  \item{models}{
     An object of class \samp{c(Mods, fullMod)}, see the
     \code{\link{Mods}} function for details. When an TD optimal design
     should be calculated, the TD needs to exist for all models. If a
@@ -49,11 +47,11 @@ rndDesign(design, n, eps = 0.0001)
 }
   \item{probs}{
    Vector of model probabilities for the models specified in
-   \samp{fmodels}, assumed in the same order as specified in fmodels
+   \samp{models}, assumed in the same order as specified in models
 }
 \item{doses}{
   Optional argument. If this argument is missing the doses attribute
-  in the \samp{c(Mods, fullMod)} object specified in \samp{fmodels} is used.
+  in the \samp{c(Mods, fullMod)} object specified in \samp{models} is used.
 }
   \item{designCrit}{
     Determines which type of design to calculate. "TD&Dopt" uses both
@@ -83,12 +81,6 @@ rndDesign(design, n, eps = 0.0001)
     
     For \samp{optimizer = "exact"} one always needs to specify the total
     sample size via \samp{n}.
-  }
-  \item{direction}{
-    Character determining the trend direction of the data, which one
-    wants to investigate (e.g., if one wants to investigate whether the
-    response gets larger with increasing dose direction should be equal
-    to "increasing"). 
   }
   \item{control}{
    List containing control parameters passed down to numerical
@@ -138,7 +130,7 @@ rndDesign(design, n, eps = 0.0001)
 \item{userCrit}{
   User defined design criterion, should be a function that given a
   vector of allocation weights and the doses returns the criterion
-  function. When specified \samp{fmodels} does not need to be handed
+  function. When specified \samp{models} does not need to be handed
   over.
 
   The first argument of \samp{userCrit} should be the vector
@@ -160,7 +152,7 @@ rndDesign(design, n, eps = 0.0001)
   rows of the matrices need to sum to 1. Alternatively also an object of
   class "DRdesign" can be used for \samp{rndDesign}. Note that there
   should be at least as many design points available as there are
-  parameters in the dose-response models selected in \code{fmodels}
+  parameters in the dose-response models selected in \code{models}
   (otherwise the code returns an NA).
 }
 \item{eps}{
@@ -250,9 +242,9 @@ plot(des, emodel)
 rndDesign(des, n=90) ## using the round function would lead to 91 patients
 
 ## illustrating different optimizers (see Note above for more comparison)
+optDesign(emodel, probs=1, optimizer="Nelder-Mead")
 optDesign(emodel, probs=1, optimizer="nlminb")
-optDesign(emodel, probs=1, optimizer="solnp")
-## optimizer solnp can deal with lower and upper bounds:
+## optimizer solnp (the default) can deal with lower and upper bounds:
 optDesign(emodel, probs=1, designCrit = "TD", Delta=0.5,
           optimizer="solnp", lowbnd = rep(0.2,3))
 ## exact design using enumeration of all possibilites
@@ -285,17 +277,17 @@ plot(desMix, fmods)
 ## illustrate calcCrit function
 ## calculate optimal design for beta model
 doses <- c(0, 0.49, 25.2, 108.07, 150)
-fmodels <- Mods(betaMod = c(0.33, 2.31), doses=doses,
+models <- Mods(betaMod = c(0.33, 2.31), doses=doses,
                 addArgs=list(scal=200),
                 placEff=0, maxEff=0.4)
 probs <- 1
-deswgts <- optDesign(fmodels, probs, designCrit = "Dopt",
+deswgts <- optDesign(models, probs, designCrit = "Dopt",
                      control=list(maxit=1000))
 ## now compare this design to equal allocations on
 ## 0, 10, 25, 50, 100, 150
 doses2 <- c(0, 10, 25, 50, 100, 150)
 design2 <- c(1/6, 1/6, 1/6, 1/6, 1/6, 1/6)
-crit2 <- calcCrit(design2, fmodels, probs, doses2, designCrit = "Dopt")
+crit2 <- calcCrit(design2, models, probs, doses2, designCrit = "Dopt")
 ## ratio of determinants (returned criterion value is on log scale)
 exp(deswgts$crit-crit2)
 
@@ -306,7 +298,7 @@ fMod <- Mods(linear = NULL, doses=doses, placEff=-5, maxEff = 10)
 mu <- as.numeric(getResp(fMod, doses=doses))
 mu <- 1/(1+exp(-mu))
 weights <- mu*(1-mu) 
-des <- optDesign(fMod, 1, doses, weights = weights, optimizer = "solnp") 
+des <- optDesign(fMod, 1, doses, weights = weights) 
 
 ## one can also specify a user defined criterion function
 ## here D-optimality for cubic polynomial

@@ -89,8 +89,7 @@ bFitMod <- function(dose, resp, model, S, placAdj = FALSE,
                              nodes)
   }
   
-  out <- list()
-  out$samples <- res
+  out <- list(samples = res)
   if(model != "linInt"){
     nams <- names(formals(model))[-1]
   } else {
@@ -235,29 +234,29 @@ bFitMod.bootstrap <- function(dose, resp, S, model, placAdj,
 ## to do write print, predict and summary method
 ess.mcmc <- function(series, lag.max = NULL){
   ## initial monotone sequence estimate of effective sample size
-  ## idea:
+  ## Geyer, 1992, Statistical Science, idea:
   ## sum of even and un-even autocorrelations (gamma)
   ## needs to be positive and monotone decreasing
   N <- length(series)
-  if(length(unique(series)) == 1)
+  if (length(unique(series)) == 1) 
     return(NA)
-  if(is.null(lag.max))
-    lag.max <- 10*log10(N)
-  ac <- acf(series, plot=FALSE, lag.max=lag.max)$acf[2:(lag.max+1),,1]
-  fl <- filter(ac[-1], c(1,1))
-  gam <- fl[seq(1,length(fl)-1, by=2)]
+  if (is.null(lag.max)) 
+    lag.max <- 10 * log10(N)
+  ac <- acf(series, plot = FALSE, lag.max = lag.max)$acf[2:(lag.max + 
+                                    1), , 1]
+  gam <- ac[-length(ac)]+ac[-1]
   dgam <- -diff(gam)
-  if(gam[1]<0)
+  if (gam[1] < 0) 
     return(N)
   m1 <- m2 <- lag.max
-  ind1 <- gam<0
-  if(any(ind1))
+  ind1 <- gam < 0
+  if (any(ind1)) 
     m1 <- min(which(ind1))
-  ind2 <- dgam<0
-  if(any(ind2))
+  ind2 <- dgam < 0
+  if (any(ind2)) 
     m2 <- min(which(ind2))
-  ind <- 2*min(m1, m2)+1
-  N/(1+2*sum(ac[1:ind]))
+  ind <- min(2 * min(m1, m2) + 1, lag.max)
+  N/(1 + 2 * sum(ac[1:ind]))
 }
 
 print.bFitMod <- function(x, digits = 3, ...){
@@ -298,26 +297,12 @@ predict.bFitMod <- function(object, predType = c("full-model", "effect-curve"),
   off <- attr(object, "off")
   placAdj <- attr(object, "placAdj")
   if(placAdj){
-    if(model != "linInt"){
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(c(c(0,x), scal, off))))
-    } else {
-      nodes <- c(0,attr(object, "data")$dose)
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(list(c(0,x), nodes))))
-    }
+    nodes <- c(0,attr(object, "data")$dose)
   } else {
-    if(model != "linInt"){
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(c(x, scal, off))))
-    } else {
-      nodes <- attr(object, "data")$dose
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(list(x, nodes))))
+    nodes <- attr(object, "data")$dose    
   }
+  out <- predSamples(object$samples, doseSeq, placAdj, model, scal, off, nodes)
 
-  }
-  out <- t(apply(object$samples, 1, func))
   if(predType == "EffectCurve"){
     out <- out - out[,1]
   }
@@ -327,6 +312,28 @@ predict.bFitMod <- function(object, predType = c("full-model", "effect-curve"),
   }
   colnames(out) <- doseSeq
   out
+}
+
+predSamples <- function(samples, doseSeq, placAdj, model, scal, off, nodes){
+  if(placAdj){
+    if(model != "linInt"){
+      func <- function(x)
+        do.call(model, c(list(doseSeq), as.list(c(c(0,x), scal, off))))
+    } else {
+      func <- function(x)
+        do.call(model, c(list(doseSeq), as.list(list(c(0,x), nodes))))
+    }
+  } else {
+    if(model != "linInt"){
+      func <- function(x)
+        do.call(model, c(list(doseSeq), as.list(c(x, scal, off))))
+    } else {
+      func <- function(x)
+        do.call(model, c(list(doseSeq), as.list(list(x, nodes))))
+    }
+    
+  }
+  out <- t(apply(samples, 1, func))
 }
 
 plot.bFitMod <- function (x, plotType = c("dr-curve", "effect-curve"),
@@ -406,8 +413,7 @@ plot.bFitMod <- function (x, plotType = c("dr-curve", "effect-curve"),
       }
     }
   }
-  res <- list()
-  res$doseSeq <- doseSeq
+  res <- list(doseSeq = doseSeq)
   attr(res, "level") <- level
   attr(res, "ylim") <- ylim
   res$mean <- pred

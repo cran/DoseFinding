@@ -7,12 +7,13 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
                    addCovars = ~1, placAdj = FALSE, selModel = c("AIC", "maxT", "aveAIC"),
                    alpha = 0.025, df = NULL, critV = NULL, doseType = c("TD", "ED"), Delta, p,
                    pVal = TRUE, alternative = c("one.sided", "two.sided"), 
-                   direction = c("increasing", "decreasing"), na.action = na.fail, 
-                   mvtcontrol = mvtnorm.control(), bnds, control = NULL){
+                   na.action = na.fail, mvtcontrol = mvtnorm.control(),
+                   bnds, control = NULL){
 
+  direction <- attr(models, "direction")
   ## first perform multiple contrast test
   test <- MCTtest(dose, resp, data, models, S, type, addCovars, placAdj, alpha, df,
-                  critV, pVal, alternative, direction, na.action, mvtcontrol)
+                  critV, pVal, alternative, na.action, mvtcontrol)
   
   ## now pre-select models based on contrasts
   tstat <- test$tStat
@@ -33,7 +34,7 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
   nams <- gsub("[0-9]", "", names(tstat)) ## remove numbers from model-names
   namsU <- unique(nams)
   
-  mods <- list();z <- 1;crit <- numeric(length(namsU))
+  mods <- vector("list", length(namsU));z <- 1
   if(missing(bnds)){
     if(!missing(data)){
       cal <- as.character(match.call())
@@ -55,12 +56,12 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
       max(tstat[attr(x, "model") == nams])
   }
   for(i in 1:length(namsU)){
-    mods[[namsU[i]]] <- fitMod(dose, resp, data, namsU[i], S, type, addCovars,
-                               placAdj, bnds[[namsU[i]]], df, start=NULL, na.action, control,
-                              addArgs)
-    crit[i] <- modcrit(mods[[namsU[i]]])
+    mods[[i]] <- fitMod(dose, resp, data, namsU[i], S, type, addCovars,
+                        placAdj, bnds[[namsU[i]]], df, start=NULL, na.action, control,
+                        addArgs)
   }
-  names(crit) <- namsU
+  crit <- sapply(mods, modcrit)
+  names(crit) <- names(mods) <- namsU
   attr(crit, "crit") <- selModel
 
   if(selModel %in% c("maxT", "AIC")){
@@ -106,18 +107,17 @@ predict.MCPMod <- function(object,
   lapply(object$mods, function(x) predict(x, predType, newdata, doseSeq, se.fit))
 }
 
-print.MCPMod <- function(x, ...){
+print.MCPMod <- function(x, digits=3, eps=1e-03, ...){
   cat("MCPMod\n")
 
   xx <- x$MCTtest
-  digits <- 4
   cat("\nMultiple Contrast Test:\n")
   ord <- rev(order(xx$tStat))
   if (!any(is.null(attr(xx$tStat, "pVal")))) {
     pval <- format.pval(attr(xx$tStat, "pVal"), digits = digits, 
-                        eps = 1e-04)
+                        eps = eps)
     dfrm <- data.frame(round(xx$tStat, digits)[ord], pval[ord])
-    names(dfrm) <- c("t-Stat", "p-value")
+    names(dfrm) <- c("t-Stat", "adj-p")
   }
   else {
     dfrm <- data.frame(round(xx$tStat, digits)[ord])
@@ -169,7 +169,7 @@ print.MCPMod <- function(x, ...){
 
 summary.MCPMod <- function(object, ...){
   class(object) <- "summary.MCPMod"
-  print(object, digits = 4)
+  print(object, digits = 3)
 }
 
 print.summary.MCPMod <- function(x, ...){
@@ -222,12 +222,10 @@ print.summary.MCPMod <- function(x, ...){
   print(round(x$doseEst, 4))
 }
 
-plot.MCPMod <- function(x, ...){
-  op <- par()$mfrow
-  nM <- length(x$mods)
-  par(mfrow=c(1,nM))
-  sapply(x$mods, function(x) {
-    plot(x, main=attr(x, "model"), ...)
-  })
-  par(mfrow = op)
+
+plot.MCPMod <- function(x, CI = FALSE, level = 0.95,
+                        plotData = c("means", "meansCI", "raw", "none"),
+                        plotGrid = TRUE, colMn = 1, colFit = 1, ...){
+  plotFunc(x, CI, level, plotData, plotGrid, colMn, colFit, ...)
 }
+

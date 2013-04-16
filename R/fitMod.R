@@ -184,7 +184,6 @@ fitMod.raw <- function(dose, resp, data, model, S, type,
                            start, scal, weights, placAdj, clinS)
   }
   ## now need to post-process
-  res <- list()
   resid <- fit$resid
   if(type == "normal" & !covarsUsed) # fitted on means, need to recover full RSS
     resid <- fit$resid + S2
@@ -327,13 +326,19 @@ fitModel.bndnls <- function(dataFit, model, addCovars, type, bnds, control,
     opt <- optGrid(model, dim, bnds, ctrl$gridSize, dose, type,
                    qrX, resXY, clinS, placAdj, scal)
     strt <- opt$coefs;resid <- opt$resid
+    if(dim == 1){ ## refine bounds
+      N <- ctrl$gridSize$dim1
+      dif <- (bnds[2]-bnds[1])/N # distance between grid points
+      bnds[1] <- max(c(start-1.1*dif), bnds[1])
+      bnds[2] <- min(c(start+1.1*dif), bnds[2])
+    }
   } else {
     strt <- start;resid <- Inf
   }
   ## start local optimizer at starting value
   opt2 <- optLoc(model, dim, bnds, dose, qrX, resXY, strt, scal,
-                 placAdj, type, ctrl$optimizetol, ctrl$gridSize$dim1,
-                 ctrl$nlminbcontrol, clinS)
+                 placAdj, type, ctrl$optimizetol, ctrl$nlminbcontrol,
+                 clinS)
   ## recover names
   nam1 <- switch(model, emax = c("eMax", "ed50"),
                  sigEmax = c("eMax", "ed50", "h"),
@@ -433,7 +438,7 @@ getStandDR <- function(model, x, nl, scal){
 }
 
 optLoc <- function(model, dim, bnds, dose, qrX, resXY, start, scal,
-                   placAdj, type, tol, N, nlminbcontrol, clinS){
+                   placAdj, type, tol, nlminbcontrol, clinS){
   ## function to calculate ls residuals (to be optimized)
   optFunc <- function(nl, x, qrX, resXY, model, scal, clinS){
     Z <- getStandDR(model, x, nl, scal)
@@ -452,10 +457,7 @@ optLoc <- function(model, dim, bnds, dose, qrX, resXY, start, scal,
   }
 
   if(dim == 1){ # one-dimensional models
-    dif <- (bnds[2]-bnds[1])/N # distance between grid points
-    lbnd <- max(c(start-1.1*dif), bnds[1])
-    ubnd <- min(c(start+1.1*dif), bnds[2])
-    optobj <- optimize(optFunc, c(lbnd, ubnd), x=dose, qrX=qrX, resXY=resXY,
+    optobj <- optimize(optFunc, c(bnds[1], bnds[2]), x=dose, qrX=qrX, resXY=resXY,
                        model = model, tol=tol, clinS=clinS, scal = scal)
     coefs <- optobj$minimum
     RSS <- optobj$objective
@@ -497,7 +499,7 @@ sepCoef <- function(object){
   return(list(DRpars=DRpars, covarPars=covarPars))
 }
 
-print.DRMod <- function(x, digits = 5, ...){
+print.DRMod <- function(x, digits = 4, ...){
   if (length(x) == 1) {
     cat("NA\n")
     return()
@@ -528,12 +530,12 @@ print.DRMod <- function(x, digits = 5, ...){
   }
 }
 
-summary.DRMod <- function(object, digits = 4, ...){
+summary.DRMod <- function(object, digits = 3, ...){
   class(object) <- "summary.DRMod"
   print(object, digits = digits)
 }
 
-print.summary.DRMod <- function(x, digits = 4, data, ...){
+print.summary.DRMod <- function(x, digits = 3, data, ...){
   if(length(x) == 1){
     cat("NA\n")
     return()
@@ -870,29 +872,152 @@ predict.DRMod <- function(object, predType = c("full-model", "ls-means", "effect
   }
 }
 
-plot.DRMod <- function(x, CI = FALSE, level = 0.95,
-                       plotData = c("means", "meansCI", "none"),
-                       lenDose = 201, ...){
-  ## arguments passed to plot
-  pArgs <- list(...)
-  ## Extract relevant information from object
-  scal <- attr(x, "addArgs")$scal
-  off <- attr(x, "addArgs")$off
-  model <- attr(x, "model")
-  addCovars <- attr(x, "addCovars")
-  covarsUsed <- addCovars != ~1
-  xlev <- attr(x, "xlev")
-  doseNam <- attr(x, "doseRespNam")[1]
-  respNam <- attr(x, "doseRespNam")[2]
-  data <- attr(x, "data")
-  type <- attr(x, "type")
-  placAdj <- attr(x, "placAdj")
-  doseSeq <- seq(0, max(data[[doseNam]]), length=lenDose)
+## plot.DRMod <- function(x, CI = FALSE, level = 0.95,
+##                        plotData = c("means", "meansCI", "none"),
+##                        lenDose = 201, ...){
+##   ## arguments passed to plot
+##   pArgs <- list(...)
+##   ## Extract relevant information from object
+##   scal <- attr(x, "addArgs")$scal
+##   off <- attr(x, "addArgs")$off
+##   model <- attr(x, "model")
+##   addCovars <- attr(x, "addCovars")
+##   covarsUsed <- addCovars != ~1
+##   xlev <- attr(x, "xlev")
+##   doseNam <- attr(x, "doseRespNam")[1]
+##   respNam <- attr(x, "doseRespNam")[2]
+##   data <- attr(x, "data")
+##   type <- attr(x, "type")
+##   placAdj <- attr(x, "placAdj")
+##   doseSeq <- seq(0, max(data[[doseNam]]), length=lenDose)
 
+##   plotData <- match.arg(plotData)
+##   if(type == "normal"){
+##     ## first produce estimates for ANOVA type model
+##     if(plotData %in% c("means", "meansCI")){
+##       data$doseFac <- as.factor(data[[doseNam]])
+##       form <- as.formula(paste(respNam, "~ doseFac +", addCovars[2]))
+##       fit <- lm(form, data=data)
+##       ## build design matrix for prediction
+##       dose <- sort(unique(data[[doseNam]]))
+##       preddat <- data.frame(doseFac=factor(dose))
+##       m <- model.matrix(~doseFac, data=preddat)
+##       if(covarsUsed){
+##         ## get sas type ls-means
+##         nams <- all.vars(addCovars)
+##         out <- list()
+##         z <- 1
+##         for(covar in nams){
+##           varb <- data[,covar]
+##           if(is.numeric(varb)){
+##             out[[z]] <- mean(varb)
+##           } else if(is.factor(varb)){
+##             k <- nlevels(varb)
+##             out[[z]] <- rep(1/k, k-1)
+##           }
+##           z <- z+1
+##         }
+##         out <- do.call("c", out)
+##         m0 <- matrix(rep(out, length(dose)), byrow=TRUE, nrow = length(dose))
+##         m <- cbind(m, m0)
+##       }
+##       mns <- as.numeric(m%*%coef(fit))
+##       lbndm <- ubndm <- rep(NA, length(mns))
+##       if(plotData == "meansCI"){
+##         sdv <- sqrt(diag(m%*%vcov(fit)%*%t(m)))
+##         quant <- qt(1 - (1 - level)/2, df=x$df)
+##         lbndm <- mns-quant*sdv
+##         ubndm <- mns+quant*sdv
+##       }
+##     }
+##   }
+##   if(type == "general"){
+##     ## extract ANOVA estimates
+##     if(plotData %in% c("means", "meansCI")){
+##       dose <- data[[doseNam]]
+##       mns <- data[[respNam]]
+##       sdv <- sqrt(diag(data$S))
+##       lbndm <- ubndm <- rep(NA, length(dose))
+##       if(plotData == "meansCI"){
+##         quant <- qnorm(1 - (1 - level)/2)
+##         lbndm <- mns-quant*sdv
+##         ubndm <- mns+quant*sdv
+##       }
+##     }
+##   }
+##   ## curve produced (use "ls-means" apart when data are fitted on placAdj scale)
+##   predtype <- ifelse(placAdj, "effect-curve", "ls-means")
+##   predmn <- predict(x, doseSeq = doseSeq, predType = predtype, se.fit = CI)
+##   lbnd <- ubnd <- rep(NA, length(doseSeq))
+##   if(CI){
+##     quant <- qt(1 - (1 - level)/2, df=x$df)
+##     lbnd <- predmn$fit-quant*predmn$se.fit
+##     ubnd <- predmn$fit+quant*predmn$se.fit
+##     predmn <- predmn$fit
+##   }
+##   ## determine plotting range
+##   if(plotData %in% c("means", "meansCI")){
+##     rng <- range(lbndm, ubndm, mns, predmn, ubnd, lbnd, na.rm=TRUE)
+##   } else {
+##     rng <- range(predmn, ubnd, lbnd, na.rm=TRUE)    
+##   }
+##   dff <- diff(rng)
+##   ylim <- c(rng[1] - 0.02 * dff, rng[2] + 0.02 * dff)
+##   ## default title
+##   main <- "Dose-Response Curve"
+##   main2 <- ifelse(placAdj, "(placebo-adjusted)", "(ls-means)")
+##   main <- paste(main, main2)
+##   ## plot
+##   callList <- list(doseSeq, predmn, type = "l", col = "white",
+##                    xlab = doseNam, ylim = ylim,
+##                    ylab = respNam, main = main)
+##   callList[names(pArgs)] <- pArgs
+##   do.call("plot", callList)
+##   grid()
+##   if(plotData %in% c("means", "meansCI")){
+##     points(dose, mns, pch = 19, cex = 0.75)
+##     if(plotData == "meansCI"){
+##       for(i in 1:length(dose)){
+##         lines(c(dose[i],dose[i]), c(lbndm[i], ubndm[i]), lty=2)
+##       }
+##     }
+##   }
+##   lines(doseSeq, predmn, lwd=1.5)
+##   lines(doseSeq, ubnd, lwd=1.5)
+##   lines(doseSeq, lbnd, lwd=1.5)
+## }
+
+plot.DRMod <- function(x, CI = FALSE, level = 0.95,
+                       plotData = c("means", "meansCI", "raw", "none"),
+                       plotGrid = TRUE, colMn = 1, colFit = 1, ...){
+  plotFunc(x, CI, level, plotData, plotGrid, colMn, colFit, ...)
+}
+
+plotFunc <- function(x, CI = FALSE, level = 0.95,
+                     plotData = c("means", "meansCI", "raw", "none"),
+                     plotGrid = TRUE, colMn = 1, colFit = 1, ...){
+  ## Extract relevant information from object
+  if(class(x) == "DRMod")
+    obj <- x
+  if(class(x) == "MCPMod")
+    obj <- x$mods[[1]]
+  addCovars <- attr(obj, "addCovars")
+  covarsUsed <- addCovars != ~1
+  xlev <- attr(obj, "xlev")
+  doseNam <- attr(obj, "doseRespNam")[1]
+  respNam <- attr(obj, "doseRespNam")[2]
+  data <- attr(obj, "data")
+  type <- attr(obj, "type")
+  placAdj <- attr(obj, "placAdj")
   plotData <- match.arg(plotData)
+  if(type == "general" & plotData == "raw")
+    stop("plotData =\"raw\" only allowed if fitted DRmod object is of type = \"normal\"")
+
+  ## save anova info in pList list
+  pList <- as.list(data)
   if(type == "normal"){
-    ## first produce estimates for ANOVA type model
     if(plotData %in% c("means", "meansCI")){
+      ## produce estimates for ANOVA type model
       data$doseFac <- as.factor(data[[doseNam]])
       form <- as.formula(paste(respNam, "~ doseFac +", addCovars[2]))
       fit <- lm(form, data=data)
@@ -919,71 +1044,101 @@ plot.DRMod <- function(x, CI = FALSE, level = 0.95,
         m0 <- matrix(rep(out, length(dose)), byrow=TRUE, nrow = length(dose))
         m <- cbind(m, m0)
       }
-      mns <- as.numeric(m%*%coef(fit))
-      lbndm <- ubndm <- rep(NA, length(mns))
+      pList$dos <- sort(unique(data[[doseNam]]))
+      pList$mns <- as.numeric(m%*%coef(fit))
       if(plotData == "meansCI"){
         sdv <- sqrt(diag(m%*%vcov(fit)%*%t(m)))
-        quant <- qt(1 - (1 - level)/2, df=x$df)
-        lbndm <- mns-quant*sdv
-        ubndm <- mns+quant*sdv
+        quant <- qt(1 - (1 - level)/2, df=fit$df)
+        pList$lbndm <- pList$mns-quant*sdv
+        pList$ubndm <- pList$mns+quant*sdv
       }
     }
   }
   if(type == "general"){
     ## extract ANOVA estimates
     if(plotData %in% c("means", "meansCI")){
-      dose <- data[[doseNam]]
-      mns <- data[[respNam]]
+      pList$dos <- data[[doseNam]]
+      pList$mns <- data[[respNam]]
       sdv <- sqrt(diag(data$S))
-      lbndm <- ubndm <- rep(NA, length(dose))
       if(plotData == "meansCI"){
         quant <- qnorm(1 - (1 - level)/2)
-        lbndm <- mns-quant*sdv
-        ubndm <- mns+quant*sdv
+        pList$lbndm <- pList$mns-quant*sdv
+        pList$ubndm <- pList$mns+quant*sdv
       }
     }
   }
-  ## curve produced (use "ls-means" apart when data are fitted on placAdj scale)
+  
+  doseSeq <- seq(0, max(data[[doseNam]]), length=201)
+  ## create data frame for plotting dr-functions
   predtype <- ifelse(placAdj, "effect-curve", "ls-means")
-  predmn <- predict(x, doseSeq = doseSeq, predType = predtype, se.fit = CI)
-  lbnd <- ubnd <- rep(NA, length(doseSeq))
-  if(CI){
-    quant <- qt(1 - (1 - level)/2, df=x$df)
-    lbnd <- predmn$fit-quant*predmn$se.fit
-    ubnd <- predmn$fit+quant*predmn$se.fit
-    predmn <- predmn$fit
-  }
-  ## determine plotting range
-  if(plotData %in% c("means", "meansCI")){
-    rng <- range(lbndm, ubndm, mns, predmn, ubnd, lbnd, na.rm=TRUE)
-  } else {
-    rng <- range(predmn, ubnd, lbnd, na.rm=TRUE)    
-  }
-  dff <- diff(rng)
-  ylim <- c(rng[1] - 0.02 * dff, rng[2] + 0.02 * dff)
-  ## default title
-  main <- "Dose-Response Curve"
-  main2 <- ifelse(placAdj, "(placebo-adjusted)", "(ls-means)")
-  main <- paste(main, main2)
-  ## plot
-  callList <- list(doseSeq, predmn, type = "l", col = "white",
-                   xlab = doseNam, ylim = ylim,
-                   ylab = respNam, main = main)
-  callList[names(pArgs)] <- pArgs
-  do.call("plot", callList)
-  grid()
-  if(plotData %in% c("means", "meansCI")){
-    points(dose, mns, pch = 19, cex = 0.75)
-    if(plotData == "meansCI"){
-      for(i in 1:length(dose)){
-        lines(c(dose[i],dose[i]), c(lbndm[i], ubndm[i]), lty=2)
+  if(class(x) == "MCPMod"){
+    nmods <- length(x$mods)
+    lst <- vector(mode = "list", nmods)
+    for(i in 1:nmods){
+      pred <- predict(x$mods[[i]], predType = predtype, doseSeq = doseSeq, se.fit = CI)
+      lbnd <- ubnd <- rep(NA, length(doseSeq))
+      if(CI){
+        quant <- qt(1 - (1 - level)/2, df=x$mods[[i]]$df)
+        lbnd <- pred$fit-quant*pred$se.fit
+        ubnd <- pred$fit+quant*pred$se.fit
+        pred <- pred$fit
       }
+      lst[[i]] <- data.frame(rep(doseSeq, 3), c(pred, lbnd, ubnd),
+                             rep(c("pred", "LB", "UB"), each=length(doseSeq)),
+                             attr(x$mods[[i]], "model"))
     }
+    plotdf <- do.call("rbind", lst)
   }
-  lines(doseSeq, predmn, lwd=1.5)
-  lines(doseSeq, ubnd, lwd=1.5)
-  lines(doseSeq, lbnd, lwd=1.5)
+  if(class(x) == "DRMod"){
+    pred <- predict(x, predType = predtype, doseSeq = doseSeq, se.fit = CI)
+    lbnd <- ubnd <- rep(NA, length(doseSeq))
+    if(CI){
+      quant <- qt(1 - (1 - level)/2, df=x$df)
+      lbnd <- pred$fit-quant*pred$se.fit
+      ubnd <- pred$fit+quant*pred$se.fit
+      pred <- pred$fit
+    }
+    plotdf <- data.frame(rep(doseSeq, 3), c(pred, lbnd, ubnd),
+                         rep(c("pred", "LB", "UB"), each=length(doseSeq)),
+                         attr(x, "model"))
+  }
+  names(plotdf) <- c(doseNam, respNam, "group", "model")
+  
+  ## calculate plotting range
+  rng <- switch(plotData,
+                raw = range(data[[respNam]]),
+                none = range(plotdf[[respNam]], na.rm=TRUE),
+                range(plotdf[[respNam]], pList$lbndm, pList$ubndm,
+                      na.rm=TRUE))
+  dff <- diff(rng)
+  ylim <- c(rng[1] - 0.05 * dff, rng[2] + 0.05 * dff)
+  
+  ## produce plot
+  form <- as.formula(paste(respNam, "~", doseNam, "|model", sep=""))
+  print(
+    xyplot(form, groups = plotdf$group, data = plotdf, pList=pList, ...,
+           ylim = ylim, panel = function(x, y, ..., pList){
+             if(plotGrid)
+               panel.grid(h = -1, v = -1, col = "lightgrey", lty = 2)
+             if(plotData != "none"){
+               if(type == "normal" & plotData == "raw"){
+                 lpoints(data[[doseNam]], data[[respNam]], col = "grey45", pch=19)
+               } else {
+                 lpoints(pList$dos, pList$mns, pch=19, col = colMn)
+                 if(plotData == "meansCI"){
+                   quant <- qnorm(1 - (1 - level)/2)
+                   for(i in 1:length(pList$dos)){
+                     llines(rep(pList$dos[i], 2),
+                            c(pList$lbndm[i], pList$ubndm[i]),
+                            lty=2, col = colMn, ...)
+                   }
+                 }
+               }
+             }
+             panel.xyplot(x, y, col=colFit, type="l", ...)
+           }))
 }
+
 
 logLik.DRMod <- function(object, ...){
 

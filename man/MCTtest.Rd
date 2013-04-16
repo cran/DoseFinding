@@ -6,7 +6,10 @@
 \description{
   This function performs a multiple contrast test. The contrasts are
   either directly specified in \samp{contMat} or optimal contrasts
-  derived from the \samp{models} argument.
+  derived from the \samp{models} argument. The directionality of the
+  data (i.e. whether an increase or decrease in the response variable is
+  beneficial is inferred from the \samp{models} object, see
+  \code{\link{Mods}}).
 
   For \samp{type = "normal"} an ANCOVA model based on a homoscedastic
   normality assumption (with additive covariates specified in
@@ -21,8 +24,7 @@
 MCTtest(dose, resp, data, models, S, type = c("normal", "general"),
         addCovars = ~1, placAdj = FALSE, alpha = 0.025, df = NULL,
         critV = NULL, pVal = TRUE,
-        alternative = c("one.sided", "two.sided"),
-        direction = c("increasing", "decreasing"), na.action = na.fail,
+        alternative = c("one.sided", "two.sided"), na.action = na.fail,
         mvtcontrol = mvtnorm.control(), contMat = NULL)
 
 }
@@ -37,7 +39,7 @@ MCTtest(dose, resp, data, models, S, type = c("normal", "general"),
     \samp{resp} are variables referenced from data (and no vectors)
   }
   \item{models}{
-    An object of class \samp{c(Mods, standMod)}, see \code{\link{Mods}} for
+    An object of class \samp{Mods}, see \code{\link{Mods}} for
     details
   }
   \item{S}{
@@ -79,14 +81,6 @@ MCTtest(dose, resp, data, models, S, type = c("normal", "general"),
 \item{alternative}{
   Character determining the alternative for the multiple contrast
   trend test. 
-}
-\item{direction}{
-  Character determining the trend direction of the data, which one
-  wants to investigate (e.g., if one wants to investigate whether the
-  response gets larger with increasing dose direction should be equal
-  to "increasing"). When the contrast matrix is handed over via the
-  'contMat' argument the direction argument is ignored (the direction is
-  implicit in the contrast matrix).
 }
 \item{na.action}{
   A function which indicates what should happen when

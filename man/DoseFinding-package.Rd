@@ -12,14 +12,14 @@
   (\code{MCTtest}), fitting non-linear dose-response models
   (\code{fitMod}), a combination of testing and dose-response modelling
   (\code{MCPMod}), and calculating optimal designs (\code{optDesign}),
-  both for normal and general endpoints.
+  both for normal and general response variable.
 }
 \details{
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-5\cr
-Date: \tab 2013-03-06\cr
+Version: \tab 0.9-6\cr
+Date: \tab 2013-04-16\cr
 License: \tab GPL-3
 }
 The main functions are:\cr
@@ -74,8 +74,8 @@ data(IBScovars)
 ## define candidate dose-response shapes
 models <- Mods(linear = NULL, emax = 0.2, quadratic = -0.17,
                doses = c(0, 1, 2, 3, 4))
-## plot model shapes (need to specify placEff and maxEff)
-plot(models, placEff = 0, maxEff = 1)
+## plot models
+plot(models)
 ## perform multiple contrast test
 test <- MCTtest(dose, resp, IBScovars, models=models,
                 addCovars = ~ gender)
