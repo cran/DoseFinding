@@ -87,7 +87,8 @@ checkEntries <- function(modL, doses){
   })
 }
 
-Mods <- function(..., doses, placEff, maxEff, addArgs = NULL){
+Mods <- function(..., doses, placEff = 0, maxEff, direction = c("increasing", "decreasing"),
+                 addArgs = NULL){
   if(missing(doses))
     stop("Need to specify dose levels")
   doses <- sort(doses)
@@ -110,17 +111,16 @@ Mods <- function(..., doses, placEff, maxEff, addArgs = NULL){
     stop("\"scal\" parameter needs to be positive")    
   if(lst$off < 0)
     stop("\"off\" parameter needs to be positive")    
+
+  direction <- match.arg(direction)
+  if(missing(maxEff))
+    maxEff <- ifelse(direction == "increasing", 1, -1)
   
-  if(xor(missing(placEff), missing(maxEff)))
-    stop("Both \"placEff\" and \"maxEff\" need to be specified")
-  if(!missing(placEff) & !missing(maxEff)){ # only standardized model list
-    modL <- fullMod(modL, doses, placEff, maxEff, lst$scal, lst$off)
-    attr(modL, "placEff") <- placEff
-    attr(modL, "maxEff") <- maxEff
-    class(modL) <- c("Mods", "fullMod")
-  } else {
-    class(modL) <- c("Mods", "standMod")
-  }
+  modL <- fullMod(modL, doses, placEff, maxEff, lst$scal, lst$off)
+  attr(modL, "placEff") <- placEff
+  attr(modL, "maxEff") <- maxEff
+  attr(modL, "direction") <- ifelse(maxEff > 0, "increasing", "decreasing")
+  class(modL) <- "Mods"
   attr(modL, "doses") <- doses
   attr(modL, "scal") <- lst$scal
   attr(modL, "off") <- lst$off
@@ -131,7 +131,7 @@ Mods <- function(..., doses, placEff, maxEff, addArgs = NULL){
 ## list with all model parameters.
 fullMod <-  function(models, doses, placEff, maxEff, scal, off){
   ## check for valid placEff and maxEff arguments
-  nM <- modCount(models)
+  nM <- modCount(models, fullMod = FALSE)
   if(length(placEff) > 1){
     if(length(placEff) != nM)
       stop("placEff needs to be of length 1 or length equal to the number of models")
@@ -148,7 +148,7 @@ fullMod <-  function(models, doses, placEff, maxEff, scal, off){
   
   ## calculate linear parameters of models (with standardized
   ## parameters as in models), to achieve the specified placEff and maxEff
-  complMod <- list()
+  complMod <- vector("list", length=length(models))
   i <- 0;z <- 1
   for(nm in names(models)){
     pars <- models[[nm]]
@@ -199,38 +199,28 @@ fullMod <-  function(models, doses, placEff, maxEff, scal, off){
   complMod
 }
 
-plot.Mods <- function(x, placEff = 0, maxEff = 1, nPoints = 200,
-                      superpose = FALSE, xlab = "Dose", ylab = "Model means",
-                      modNams = NULL, plotTD = FALSE, Delta, ...){
-  if(class(x)[2] == "fullMod"){ ## over-write specified values
-    placEff <- attr(x, "placEff")
-    maxEff <- attr(x, "maxEff")
-  } else { ## for type == standMod need to create object of type fullmod
-    addArgs <- list(scal=attr(x, "scal"), off=attr(x, "off"))
-    x <- do.call("Mods", c(x, list(doses=attr(x, "doses"), placEff=placEff,
-                                   maxEff=maxEff, addArgs=addArgs)))
-  }
-  plotModels(x, placEff = placEff, maxEff = maxEff, nPoints = nPoints,
-             superpose = superpose, xlab = xlab, ylab = ylab,
-             modNams = modNams, plotTD = plotTD, Delta, ...)
+plot.Mods <- function(x, nPoints = 200, superpose = FALSE, xlab = "Dose",
+                      ylab = "Model means", modNams = NULL, plotTD = FALSE, Delta, ...){
+  plotModels(x, nPoints = nPoints, superpose = superpose, xlab = xlab,
+             ylab = ylab, modNams = modNams, plotTD = plotTD, Delta, ...)
 }
 
-plotModels <- function(models, placEff = 0, maxEff = 1, nPoints = 200,
-                       superpose = FALSE, xlab = "Dose", ylab = "Model means",
+plotModels <- function(models, nPoints = 200, superpose = FALSE,
+                       xlab = "Dose", ylab = "Model means",
                        modNams = NULL, plotTD = FALSE, Delta, ...){
-  ## models is always assumed to be of class Mods with type fullMod
+  ## models is always assumed to be of class Mods 
   doses <- nodes <- attr(models, "doses")
+  placEff <- attr(models, "placEff")
+  maxEff <- attr(models, "maxEff")
   off <- attr(models, "off")
   scal <- attr(models, "scal")
   if(!inherits(models, "Mods"))
     stop("\"models\" needs to be of class Mods")
-  placEff <- attr(models, "placEff")
-  maxEff <- attr(models, "maxEff")
   nM <- modCount(models, fullMod = TRUE)
 
   doseSeq <- sort(union(seq(min(doses), max(doses), length = nPoints), 
                         doses))
-  resp <- calcResp(models, doseSeq, fullMod = TRUE, off, scal, nodes)
+  resp <- calcResp(models, doseSeq, off, scal, nodes)
   pdos <- NULL
   if(plotTD){ # also include TD in plot
     if(missing(Delta))
@@ -451,13 +441,13 @@ calcTD <- function(model, pars, Delta, TDtype = c("continuous", "discrete"),
 
 TD <- function(object, Delta, TDtype = c("continuous", "discrete"),
                direction = c("increasing", "decreasing"), doses){
-  ## calculate target doses for fullMod or DRMod object, return in a numeric
+  ## calculate target doses for Mods or DRMod object, return in a numeric
   if(missing(Delta))
     stop("need \"Delta\" to calculate TD")
   if(Delta <= 0)
     stop("\"Delta\" needs to be > 0")
   modNams <- tds <- NULL
-  if(inherits(object, "fullMod")){
+  if(inherits(object, "Mods")){
     off <- attr(object, "off")
     scal <- attr(object, "scal")
     nodes <- attr(object, "doses")
@@ -680,7 +670,7 @@ calcED <- function(model, pars, p, maxD, EDtype = c("continuous", "discrete"),
       resp <- abs(do.call(model, c(list(doses), as.list(pars)))-resp0)
     } else {
       resp0 <- do.call(model, c(list(0), as.list(list(pars, nodes))))
-      resp <- do.call(model, c(list(doses), as.list(list(pars, nodes))))-resp0
+      resp <- abs(do.call(model, c(list(doses), as.list(list(pars, nodes))))-resp0)
     }
     ## calculate maximum response
     if(model %in% c("betaMod", "quadratic")){
@@ -704,13 +694,13 @@ calcED <- function(model, pars, p, maxD, EDtype = c("continuous", "discrete"),
 
 
 ED <- function(object, p, EDtype = c("continuous", "discrete"), doses){
-  ## calculate target doses for fullMod or DRMod object, return in a numeric
+  ## calculate target doses for Mods or DRMod object, return in a numeric
   if(missing(p))
     stop("need \"p\" to calculate ED")
   if(p <= 0 | p >= 1)
     stop("\"p\" needs to be in (0,1)")
   modNams <- eds <- NULL
-  if(inherits(object, "fullMod")){
+  if(inherits(object, "Mods")){
     off <- attr(object, "off")
     scal <- attr(object, "scal")
     nodes <- attr(object, "doses")
@@ -777,9 +767,9 @@ ED <- function(object, p, EDtype = c("continuous", "discrete"), doses){
 calcEDgrad <- function(model, pars, maxD, p, off, scal, nodes){
   cf <- pars
   if(model == "linear")
-    return(c(0,0,0))
+    return(c(0,0))
   if(model == "linlog"){
-    return(c(0,0,0))
+    return(c(0,0))
   }
   if(model == "emax"){
     p <- (1-p)*p*maxD^2/(p*maxD-maxD-cf[3])^2
@@ -806,14 +796,11 @@ calcEDgrad <- function(model, pars, maxD, p, off, scal, nodes){
 }
 
 
-calcResp <- function(models, doses, fullMod = FALSE, off, scal, nodes){
+calcResp <- function(models, doses, off, scal, nodes){
   ## generate response vectors for models and guesstimates in "models"
-  ## models - candidate model list (can contain user-defined models), or of class fullMod
-  ## fullMod - if FALSE it is assumed only guesstimates are given, if TRUE
-  ##       it is assumed all parameters are given in the models list
+  ## models - candidate model list of class Mods
   nModels <- length(models)             # number of model elements
-  val <- list()
-  parList <- list()
+  parList <- val <- vector("list", modCount(models, fullMod = TRUE))
   k <- 1
   nams <- character()
   for(nm in names(models)) {
@@ -821,111 +808,37 @@ calcResp <- function(models, doses, fullMod = FALSE, off, scal, nodes){
     if (!is.null(pars) && !is.numeric(pars)) {
       stop("elements of \"models\" must be NULL or numeric")
     }
-    if(!fullMod) {
-      if (is.element(nm, c("linear","linlog","quadratic", "emax", "exponential"))) {
-        ## all others have single parameter
-        if (is.matrix(pars)) {
-          stop("For standardized ", nm,
-               " models element cannot be matrix")
-        }
-        nmod <- length(pars)
-        if (nmod > 1) {                 # multiple models
-          ind <- 1:nmod
-          nams <- c(nams, paste(nm, ind, sep = ""))
-          for(j in 1:nmod) {
-            if (nm == "linlog") pars1 <- c(0, 1, off)
-            else pars1 <- c(0, 1, pars[j])
-            val[[k]] <- do.call(nm, c(list(doses), as.list(pars1)))
-            parList[[k]] <- pars1
-            k <- k + 1
-          }
-        } else {                        # single model
-          nams <- c(nams, nm)
-          if (nm == "quadratic") names(pars) <- NULL
-          if (nm == "linlog") pars <- c(0, 1, off)
-          else pars <- c(0, 1, pars)
-          val[[k]] <- do.call(nm, c(list(doses), as.list(pars)))
-          parList[[k]] <- pars
-          k <- k + 1
-        }
-      }
-      if (is.element(nm, c("betaMod","logistic","sigEmax"))) {
-        if (is.matrix(pars)) {          # multiple models
-          if (ncol(pars) != 2) {
-            stop("standardized ", nm," model must have two parameters")
-          }
-          nmod <- nrow(pars)            # number of models
-          ind <- 1:nmod
-          nams <- c(nams, paste(nm, ind, sep = ""))
-          for(j in 1:nmod) {
-            if(nm == "betaMod")     pars1 <- c(0, 1, pars[j, ], scal)
-            else pars1 <- c(0, 1, pars[j, ])
-            val[[k]] <- do.call(nm, c(list(doses), as.list(pars1)))
-            parList[[k]] <- pars1
-            k <- k + 1
-          }
-        } else {                        # single model
-          if (length(pars) != 2) {
-            stop("standardized ", nm," model must have two parameters")
-          }
-          nams <- c(nams, nm)
-          if(nm == "betaMod") pars <- c(pars, scal)
-          val[[k]] <-
-            do.call(nm, c(list(doses), as.list(c(0, 1, pars))))
-          parList[[k]] <- c(0,1,pars)
-          k <- k + 1
-        }
-      }
-      if(nm == "linInt"){
-        if (is.matrix(pars)) {
-          nmod <- nrow(pars)
-          for(j in 1:nmod){
-            val[[k]] <- linInt(doses, c(0, pars[j,]), nodes)
-            parList[[k]] <- c(0, pars[j,])
-            ind <- 1:nmod
-            nams <- c(nams, paste(nm, ind, sep = ""))
-            k <- k+1
-          }
-        } else {
-          val[[k]] <- linInt(doses, c(0, pars), nodes)
-          parList[[k]] <- c(0,pars)
-          nams <- c(nams, nm)
-          k <- k+1
-        }
-      }
-    } else {                        # user-defined or non-standardized
-      if (is.matrix(pars)) {            # multiple models
-        nmod <- nrow(pars)              # number of models
-        if(nm == "linlog")
-          pars <- cbind(pars, off)
-        if(nm == "betaMod")
-          pars <- cbind(pars, scal)
-        ind <- 1:nmod
-        nams <- c(nams, paste(nm, ind, sep = ""))
-        for(j in 1:nmod) {
-          if(nm != "linInt"){
-            val[[k]] <- do.call(nm, c(list(doses), as.list(pars[j,])))
-          } else {
-            val[[k]] <- linInt(doses, pars[j,], nodes)
-          }
-          parList[[k]] <- pars[j,]
-          k <- k + 1
-        }
-      } else {                      # single model
-        if(nm == "linlog")
-          pars <- c(pars, off)
-        if(nm == "betaMod")
-          pars <- c(pars, scal)
-        nams <- c(nams, nm)
+    if (is.matrix(pars)) {            # multiple models
+      nmod <- nrow(pars)              # number of models
+      if(nm == "linlog")
+        pars <- cbind(pars, off)
+      if(nm == "betaMod")
+        pars <- cbind(pars, scal)
+      ind <- 1:nmod
+      nams <- c(nams, paste(nm, ind, sep = ""))
+      for(j in 1:nmod) {
         if(nm != "linInt"){
-          val[[k]] <- do.call(nm, c(list(doses), as.list(pars)))
+          val[[k]] <- do.call(nm, c(list(doses), as.list(pars[j,])))
         } else {
-          val[[k]] <- linInt(doses, pars, nodes)
+          val[[k]] <- linInt(doses, pars[j,], nodes)
         }
-        parList[[k]] <- pars
+        parList[[k]] <- pars[j,]
         k <- k + 1
-      }       
-    }
+      }
+    } else {                      # single model
+      if(nm == "linlog")
+        pars <- c(pars, off)
+      if(nm == "betaMod")
+        pars <- c(pars, scal)
+      nams <- c(nams, nm)
+      if(nm != "linInt"){
+        val[[k]] <- do.call(nm, c(list(doses), as.list(pars)))
+      } else {
+        val[[k]] <- linInt(doses, pars, nodes)
+      }
+      parList[[k]] <- pars
+      k <- k + 1
+    }       
   }
   muMat <- do.call("cbind", val)
   dimnames(muMat) <- list(doses, nams)
@@ -936,15 +849,15 @@ calcResp <- function(models, doses, fullMod = FALSE, off, scal, nodes){
 
 getResp <- function(fmodels, doses){
   ## convenience function for getting the mean responses of
-  ## the models in an fullMod object (output in matrix)
-  if(!inherits(fmodels, "fullMod"))
-    stop("\"fmodels\" needs to be of class c(Mods, fullMod)")
+  ## the models in a Mods object (output in matrix)
+  if(!inherits(fmodels, "Mods"))
+    stop("\"fmodels\" needs to be of class Mods")
   if(missing(doses))
     doses <- attr(fmodels, "doses")
   off <- attr(fmodels, "off")
   scal <- attr(fmodels, "scal")
   nodes <- attr(fmodels, "doses")
-  calcResp(fmodels, doses, fullMod = TRUE, off=off, scal=scal, nodes=nodes)
+  calcResp(fmodels, doses, off=off, scal=scal, nodes=nodes)
 }
 
 ## calculates the location and scale parameters corresponding to

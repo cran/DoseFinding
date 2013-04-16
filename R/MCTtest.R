@@ -5,13 +5,11 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
                     addCovars = ~1, placAdj = FALSE, 
                     alpha = 0.025, df = NULL, critV = NULL, pVal = TRUE,
                     alternative = c("one.sided", "two.sided"),
-                    direction = c("increasing", "decreasing"),
                     na.action = na.fail, mvtcontrol = mvtnorm.control(),
                     contMat = NULL){
   ## perform multiple contrast test
   type <- match.arg(type)
   alternative <- match.arg(alternative)
-  direction <- match.arg(direction)  
   ## check for valid arguments
   cal <- as.character(match.call())
   lst <- checkAnalyArgs(dose, resp, data, S, type,
@@ -41,8 +39,7 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
       df <- Inf
   }
   if(is.null(contMat)){ # calculate optimal contrasts
-    contMat <- optContr(models, doses, S=vc, placAdj=placAdj,
-                        direction=direction)$contMat
+    contMat <- optContr(models, doses, S=vc, placAdj=placAdj)$contMat
     rownames(contMat) <- doses
   } else { # contrast matrix specified
     if(inherits(contMat, "optContr"))
@@ -75,12 +72,8 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
     pVals <- pValues(contMat, corMat, alpha, df,
                      tStat, alternative, mvtcontrol)
   }
-  res <- list()
-  res$contMat <- contMat
-  res$corMat <- corMat
-  res$tStat <- tStat
-  res$alpha <- alpha
-  res$alternative <- alternative[1]
+  res <- list(contMat = contMat, corMat = corMat, tStat = tStat,
+              alpha = alpha, alternative = alternative[1])
   if(pVal)
     attr(res$tStat, "pVal") <- pVals
   res$critVal <- critV
@@ -88,7 +81,7 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
   res
 }
 
-print.MCTtest <- function(x, digits = 4, ...){
+print.MCTtest <- function(x, digits = 3, eps = 1e-3, ...){
   cat("Multiple Contrast Test\n")
   cat("\n","Contrasts:","\n", sep="")
   print(round(x$contMat, digits))
@@ -98,10 +91,10 @@ print.MCTtest <- function(x, digits = 4, ...){
   ord <- rev(order(x$tStat))
   if(!any(is.null(attr(x$tStat, "pVal")))){
     pval <- format.pval(attr(x$tStat, "pVal"),
-                        digits = digits, eps = 1e-04)
+                        digits = digits, eps = eps)
     dfrm <- data.frame(round(x$tStat, digits)[ord],
                        pval[ord])
-    names(dfrm) <- c("t-Stat", "p-value")
+    names(dfrm) <- c("t-Stat", "adj-p")
   } else {
     dfrm <- data.frame(round(x$tStat, digits)[ord])
     names(dfrm) <- c("t-Stat")

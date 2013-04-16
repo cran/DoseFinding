@@ -52,8 +52,8 @@ fitMod(dose, resp, data, model, S, type = c("normal", "general"),
 \method{vcov}{DRMod}(object, ...)
 
 \method{plot}{DRMod}(x, CI = FALSE, level = 0.95,
-     plotData = c("means", "meansCI", "none"),
-     lenDose = 201, ...)
+     plotData = c("means", "meansCI", "raw", "none"),
+     plotGrid = TRUE, colMn = 1, colFit = 1, ...)
 
 \method{logLik}{DRMod}(object, ...)
 
@@ -164,12 +164,15 @@ fitMod(dose, resp, data, model, S, type = c("normal", "general"),
   se.fit: logical determining, whether the standard error should be
   calculated.
 }
-\item{CI, level, plotData, lenDose}{
-  Arguments for plot method: CI determines whether confidence
-  intervals should be plotted. level determines the level of the
-  confidence intervals. plotData determines how the data are plotted
-  (either as means or as means with CI or none) and lenDose is the
-  length of the plot sequence to be used.
+\item{CI, level, plotData, plotGrid, colMn, colFit}{
+  Arguments for plot method: \samp{CI} determines whether confidence
+  intervals should be plotted. \samp{level} determines the level of the
+  confidence intervals. \samp{plotData} determines how the data are plotted:
+  Either as means or as means with CI, raw data or none. In case of
+  \samp{type = "normal"} and covariates the ls-means are displayed, when
+  \samp{type = "general"} the option "raw" is not available.
+  \samp{colMn} and \samp{colFit} determine the colors of fitted model
+  and the raw means.
 }
 \item{k}{
   Penalty to use for model-selection criterion (AIC uses 2, BIC uses

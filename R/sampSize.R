@@ -169,6 +169,10 @@ targN <- function(upperN, lowerN, step, targFunc,
   out <-t(sapply(nseq, function(x){
     targFunc(round(x * alRatio))
   }))
+  if(nrow(out) == 1 & length(nseq) > 1){
+    out <- t(out)
+    colnames(out) <- ""
+  }
   out2 <- out
   for(i in 1:length(sumFct)){
     out2 <- cbind(out2, apply(out, 1, sumFct[i]))

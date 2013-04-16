@@ -4,7 +4,7 @@
 calcGrads <- function(fmodels, doses, weights,
                       Delta, off, scal, direction,
                       designCrit){
-  modgrad <- TDgrad <- nPar <- list()
+  modgrad <- TDgrad <- nPar <- vector("list", modCount(fmodels, fullMod=TRUE))
   z <- 1
   for(nam in names(fmodels)){
     pars <- fmodels[[nam]]
@@ -54,12 +54,23 @@ callOptim <- function(func, method, nD, control, lowbnd, uppbnd){
     res <- optim(getStart(nD), fn=func, control = control)
   } else if(method == "solnp"){ # no need for transformed values for solnp
     require(Rsolnp, quietly = TRUE)
+    ## get starting value (need feasible starting value for solnp)
+    ## try whether equal allocation is feasible
+    eq <- rep(1/nD, nD)
+    if(all(eq > lowbnd+0.001) & all(eq < uppbnd-0.001)){
+      strt <- eq
+    } else {
+      slb <- sum(lowbnd)
+      sub <- sum(uppbnd)
+      gam <- (1-slb)/(sub-slb)
+      strt <- lowbnd+gam*(uppbnd-lowbnd)
+    }
     eqfun <- function(x, ...){
       sum(x)
     }
     con <- list(trace = 0)
     con[(namc <- names(control))] <- control
-    res <- solnp(rep(1/nD, nD), fun=func, eqfun=eqfun, eqB=1,
+    res <- solnp(strt, fun=func, eqfun=eqfun, eqB=1,
                  control = con, LB = lowbnd, UB = uppbnd)
   } 
   res
@@ -108,32 +119,31 @@ optFunc <- function(x, xvec, pvec, nD, probs, M, n, nold, bvec, designCrit,
 }
 
 ## user visible function calling all others
-optDesign <- function(fmodels, probs, doses,
+optDesign <- function(models, probs, doses,
                       designCrit = c("Dopt", "TD", "Dopt&TD", "userCrit"),
                       Delta, standDopt = TRUE, weights,
                       nold = rep(0, length(doses)),  n,
-                      direction = c("increasing", "decreasing"),
                       control=list(), 
                       optimizer = c("solnp", "Nelder-Mead", "nlminb", "exact"),
                       lowbnd = rep(0, length(doses)), uppbnd = rep(1, length(doses)),
                       userCrit, ...){
-  if(!missing(fmodels)){
-    if(!inherits(fmodels, "fullMod"))
-      stop("\"fmodels\" needs to be of class c(Mods, fullMod)")
-    off <- attr(fmodels, "off")
-    scal <- attr(fmodels, "scal")
+  if(!missing(models)){
+    if(!inherits(models, "Mods"))
+      stop("\"models\" needs to be of class Mods")
+    direction <- attr(models, "direction")
+    off <- attr(models, "off")
+    scal <- attr(models, "scal")
     if(missing(doses))
-      doses <- attr(fmodels, "doses")
+      doses <- attr(models, "doses")
   } else {
     if(missing(userCrit))
-      stop("either \"fmodels\" or \"userCrit\" need to be specified")
+      stop("either \"models\" or \"userCrit\" need to be specified")
     if(missing(doses))
       stop("For userCrit one always needs to specify doses")
   }
   ## check arguments
   designCrit <- match.arg(designCrit)
   optimizer <- match.arg(optimizer)
-  direction <- match.arg(direction)  
   if(missing(n)){
     if(optimizer == "exact")
       stop("need to specify sample size via n argument")
@@ -165,19 +175,23 @@ optDesign <- function(fmodels, probs, doses,
     if(optimizer != "solnp" & optimizer != "exact")
       stop("only optimizers solnp or exact can handle additional constraints on allocations")
   }
+  if(sum(lowbnd) > 1)
+    stop("Infeasible lower bound specified (\"sum(lowbnd) > 1\"!)")
+  if(sum(uppbnd) < 1)
+    stop("Infeasible upper bound specified (\"sum(lowbnd) < 1\"!)")
   if(!is.logical(standDopt))
     stop("standDopt needs to contain a logical value")
   standInt <- as.integer(standDopt) # use standardized or non-stand. D-optimality
   nD <- length(doses)
   if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
-    tdMods <- TD(fmodels, Delta, "continuous", direction)
+    tdMods <- TD(models, Delta, "continuous", direction)
     tdMods[tdMods > max(doses)] <- NA
     if(any(is.na(tdMods)))
       stop("TD does not exist for ",
            paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
   }
   if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
-    np <- nPars(names(fmodels))
+    np <- nPars(names(models))
     if(max(np) > length(doses))
       stop("need at least as many dose levels as there are parameters to calculate Dopt design.")
   } 
@@ -195,7 +209,7 @@ optDesign <- function(fmodels, probs, doses,
       stop("probs need to sum to 1")
     }
     ## prepare criterion function
-    lst <- calcGrads(fmodels, doses, weights,
+    lst <- calcGrads(models, doses, weights,
                      Delta, off, scal, direction, designCrit)
     ## check for invalid values (NA, NaN and +-Inf)
     checkInvalid <- function(x)
@@ -263,38 +277,32 @@ optDesign <- function(fmodels, probs, doses,
     res <- sweep(designmat, 2, n+sum(nold), "/")
     ## evaluate criterion function
     if(designCrit != "userCrit"){
-      critv <- calcCrit(res, fmodels, probs, doses,
+      critv <- calcCrit(res, models, probs, doses,
                         designCrit, Delta, standDopt,
-                        weights, nold, n, direction)
+                        weights, nold, n)
     } else {
       critv <- apply(res, 1, objFunc)
     }
     des <- mat[which.min(critv),]
     crit <- min(critv)
   }
-  out <- list()
-  out$crit <- crit
-  out$design <- des
-  out$doses <- doses
-  out$n <- n
-  out$nold <- nold
-  out$designCrit <- designCrit
+  out <- list(crit = crit, design = des, doses = doses, n = n,
+              nold = nold, designCrit = designCrit)
   attr(out, "optimizerResults") <- res
   class(out) <- "DRdesign"
   out
 }
 
-calcCrit <- function(design, fmodels, probs, doses, 
+calcCrit <- function(design, models, probs, doses, 
                      designCrit = c("Dopt", "TD", "Dopt&TD"),
                      Delta, standDopt = TRUE, weights,
-                     nold = rep(0, length(doses)), n,
-                     direction = c("increasing", "decreasing")){
-  if(!inherits(fmodels, "fullMod"))
-    stop("\"fmodels\" needs to be of class c(Mods, fullMod)")
-  off <- attr(fmodels, "off")
-  scal <- attr(fmodels, "scal")
+                     nold = rep(0, length(doses)), n){
+  if(!inherits(models, "Mods"))
+    stop("\"models\" needs to be of class Mods")
+  off <- attr(models, "off")
+  scal <- attr(models, "scal")
   if(missing(doses))
-    doses <- attr(fmodels, "doses")  
+    doses <- attr(models, "doses")  
   ## extract design
   if(inherits(design, "DRdesign"))
     design <- design$design
@@ -321,24 +329,24 @@ calcCrit <- function(design, fmodels, probs, doses,
   designCrit <- match.arg(designCrit)
   if(missing(Delta) & substr(designCrit, 1, 3) == "TD")
     stop("need to specify clinical relevance parameter")
-
+  direction <- attr(models, "direction")
 
   if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
-    tdMods <- TD(fmodels, Delta, "continuous", direction)
+    tdMods <- TD(models, Delta, "continuous", direction)
     tdMods[tdMods > max(doses)] <- NA
     if(any(is.na(tdMods)))
       stop("TD does not exist for ",
            paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
   }
   if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
-    np <- nPars(names(fmodels))
+    np <- nPars(names(models))
     if(max(np) > length(doses))
       stop("need more dose levels to calculate Dopt design.")
   }
   if(!is.logical(standDopt))
     stop("standDopt needs to contain a logical value")
   standInt <- as.integer(standDopt)
-  lst <- calcGrads(fmodels, doses, weights, Delta, off, scal,
+  lst <- calcGrads(models, doses, weights, Delta, off, scal,
                    direction, designCrit)
   ## check for invalid values (NA, NaN and +-Inf)
   checkInvalid <- function(x)
@@ -469,10 +477,10 @@ getDesMat <- function(n, nDoses, lowbnd = rep(0, nDoses),
 }
 
 ## plot method for design objects
-plot.DRdesign <- function(x, fmodels, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...){
-  if(missing(fmodels))
-    stop("need object of class c(\"Mods\", \"fullMod\") to produce plot")
-  plot(fmodels, ...)
+plot.DRdesign <- function(x, models, lwdDes = 10, colDes = rgb(0,0,0,0.3), ...){
+  if(missing(models))
+    stop("need object of class Mods to produce plot")
+  plot(models, ...)
   layoutmat <- trellis.currentLayout()
   nc <- ncol(layoutmat)
   nr <- nrow(layoutmat)

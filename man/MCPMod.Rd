@@ -14,16 +14,20 @@
 \usage{
 MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
        addCovars = ~1, placAdj = FALSE, selModel = c("AIC", "maxT", "aveAIC"),
-       alpha = 0.025, df = NULL, critV = NULL, doseType = c("TD", "ED"), Delta, p,
-       pVal = TRUE, alternative = c("one.sided", "two.sided"),
-       direction = c("increasing", "decreasing"), na.action = na.fail,
-       mvtcontrol = mvtnorm.control(), bnds, control = NULL)
+       alpha = 0.025, df = NULL, critV = NULL, doseType = c("TD", "ED"),
+       Delta, p, pVal = TRUE, alternative = c("one.sided", "two.sided"),
+       na.action = na.fail, mvtcontrol = mvtnorm.control(),
+       bnds, control = NULL)
 
 \method{predict}{MCPMod}(object,
         predType = c("full-model", "ls-means", "effect-curve"),
         newdata = NULL, doseSeq = NULL, se.fit = FALSE, ...)
 
-\method{plot}{MCPMod}(x, ...)
+
+
+\method{plot}{MCPMod}(x, CI = FALSE, level = 0.95,
+       plotData = c("means", "meansCI", "raw", "none"),
+       plotGrid = TRUE, colMn = 1, colFit = 1, ...)
 
 }
 \arguments{
@@ -37,7 +41,7 @@ MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
     \samp{resp} are variables referenced from data (and no vectors)
   }
   \item{models}{
-    An object of class \samp{c(Mods, standMod)}, see \code{\link{Mods}} for
+    An object of class \samp{"Mods"}, see \code{\link{Mods}} for
     details
   }
   \item{S}{
@@ -101,10 +105,6 @@ MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
   Character determining the alternative for the multiple contrast
   trend test. 
 }
-\item{direction}{
-  Character determining whether the beneficial direction is \samp{increasing}
-  or \samp{decreasing} with increasing dose levels.
-}
 \item{na.action}{
   A function which indicates what should happen when
   the data contain NAs.
@@ -157,6 +157,17 @@ MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
   \ldots: Additional arguments, for plot.MCPMod these are passed to
   plot.DRMod.
 }
+\item{CI, level, plotData, plotGrid, colMn, colFit}{
+  Arguments for plot method: \samp{CI} determines whether confidence
+  intervals should be plotted. \samp{level} determines the level of the
+  confidence intervals. \samp{plotData} determines how the data are plotted:
+  Either as means or as means with CI, raw data or none. In case of
+  \samp{type = "normal"} and covariates the ls-means are displayed, when
+  \samp{type = "general"} the option "raw" is not available.
+  \samp{colMn} and \samp{colFit} determine the colors of fitted model
+  and the raw means.
+}
+
 }
 \value{
   An object of class \samp{MCPMod}, which contains the fitted
@@ -211,7 +222,7 @@ summary(MM) # more information
 predict(MM, se.fit=TRUE, doseSeq=c(0,0.2,0.4, 0.9, 1),
         predType="ls-means")
 ## display all model functions 
-plot(MM, plotData="meansCI")
+plot(MM, plotData="meansCI", CI=TRUE)
 
 ## now perform model-averaging
 MM2 <- MCPMod(dose, resp, biom, models, Delta=0.5, selModel = "aveAIC")

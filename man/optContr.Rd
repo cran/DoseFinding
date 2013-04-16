@@ -1,13 +1,12 @@
 \name{optContr}
 \alias{optContr}
 \alias{plot.optContr}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{
   Calculate optimal contrasts
 }
 \description{
-  This function calculates a contrast vector that is optimal for
-  detecting a certain alternative. The contrast is optimal in the sense
+  This function calculates a contrast vectors that are optimal for
+  detecting certain alternatives. The contrast is optimal in the sense
   of maximizing the non-centrality parameter of the underlying contrast
   test statistic:
   \deqn{\frac{c'\mu}{\sqrt{c'Sc}}}{c'mu/sqrt(c'Sc).}
@@ -18,10 +17,13 @@
     c^{opt} \propto S^{-1}\left(\mu - \frac{\mu^{\prime}S^{-1}
       1}{1^\prime S^{-1} 1}\right),}{c propto S^(-1) (mu - mu'S^(-1)1)/(1'S^(-1)1),}
   see Pinheiro et al. (2013).
+
+  Note that the directionality (i.e. whether in "increase" in the
+  response variable is beneficial or a "decrease", is inferred from the
+  specified \samp{models} object, see \code{\link{Mods}} for details).
 }
 \usage{
-optContr(models, doses, w, S, placAdj = FALSE,
-         direction = c("increasing", "decreasing"))
+optContr(models, doses, w, S, placAdj = FALSE)
 
 \method{plot}{optContr}(x, superpose = TRUE, xlab = "Dose",
      ylab = NULL, plotType = c("contrasts", "means"), ...)
@@ -29,14 +31,12 @@ optContr(models, doses, w, S, placAdj = FALSE,
 }
 \arguments{
   \item{models}{
-    An object of class \samp{c("Mods", "standMod")} defining the
-    dose-response shapes for which to calculate optimal contrasts. This
-    can also be an object of class \samp{c("Mods", "fullMod")}, in this
-    case the arguments given in \samp{doses}, \samp{direction} are ignored.
+    An object of class \samp{Mods} defining the dose-response shapes for
+    which to calculate optimal contrasts. 
   }
   \item{doses}{
     Optional argument. If this argument is missing the doses attribute
-    in the \samp{c("Mods", "standMod")} object specified in \samp{models} is used.
+    in the \samp{Mods} object specified in \samp{models} is used.
   }
 \item{w, S}{
   Arguments determining the matrix S used in the formula for the optimal
@@ -64,10 +64,6 @@ optContr(models, doses, w, S, placAdj = FALSE,
   original contrast matrix to the unadjusted estimates.
 }
 
-\item{direction}{
-  Character determining whether the beneficial direction is \samp{increasing}
-  or \samp{decreasing} with increasing dose levels.
-}
 \item{x, superpose, xlab, ylab, plotType}{
   Arguments for the plot method for optContr objects. plotType
   determines, whether the contrasts or the underlying (standardized)

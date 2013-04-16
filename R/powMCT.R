@@ -79,7 +79,7 @@ powMCT <- function(contMat, alpha = 0.025, altModels,
     stop("altModels argument needs to be specified")
   muMat <- getResp(altModels)
   if(placAdj){
-    muMat <- muMat - muMat[1,] # remove placebo column
+    muMat <- sweep(muMat, 2, muMat[1,], "-") # remove placebo column
     muMat <- muMat[-1, , drop=FALSE]
   }
   if(nrow(muMat) != nD)

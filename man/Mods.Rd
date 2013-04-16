@@ -1,14 +1,11 @@
 \name{Mods}
 \alias{Mods}
-\alias{TD}
-\alias{ED}
 \alias{getResp}
 \alias{plot.Mods}
 \title{
   Define dose-response models
 }
 \description{
-  
   The Mods functions allows to define a set of dose-response models.
   The function is used as input object for a number of other different
   functions.
@@ -22,65 +19,32 @@
   parameter and can be one- or two-dimensional, depending on the used
   model.
   
-  One can either define the candidate functions in terms of the
-  standardized dose-response shapes. Then
-  \eqn{\theta_0,\theta_1}{theta0,theta1} do not need to specified, only
-  the \eqn{\theta_2}{theta2} parameter(s). The output object is the of
-  class \samp{c("Mods", "standMod")}. This object can then be used as
-  input to \code{\link{optContr}} and \code{\link{powMCT}}.
-
-  Or one can obtain full model parameter specifications, then one needs
-  to hand over the effect at placebo and the maximum effect in the dose
-  range, from which \eqn{\theta_0,\theta_1}{theta0,theta1} are then
-  back-calculated, the output object is then of class \samp{c("Mods",
-  "fullMod")}. This type of output object can form the input for the
-  functions \samp{getResp}, \samp{TD} and \samp{ED} to extract the mean
-  response and target doses corresponding to the models. This class is
-  also needed as input to the functions \code{\link{powMCT}},
+  One needs to hand over the effect at placebo and the maximum effect in
+  the dose range, from which \eqn{\theta_0,\theta_1}{theta0,theta1} are
+  then back-calculated, the output object is of class
+  \samp{"Mods"}. This object can form the input for other functions
+  to extract the mean response (\samp{getResp}) or target doses
+  (\code{\link{TD}} and \code{\link{ED}}) corresponding to the models. It
+  is also needed as input to the functions \code{\link{powMCT}},
   \code{\link{optDesign}}
-
+  
   Some models, for example the beta model (\samp{scal}) and the linlog
   model (\samp{off}) have parameters that are not estimated by the code,
   they need to be specified via the \samp{addArgs} argument.
 
-  The TD (target dose) is defined as the dose that achieves a target
-  effect of Delta over placebo (if there are multiple such doses, the
-  smallest is chosen):
-
-  \deqn{TD_\Delta = \min \{x|f(x) > f(0)+\Delta\}}{TD = min {x|f(x) > f(0)+Delta}}
-
-  If a decreasing trend is beneficial the definition of the TD is
-
-  \deqn{TD_\Delta = \min \{x|f(x) < f(0)-\Delta\}}{TD = min {x|f(x) < f(0)-Delta}}
-
-  When \eqn{\Delta}{Delta} is the clinical relevance threshold, then the
-  TD is similar to the usual definition of the minimum effective dose (MED).
-  
-  The ED (effective dose) is defined as the dose that achieves a certain
-  percentage p of the full effect size (within the observed dose-range!)
-  over placebo (if there are multiple such doses, the smallest is
-  chosen).  \deqn{ED_p=\min\{x|f(x) > f(0) + p(f(dmax)-f(0))}{ EDp=min
-  {x|f(x) > f(0) + p(f(dmax)-f(0))}}
-  
-  Note that this definition of the EDp is different from tradtional as
-  the Emax model, where the EDp is defined relative to the
-  \emph{asymptotic} maximum effect (rather than the maximum effect in
-  the observed dose-range).
-
+  NOTE: If a decreasing effect is beneficial for the considered response
+  variable it needs to specified here, either by using \samp{direction =
+  "decreasing"} or by specifying a negative "maxEff" argument.
 }
 \usage{
-Mods(..., doses, placEff, maxEff, addArgs=NULL)
+Mods(..., doses, placEff = 0, maxEff,
+     direction = c("increasing", "decreasing"), addArgs=NULL)
 
 getResp(fmodels, doses)
 
-TD(object, Delta, TDtype = c("continuous", "discrete"),
-   direction = c("increasing", "decreasing"), doses)
-
-ED(object, p, EDtype = c("continuous", "discrete"), doses)
-
-\method{plot}{Mods}(x, placEff = 0, maxEff = 1, nPoints = 200,
-     superpose = FALSE, xlab = "Dose", ylab = "Model means",
-     modNams = NULL, plotTD = FALSE, Delta, ...)
+\method{plot}{Mods}(x, nPoints = 200, superpose = FALSE, 
+     xlab = "Dose", ylab = "Model means", modNams = NULL, 
+     plotTD = FALSE, Delta, ...)
 
 }
 \arguments{
@@ -108,30 +72,21 @@ ED(object, p, EDtype = c("continuous", "discrete"), doses)
     Specify used placebo effect and the maximum effect over placebo.
     Either a numeric vector of the same size as the number of candidate
     models or of length one.\cr When these parameters are not specified
-    a "standardized" model set is produced (output is of class
-    \samp{c("Mods", "standMod")}), when these parameters are specified a
-    "full" model set is produced (output is of class \samp{c("Mods", "fullMod")}).
-  }
-  \item{fmodels}{
-    An object of class Mods and of type \samp{c(Mods, fullMod)}.
-  }
-  \item{Delta, p}{
-    Delta: The target effect size use for the target dose (TD) (Delta should be
-    > 0).\cr
-    p: The percentage of the dose to use for the effective dose.
-  }
-  \item{TDtype, EDtype}{
-    character that determines, whether the dose should be treated as a
-    continuous variable when calculating the TD/ED or whether the TD/ED
-    should be calculated based on a grid of doses specified in
-    \samp{doses}
+    \samp{placEff = 0} is assumed, for \samp{maxEff = 1} is assumed, if
+    \samp{direction = "increasing"} and \samp{maxEff = -1} is assumed, for
+    \samp{direction = "decreasing"}.
   }
   \item{direction}{
-    Direction to be used in defining the TD. This depends on whether an
-    increasing or decreasing of the endpoint is beneficial.
+    Character determining whether the beneficial direction is \samp{increasing}
+    or \samp{decreasing} with increasing dose levels. This argument is
+    ignored if \samp{maxEff} is specified.
   }
-  \item{object}{
-    An object of class c(Mods, fullMod), DRMod or bFitMod
+  \item{fmodels}{
+    An object of class Mods
+  }
+  \item{Delta}{
+    Delta: The target effect size use for the target dose (TD) (Delta should be
+    > 0).
   }
   \item{x}{
     Object of class Mods with type Mods
@@ -150,9 +105,9 @@ ED(object, p, EDtype = c("continuous", "discrete"), doses)
   }
 }
 \value{
-  Returns an object of class \samp{c("Mods", "standMod")} or \samp{c("Mods", "fullMod")}
-  depending on whether \samp{placEff} and \samp{maxEff} had been
-    specified. The object contains the model parameter values in a list.
+  Returns an object of class \samp{"Mods"}. The object contains the
+  specified model parameter values and the derived linear parameters (based on
+  \samp{"placEff"} and \samp{"maxEff"}) in a list.
 }
 \references{
   Pinheiro, J. C., Bornkamp, B., and Bretz, F. (2006). Design and analysis of dose finding studies
@@ -200,21 +155,21 @@ models <- Mods(linear = NULL, linlog = NULL, emax = c(0.05, 0.3),
                linInt = rbind(c(0.5, 0.75, 1, 1), c(0.5, 1, 0.7, 0.5)),
                doses = c(0, 0.05, 0.2, 0.6, 1),
                addArgs = list(scal=1.2, off=0.1))
-## "models" now contains a standardized candidate model set
+## "models" now contains the candidate model set, as placEff, maxEff and
+## direction were not specified a placebo effect of 0 and an effect of 1
+## is assumed
 
-## display of specified candidate set (for plotting fix placebo response at 0
-## and maximum response at 1 for all models)
-plot(models, placEff=0.5, maxEff=1)
+## display of specified candidate set
+plot(models)
 
-## example for creating a "full-model" candidate set placebo response
-## and maxEff already fixed in Mods call
+## example for creating a candidate set with decreasing response 
 doses <- c(0, 10, 25, 50, 100, 150)
 fmodels <- Mods(linear = NULL, emax = 25,
                    logistic = c(50, 10.88111), exponential = 85,
                    betaMod = rbind(c(0.33, 2.31), c(1.39, 1.39)),
                    linInt = rbind(c(0, 1, 1, 1, 1),
                                   c(0, 0, 1, 1, 0.8)), 
-                   doses=doses, placEff = 0, maxEff = 0.4,
+                   doses=doses, placEff = 0.5, maxEff = -0.4,
                    addArgs=list(scal=200))
 plot(fmodels)
 ## some customizations (different model names, symbols, line-width)
@@ -226,14 +181,15 @@ plot(fmodels, lwd = 3, pch = 3, cex=1.2, col="red",
 getResp(fmodels, doses=c(0, 20, 100, 150))
 
 ## calculate doses giving an improvement of 0.3 over placebo
-TD(fmodels, Delta=0.3)
+TD(fmodels, Delta=0.3, direction = "decreasing")
 ## discrete version
-TD(fmodels, Delta=0.3, TDtype = "discrete", doses=doses)
+TD(fmodels, Delta=0.3, TDtype = "discrete", doses=doses, direction = "decreasing")
 ## doses giving 50\% of the maximum effect
 ED(fmodels, p=0.5)
 ED(fmodels, p=0.5, EDtype = "discrete", doses=doses)
 
 plot(fmodels, plotTD = TRUE, Delta = 0.3)
+
 }
 
 

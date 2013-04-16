@@ -104,7 +104,7 @@ powN(upperN, lowerN, step, ..., alRatio,
     specified, automatically \samp{df = Inf} is assumed in the
     underlying \samp{powMCT} calls.
 
-    For a homoscedastic normally distributed endpoint only \samp{sigma}
+    For a homoscedastic normally distributed response variable only \samp{sigma}
     needs to be specified, as the sample size \samp{n} is iterated in
     the different \samp{powMCT} calls.
   }
