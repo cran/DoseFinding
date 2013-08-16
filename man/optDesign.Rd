@@ -4,7 +4,7 @@
 \alias{calcCrit}
 \alias{rndDesign}
 \title{
-   Function to calculate an optimal design
+   Function to calculate optimal designs
 }
 \description{
   Given a set of models (with full parameter values and model

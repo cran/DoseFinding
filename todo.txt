@@ -1,15 +1,7 @@
 to do: 
-- Write new plot function for DRMod and MCPMod
-  - based on lattice graphics
-  - Allow to plot raw data for plot.fitMod (for type = "normal" and
-    addCovars = ~1)
-- include simulator function: planMod
 - can only use one linear model in Mods (what if we have two different
   max effects?)!
-- allow for dose finding with active control  
-- function to interactively choose guesstimates (use the slider
+- allow for dose estimate with active control  
+- function to interactively choose guesstimates (maybe use the slider
   function from the TeachingDemos package and wrap the plotModels
-  function in it). Input: up to 9 model names, then create (up to 9)
-  sliders?
-
-
+  function in it).

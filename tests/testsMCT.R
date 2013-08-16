@@ -208,3 +208,43 @@ summary(mcp)
 print(obj, digits = 3)
 
 
+########################################################################
+## unordered values in MCTtest
+## placebo-adjusted scale
+## two blocks below should give equal results
+data(IBScovars)
+modlist <- Mods(emax = 0.05, linear = NULL, logistic = c(0.5, 0.1),
+                linInt = c(0, 1, 1, 1), doses = c(0, 1, 2, 3, 4))
+ancMod <- lm(resp~factor(dose)+gender, data=IBScovars)
+drEst <- coef(ancMod)[2:5]
+vc <- vcov(ancMod)[2:5, 2:5]
+doses <- 1:4
+fitMod(doses, drEst, S=vc, model = "sigEmax", placAdj=TRUE, type = "general")
+MCTtest(doses, drEst, S = vc, models = modlist, placAdj = TRUE,
+        type = "general", df = Inf)
+
+
+ord <- c(3,4,1,2)
+drEst2 <- drEst[ord]
+vc2 <- vc[ord,ord]
+doses2 <- doses[ord]
+fitMod(doses2, drEst2, S=vc2, model = "sigEmax", placAdj=TRUE, type = "general")
+MCTtest(doses2, drEst2, S = vc2, models = modlist, placAdj = TRUE,
+        type = "general", df = Inf)
+
+## unadjusted scale
+## two blocks below should give equal results
+ancMod <- lm(resp~factor(dose)-1, data=IBScovars)
+drEst <- coef(ancMod)
+vc <- vcov(ancMod)
+doses <- 0:4
+fitMod(doses, drEst, S=vc, model = "sigEmax", type = "general")
+MCTtest(doses, drEst, S = vc, models = modlist, type = "general", df = Inf)
+
+
+ord <- c(3,4,1,2,5)
+drEst2 <- drEst[ord]
+vc2 <- vc[ord,ord]
+doses2 <- doses[ord]
+fitMod(doses2, drEst2, S=vc2, model = "sigEmax", type = "general")
+MCTtest(doses2, drEst2, S = vc2, models = modlist, type = "general", df = Inf)

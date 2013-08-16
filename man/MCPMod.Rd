@@ -118,7 +118,7 @@ MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
   Bounds for non-linear parameters. This needs to be a list with list
   entries corresponding to the selected bounds. The names of the list
   entries need to correspond to the model names. The
-  \code{\link{defBnds}} provides a reasonable default selection.
+  \code{\link{defBnds}} function provides the default selection.
 }
 \item{control}{
   Control list for the optimization.\cr
@@ -188,12 +188,13 @@ Pinheiro, J. C., Bretz, F., and Branson, M. (2006). Analysis of dose-response st
 approaches, \emph{in} N. Ting (ed.). \emph{Dose Finding in Drug Development}, Springer, New York,
 pp. 146--171
 
-Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013). Multiple
-comparisons and modelling for dose-finding using general parametric
-models, \emph{Technical report, available upon request}
+Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013)
+Model-based dose finding under model uncertainty using general
+parametric models, \emph{Technical report, preprint available under
+http://arxiv.org/abs/1305.0889}
 
-Bretz, F., Pinheiro, J. C., and Branson, M. (2004), On a hybrid
-method in dose-finding studies, \emph{Methods of Information in Medicine},
+Bretz, F., Pinheiro, J. C., and Branson, M. (2004), On a hybrid method
+in dose-finding studies, \emph{Methods of Information in Medicine},
 \bold{43}, 457--460
 
 Buckland, S. T., Burnham, K. P. and Augustin, N. H. (1997). Model selection an integral part

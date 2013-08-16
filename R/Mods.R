@@ -597,6 +597,9 @@ calcED <- function(model, pars, p, maxD, EDtype = c("continuous", "discrete"),
   
   if(EDtype == "continuous"){ ## calculate target dose analytically
     cf <- pars
+    if(cf[2] == 0){
+      return(NA)
+    }
     if(model == "linear"){
       return(p*maxD)
     }

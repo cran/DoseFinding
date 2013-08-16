@@ -301,7 +301,9 @@ predict.bFitMod <- function(object, predType = c("full-model", "effect-curve"),
   } else {
     nodes <- attr(object, "data")$dose    
   }
-  out <- predSamples(object$samples, doseSeq, placAdj, model, scal, off, nodes)
+  out <- predSamples(samples = object$samples, doseSeq = doseSeq,
+                     placAdj = placAdj, model = model, scal = scal,
+                     off = off, nodes = nodes)
 
   if(predType == "EffectCurve"){
     out <- out - out[,1]
@@ -314,14 +316,38 @@ predict.bFitMod <- function(object, predType = c("full-model", "effect-curve"),
   out
 }
 
-predSamples <- function(samples, doseSeq, placAdj, model, scal, off, nodes){
+predSamples <- function(samples, placAdjfullPars = FALSE, doseSeq, placAdj, model,
+                        scal, off, nodes){
+  ## placAdjfullPars argument only of interest if placAdj = TRUE
+  ## it determines whether the e0 parameter is included as a row in the
+  ## samples argument or not
+  if(model != "betaMod")
+    scal <- NULL
+  if(model != "linlog")
+    off <- NULL
   if(placAdj){
-    if(model != "linInt"){
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(c(c(0,x), scal, off))))
+    if(placAdjfullPars){
+      if(model != "linInt"){
+        func <- function(x){
+          pred <- do.call(model, c(list(doseSeq), as.list(c(x, scal, off))))
+          pred0 <- do.call(model, c(list(0), as.list(c(x, scal, off))))
+          pred-pred0
+        }
+      } else {
+        func <- function(x){
+          pred <- do.call(model, c(list(doseSeq), as.list(list(x, nodes))))
+          pred0 <- do.call(model, c(list(0), as.list(list(x, nodes))))
+          pred-pred0
+        }
+      }
     } else {
-      func <- function(x)
-        do.call(model, c(list(doseSeq), as.list(list(c(0,x), nodes))))
+      if(model != "linInt"){
+        func <- function(x)
+          do.call(model, c(list(doseSeq), as.list(c(c(0,x), scal, off))))
+      } else {
+        func <- function(x)
+          do.call(model, c(list(doseSeq), as.list(list(c(0,x), nodes))))
+      }
     }
   } else {
     if(model != "linInt"){
@@ -331,7 +357,6 @@ predSamples <- function(samples, doseSeq, placAdj, model, scal, off, nodes){
       func <- function(x)
         do.call(model, c(list(doseSeq), as.list(list(x, nodes))))
     }
-    
   }
   out <- t(apply(samples, 1, func))
 }

@@ -1,3 +1,18 @@
+2013-08-15 Bjoern Bornkamp (version 0.9-7)
+      * fitMod ensure that the data set returned with DRMod objects
+	is in the original order (not sorted by dose). Also ensure the right
+	S matrix is used for fitting for type = "general" and unsorted
+	dose, resp.
+      * MCTtest fixed problems for type = "general" and unsorted
+	dose, resp.
+      * glycobrom Added glycobrom data set 
+      * planMod Added planning functions for non-linear modelling
+      * Coded calculations of compositions to be able to remove dependency
+	on the partitions package
+      * man files: added reference to paper on generalized MCPMod
+      * plot.DRMod Minor changes to ensure raw means are always inside
+	the plotting region (for plotData = "means")
+	
 2013-04-16 Bjoern Bornkamp (version 0.9-6)
       * optDesign Re-named "fmodels" argument to "models".
       * optDesign for solnp if lowbnd and uppbnd are specified now use a

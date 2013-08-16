@@ -73,7 +73,7 @@ fitMod(dose, resp, data, model, S, type = c("normal", "general"),
     \samp{resp} are variables referenced from data (and no vectors)
   }
 \item{model}{
-  The non-linear model to be used for fitting the data. Built-in
+  The dose-response model to be used for fitting the data. Built-in
   models are "linlog", "linear", "quadratic", "emax", "exponential",
   "sigEmax", "betaMod" and "logistic" (see \link{drmodels}).
 }
@@ -208,9 +208,10 @@ fitMod(dose, resp, data, model, S, type = c("normal", "general"),
   generalized residual sum of squares),
 }
 \references{
-  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013). Multiple
-  comparisons and modelling for dose-finding using general parametric
-  models, \emph{Technical report, available upon request}
+  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013)
+  Model-based dose finding under model uncertainty using general
+  parametric models, \emph{Technical report, preprint available under
+  http://arxiv.org/abs/1305.0889}
 
   Seber, G.A.F. and Wild, C.J. (2003). Nonlinear Regression, Wiley.
 }

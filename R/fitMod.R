@@ -67,13 +67,6 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
                    addCovars = ~1, placAdj = FALSE, bnds, df = NULL,
                    start = NULL, na.action = na.fail, control = NULL,
                    addArgs = NULL){
-  ## dose, resp - either vectors of equal length, or names (!) of variables
-  ##              in the data data.frame (unquoted names), dose and resp are not characters!
-  ## data - data.frame containing the variables referenced in dose and resp
-  ##        if not data is specified it is assumed that dose and resp are
-  ##        variables referenced from data (and no vectors)
-  ## addArgs - additional arguments (scal and off) for beta and linlog model
-
   ## check for valid dose, resp and data
   cal <- as.character(match.call())
   type <- match.arg(type)
@@ -81,7 +74,7 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
                         addCovars, placAdj, na.action, cal)
   doseNam <- lst$doseNam;respNam <- lst$respNam
   dose <- lst$dd[[doseNam]];type <- lst$type
-  resp <- lst$dd[[respNam]];data <- lst$dd
+  resp <- lst$dd[[respNam]];data <- lst$dd;S <- lst$S
   covarsUsed <- addCovars != ~1
   
   ## check type related arguments
@@ -119,11 +112,11 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
   ## addArgs argument
   scal <- off <- nodes <- NULL
   if(model %in% c("linlog", "betaMod")){
-    lst <- getAddArgs(addArgs, sort(unique(dose)))
+    aPar <- getAddArgs(addArgs, sort(unique(dose)))
     if(model == "betaMod")
-      scal <- lst$scal
+      scal <- aPar$scal
     if(model == "linlog")
-      off <- lst$off
+      off <- aPar$off
   }
   if(model == "linInt"){ ## not allowed to use nodes different from used doses
     nodes <- sort(unique(dose))
@@ -135,6 +128,21 @@ fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
                     na.action, control, doseNam=doseNam,
                     respNam=respNam, off = off, scal = scal,
                     nodes=nodes, covarsUsed)
+  ## attach data to object
+  reord <- order(lst$ord)
+  if(type == "normal"){
+    if(covarsUsed){
+      attr(out, "data") <- data[reord,]
+    } else {
+      dat <- data.frame(dose=dose, resp=resp)
+      colnames(dat) <- c(doseNam, respNam)
+      attr(out, "data") <- dat[reord,]
+    }
+  } else {
+    lst <- list(dose=dose[reord], resp=resp[reord], S=S[reord,reord]) 
+    names(lst) <- c(doseNam, respNam, "S")
+    attr(out, "data") <- lst
+  }
   out
 }
 
@@ -209,20 +217,6 @@ fitMod.raw <- function(dose, resp, data, model, S, type,
   attr(res, "off") <- off
   attr(res, "scal") <- scal
   attr(res, "nodes") <- nodes
-  ## attach data to object
-  if(type == "normal"){
-    if(covarsUsed){
-      attr(res, "data") <- data
-    } else {
-      dat <- data.frame(dose=dose, resp=resp)
-      colnames(dat) <- c(doseNam, respNam)
-      attr(res, "data") <- dat
-    }
-  } else {
-    lst <- list(dose=dose, resp=resp, S=S)
-    names(lst) <- c(doseNam, respNam, "S")
-    attr(res, "data") <- lst
-  }
   class(res) <- "DRMod"
   res
 }
@@ -710,6 +704,8 @@ predict.DRMod <- function(object, predType = c("full-model", "ls-means", "effect
   if(predType %in% c("ls-means", "full-model")){
     ## create design-matrix according to the SAS predType ls-means
     if(predType == "ls-means"){
+      if(!is.null(newdata))
+        stop("newdata is ignored for \"predType = \"ls-means\"")
       if(is.null(doseSeq)){ ## use doses used for fitting
         if(type == "normal")
           doseSeq <- data[, doseNam]
@@ -797,6 +793,8 @@ predict.DRMod <- function(object, predType = c("full-model", "ls-means", "effect
     }
   }
   if(predType == "effect-curve") {  ## predict effect curve
+    if(!is.null(newdata))
+      stop("newdata is ignored for \"predType = \"effect-curve\"")
     if(is.null(doseSeq)){
       if(type == "normal")
         doseSeq <- data[, doseNam]
@@ -1108,7 +1106,7 @@ plotFunc <- function(x, CI = FALSE, level = 0.95,
   rng <- switch(plotData,
                 raw = range(data[[respNam]]),
                 none = range(plotdf[[respNam]], na.rm=TRUE),
-                range(plotdf[[respNam]], pList$lbndm, pList$ubndm,
+                range(plotdf[[respNam]], pList$mns, pList$lbndm, pList$ubndm,
                       na.rm=TRUE))
   dff <- diff(rng)
   ylim <- c(rng[1] - 0.05 * dff, rng[2] + 0.05 * dff)
@@ -1175,18 +1173,6 @@ gAIC.DRMod <- function(object, ..., k = 2){
   object$gRSS+k*length(object$coefs)
 }
 
-
-
-## need to test
-## - various error catches in fitMod
-## - treatment of missing data
-## - correctness of getGrid
-## - more thorough testing of vcov, predict and plot
-
-## need to write
-## - AIC, logLik, intervals
-## - much later: write optimizing function for optLoc in C
-## change in predict with type "effect-curve": use the used doses (not grid)
 
 
 
