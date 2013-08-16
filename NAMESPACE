@@ -7,7 +7,8 @@ export(fitMod, defBnds, bFitMod, MCTtest, MCPMod,
        Mods, getResp, TD, ED,
        guesst, MCTtest, gAIC,
        mvtnorm.control, 
-       optContr, powMCT, sampSize, sampSizeMCT, targN, powN,
+       optContr,
+       powMCT, sampSize, sampSizeMCT, targN, powN, planMod,
        optDesign, calcCrit, rndDesign)
 
 S3method(predict, MCPMod)
@@ -41,6 +42,11 @@ S3method(plot, bFitMod)
 S3method(print, bFitMod)
 
 S3method(plot, targN)
+
+S3method(plot, planMod)
+S3method(print, planMod)
+S3method(summary, planMod)
+S3method(print, summary.planMod)
 
 useDynLib(DoseFinding)
 

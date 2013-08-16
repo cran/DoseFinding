@@ -1,11 +1,13 @@
 \name{defBnds}
 \alias{defBnds}
 \title{
-  Calculates default bounds for non-linear parameters
+  Calculates default bounds for non-linear parameters in dose-response
+  models
 }
 \description{
-  Calculates reasonable bounds for non-linear parameters for the built-in non-linear
-  regression model based on the dose range under investigation.
+  Calculates reasonable bounds for non-linear parameters for the
+  built-in non-linear regression model based on the dose range under
+  investigation.
 
   For the logistic model the first row corresponds to the ED50 parameter and the
   second row to the delta parameter. For the sigmoid Emax model the

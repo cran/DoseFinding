@@ -18,8 +18,8 @@
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-6\cr
-Date: \tab 2013-04-16\cr
+Version: \tab 0.9-7\cr
+Date: \tab 2013-08-16\cr
 License: \tab GPL-3
 }
 The main functions are:\cr
@@ -43,7 +43,7 @@ Bjoern Bornkamp, Jose Pinheiro, Frank Bretz
 Maintainer: Bjoern Bornkamp <bbnkmp@gmail.com>
 }
 \references{
-    Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
+  Bornkamp, B., Bretz, F., Dette, H. and Pinheiro,
   J. C. (2011). Response-Adaptive Dose-Finding under model uncertainty,
   \emph{Annals of Applied Statistics}, \bold{5}, 1611--1631
   
@@ -63,6 +63,11 @@ Maintainer: Bjoern Bornkamp <bbnkmp@gmail.com>
   analysis of dose finding studies combining multiple comparisons
   and modeling procedures, \emph{Journal of Biopharmaceutical
     Statistics}, \bold{16}, 639--656
+
+  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013)
+  Model-based dose finding under model uncertainty using general
+  parametric models, \emph{Technical report, preprint available under
+  http://arxiv.org/abs/1305.0889}
   
   Seber, G.A.F. and Wild, C.J. (2003). Nonlinear Regression, Wiley
 }

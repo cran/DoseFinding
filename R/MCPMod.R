@@ -1,7 +1,3 @@
-## to do:
-## write acceptable plot method
-## idea: is it possible to re-use the plot method for fullMod objects?
-
 ## wrapper function for MCTtest and fitMod calls
 MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"), 
                    addCovars = ~1, placAdj = FALSE, selModel = c("AIC", "maxT", "aveAIC"),

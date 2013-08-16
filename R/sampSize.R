@@ -1,7 +1,5 @@
-## function for sample size calculation
-## general idea: the user needs to provide a function that returns a
-## univariate value, a bisection type algorithm is then used to find
-## the sample size so that a specific target value is reached
+## function for sample size calculation and functions to evaluate
+## performance metrics for different sample sizes
 
 sampSize <- function (upperN, lowerN = floor(upperN/2),
                       targFunc, target, tol = 0.001, alRatio,
@@ -115,6 +113,7 @@ sampSizeMCT <- function(upperN, lowerN = floor(upperN/2),
   Use sampSize directly in placebo-adjusted case.")
   }
   if(is.element("S", namargs)){
+    S <- args[["S"]]
     if(Ntype == "arm"){
       Ntype <- "total"
       message("Only Ntype == \"total\" possible if S is specified")
@@ -197,6 +196,7 @@ powN <- function(upperN, lowerN, step,
   }
   Ntype <- match.arg(Ntype)
   if(is.element("S", namargs)){
+    S <- args[["S"]]
     if(Ntype == "arm"){
       Ntype <- "total"
       message("Only Ntype == \"total\" possible if S is specified")

@@ -95,5 +95,5 @@ sigEmaxGrad <- function(dose, eMax, ed50, h, ...){
 
 linIntGrad <- function(dose, resp, nodes, ...){
   knts <- c(nodes[1], nodes, nodes[length(nodes)])
-  splines:::splineDesign(knots=knts, ord=2, x=dose)
+  splines::splineDesign(knots=knts, ord=2, x=dose)
 }

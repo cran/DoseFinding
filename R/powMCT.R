@@ -1,5 +1,4 @@
 ## all design related functions for power calculations
-## todo: write a convenience function to calculate sample size against N.
 
 mvtnorm.control <- function(maxpts = 30000, abseps = 0.001,
                             releps = 0, interval = NULL){

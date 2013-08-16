@@ -420,3 +420,51 @@ predict(fitlm, se.fit = T,
 
 TD(fit0, Delta = 0.1)
 
+########################################################################
+## ensure that predict with no argument uses the original data not the
+## sorted data that were used for fitting
+
+data(IBScovars)
+ff <- fitMod(dose, resp, data=IBScovars, model="quadratic",
+             addCovars = ~gender)
+## should be all zero
+predict(ff, predType = "ls-means")-
+predict(ff, predType = "ls-means", doseSeq = IBScovars[,3])
+predict(ff, predType = "full-model")-
+predict(ff, predType = "full-model", newdata = IBScovars[,-2])
+predict(ff, predType = "effect-curve")-
+predict(ff, predType = "effect-curve", doseSeq = IBScovars[,3])
+
+ff2 <- fitMod(dose, resp, data=IBScovars, model="quadratic")
+## should be all zero
+predict(ff2, predType = "ls-means")-
+predict(ff2, predType = "ls-means", doseSeq = IBScovars[,3])
+predict(ff2, predType = "full-model")-
+predict(ff2, predType = "full-model", newdata = IBScovars[,-2])
+predict(ff2, predType = "effect-curve")-
+predict(ff2, predType = "effect-curve", doseSeq = IBScovars[,3])
+
+dose <- unique(IBScovars$dose)
+ord <- c(2,4,1,3,5)
+mns <- tapply(IBScovars$resp, IBScovars$dose, mean)[ord]
+ff3 <- fitMod(dose, mns, S=diag(5), model="quadratic", type = "general")
+predict(ff3, predType = "ls-means")-
+predict(ff3, predType = "ls-means", doseSeq = dose)
+predict(ff3, predType = "effect-curve")-
+predict(ff3, predType = "effect-curve", doseSeq = dose)
+
+########################################################################
+## ensure that S is also sorted when the dose is not entered sorted
+dose <- sort(unique(IBScovars$dose))
+mns <- tapply(IBScovars$resp, IBScovars$dose, mean)
+S <- c(1000,1,1,1,1)*diag(5)
+ff1 <- fitMod(dose, mns, S = S, model="linear", type="general")
+## fit unsorted
+dose <- unique(IBScovars$dose)
+ord <- c(2,4,1,3,5)
+mns <- tapply(IBScovars$resp, IBScovars$dose, mean)[ord]
+ff2 <- fitMod(dose, mns, S = S, model="linear", type="general")
+ff3 <- fitMod(dose, mns, S = S[ord,ord], model="linear", type="general")
+## coef(ff1) & coef(ff3) should be equal
+coef(ff1)
+coef(ff3)

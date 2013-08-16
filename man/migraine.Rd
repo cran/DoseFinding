@@ -3,7 +3,7 @@
 \docType{data}
 \title{ Migraine Dose Response data }
 \description{
-  An example data set obtained from clinicaltrials.gov.
+  Data set obtained from clinicaltrials.gov (NCT00712725).
   This was randomized placebo controlled dose-response trial for
   treatment of acute migraine. The primary endpoint was "pain freedom at
   2 hours postdose" (a binary measurement).

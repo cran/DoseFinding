@@ -268,7 +268,6 @@ optDesign <- function(models, probs, doses,
     }
   } else { # exact criterion (enumeration of all designs)
     ## enumerate possible exact designs
-    require(partitions, quietly = TRUE)
     con <- list(maxvls1 = 1e6, maxvls2 = 1e5, groupSize = 1)
     con[(namc <- names(control))] <- control    
     mat <- getDesMat(n, nD, lowbnd, uppbnd,
@@ -413,6 +412,8 @@ which.is.max <- function (x){
 ## efficient rounding (see Pukelsheim (1993), Ch. 12)
 rndDesign <- function(design, n, eps = 0.0001){
 
+  if(missing(n))
+    stop("total sample size \"n\" needs to be specified")
   n <- round(n) # ensure n is an integer (at least numerically)
   if(inherits(design, "DRdesign")){
     design <- design$design
@@ -444,6 +445,16 @@ rndDesign <- function(design, n, eps = 0.0001){
   }
 }
 
+
+getCompositions <- function(N, M){
+  nC <- choose(N+M-1, M-1)
+  lst <- .C("getcomp", comp=integer(nC*M), integer(M-1),
+            as.integer(N), as.integer(M-1), as.integer(nC),
+            PACKAGE = "DoseFinding")
+  matrix(lst$comp, byrow = TRUE, nrow = nC)
+}
+
+
 ## calculate all possible compositions of n patients to nDoses groups
 ## (assuming a certain block-size) upper and lower bounds on the
 ## allocations can also be specified
@@ -458,7 +469,7 @@ getDesMat <- function(n, nDoses, lowbnd = rep(0, nDoses),
     stop(combn, " (unrestricted) combinations, increase maxvls1 in control 
          argument if this calculation should be performed")
 
-  desmat <- t(compositions(nG, nDoses))/nG
+  desmat <- getCompositions(nG, nDoses)/nG
  
   if(any(lowbnd > 0) | any(uppbnd < 1)){
     comp <- matrix(lowbnd, byrow = TRUE, ncol = nDoses, nrow=nrow(desmat))

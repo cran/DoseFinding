@@ -70,7 +70,9 @@
   vector is equal to the doses used in the analysis. For example the
   \code{\link{Mods}} and the \code{\link{fitMod}} function automatically
   use the doses that are used in the context of the function call as
-  nodes.
+  nodes. The guesstimates specified in the \code{\link{Mods}} function
+  need to be the treatment effects at the active doses standardized to
+  the interval [0,1] (see the examples in the \code{\link{Mods}} function).
 }
 \usage{
 emax(dose, e0, eMax, ed50)

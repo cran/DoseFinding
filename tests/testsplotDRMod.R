@@ -74,3 +74,13 @@ library(DoseFinding)
 ## plot(mmfit, plotData = "means", CI = FALSE)
 ## plot(mmfit, plotData = "none", CI =TRUE)
 ## plot(mmfit, plotData = "none", CI =FALSE)
+
+## ## neurodeg example (in 0.9-6 not all means were visible)
+## muH  <- c(-5.099, -4.581, -3.22, -2.879, -3.52)     # estimated slope
+## covH <- structure(c(0.149, 0.009, 0.009, 0.009, 0.009, 0.009, 0.149, 
+##                     0.009, 0.009, 0.009, 0.009, 0.009, 0.149, 0.009,
+##                     0.009, 0.009, 0.009, 0.009, 0.149, 0.009, 0.009,
+##                     0.009, 0.009, 0.009, 0.149), .Dim = c(5L, 5L))
+## fit <- fitMod(doses, muH, S=covH, model="emax", type = "general")
+## plot(fit)
+

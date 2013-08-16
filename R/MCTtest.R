@@ -1,4 +1,4 @@
-## here the mcp-related functions
+## here the multiple contrast test related functions
 
 ## performs multiple contrast test (MCP part of MCPMod)
 MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
@@ -14,11 +14,11 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
   cal <- as.character(match.call())
   lst <- checkAnalyArgs(dose, resp, data, S, type,
                         addCovars, placAdj, na.action, cal)
-  dd <- lst$dd;type <- lst$type
+  dd <- lst$dd;type <- lst$type;S <- lst$S
   doseNam <- lst$doseNam;respNam <- lst$respNam
 
   ## calculate optimal contrasts and test-statistics
-  doses <- sort(unique(dd[[doseNam]]))
+  doses <- unique(dd[[doseNam]])
   k <- length(doses)
   if(type == "normal"){
     dd[, doseNam] <- as.factor(dd[, doseNam])
@@ -28,12 +28,7 @@ MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
     vc <- vcov(lm.fit)[1:k, 1:k]
     df <- lm.fit$df.residual
   } else {
-    if(!missing(data)){
-      ord <- order(unique(dd[[doseNam]]))
-      est <- (dd[[respNam]])[ord]
-    } else {
-      est <- resp
-    }
+    est <- dd[[respNam]]
     vc <- S
     if(is.null(df))
       df <- Inf
@@ -189,9 +184,13 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
     if(nrow(S) != nD | ncol(S) != nD)
       stop("S and dose have non-confirming size")
   }
-  dd <- dd[order(dd[[doseNam]]), ]
-  return(list(dd=dd, type = type,
-              doseNam=doseNam,respNam=respNam))
+  ord <- order(dd[[doseNam]])
+  dd <- dd[ord, ]
+  Sout <- NULL
+  if(type == "general")
+    Sout <- S[ord, ord]
+  return(list(dd=dd, type = type, S = Sout, ord=ord,
+              doseNam=doseNam, respNam=respNam))
 }
 
 pValues <- function(contMat, corMat, alpha = 0.025, df,
