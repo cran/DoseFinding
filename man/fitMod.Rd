@@ -39,7 +39,7 @@
   section below.
 }
 \usage{
-fitMod(dose, resp, data, model, S, type = c("normal", "general"),
+fitMod(dose, resp, data = NULL, model, S = NULL, type = c("normal", "general"),
        addCovars = ~1, placAdj = FALSE, bnds, df = NULL,
        start = NULL, na.action = na.fail, control = NULL,
        addArgs = NULL)

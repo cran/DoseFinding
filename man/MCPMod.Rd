@@ -12,7 +12,7 @@
   For details on the method see Bretz et al. (2005).
 }
 \usage{
-MCPMod(dose, resp, data, models, S, type = c("normal", "general"),
+MCPMod(dose, resp, data, models, S = NULL, type = c("normal", "general"),
        addCovars = ~1, placAdj = FALSE, selModel = c("AIC", "maxT", "aveAIC"),
        alpha = 0.025, df = NULL, critV = NULL, doseType = c("TD", "ED"),
        Delta, p, pVal = TRUE, alternative = c("one.sided", "two.sided"),

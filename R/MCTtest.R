@@ -1,7 +1,8 @@
 ## here the multiple contrast test related functions
 
 ## performs multiple contrast test (MCP part of MCPMod)
-MCTtest <- function(dose, resp, data, models, S, type = c("normal", "general"),
+MCTtest <- function(dose, resp, data = NULL, models, S = NULL,
+                    type = c("normal", "general"),
                     addCovars = ~1, placAdj = FALSE, 
                     alpha = 0.025, df = NULL, critV = NULL, pVal = TRUE,
                     alternative = c("one.sided", "two.sided"),
@@ -107,14 +108,14 @@ print.MCTtest <- function(x, digits = 3, eps = 1e-3, ...){
   }
 }
 
-critVal <- function(corMat, alpha = 0.025, df,
+critVal <- function(corMat, alpha = 0.025, df = NULL,
                     alternative = c("one.sided", "two.sided"),
                     control = mvtnorm.control()){
   ## calculate critical value
   alternative <- match.arg(alternative)
   if(missing(corMat))
     stop("corMat needs to be specified")
-  if(missing(df))
+  if(is.null(df))
     stop("degrees of freedom need to be specified")
   tail <- ifelse(alternative[1] == "two.sided",
                  "both.tails", "lower.tail")
@@ -145,7 +146,7 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
     if(any(dose == 0))
       stop("If placAdj == TRUE there should be no placebo group")
   }
-  if(!missing(data)){ # data handed over in data frame
+  if(!is.null(data)){ # data handed over in data frame
     if(!is.data.frame(data))
       stop("data argument needs to be a data frame")
     nams <- c(cal[2], cal[3], all.vars(addCovars))
@@ -171,13 +172,13 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
   if(!is.numeric(dd[[respNam]]))
     stop("response variable needs to be numeric")
   ## check type related arguments
-  if(type == "general" & missing(S))
+  if(type == "general" & is.null(S))
     stop("S argument missing")
-  if(type == "normal" & !missing(S))
+  if(type == "normal" & !is.null(S))
     message("Message: S argument ignored for type == \"normal\"\n")
   if(type == "general" & addCovars != ~1)
     message("Message: addCovars argument ignored for type == \"general\"")
-  if(!missing(S)){
+  if(!is.null(S)){
     if(!is.matrix(S))
       stop("S needs to be of class matrix")
     nD <- length(dd[[doseNam]])

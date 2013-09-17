@@ -30,6 +30,37 @@ checkPrior <- function(prior){
   }
 }
 
+getPrBnds <- function(prior){
+  prbnds <- matrix(ncol = 2, nrow = length(prior))
+  for(z in 1:length(prior)){
+    prvec <- prior[[z]]
+    nam <- names(prior)[z]
+    if(nam %in% c("norm", "t"))
+      prbnds[z,] <- c(-Inf, Inf)
+    if(nam == "lnorm")
+      prbnds[z,] <- c(0, Inf)
+    if(nam == "beta")
+      prbnds[z,] <- c(prvec[1], prvec[2])
+  }
+  prbnds
+}
+
+projPrBnds <- function(par, lbnd, ubnd){
+  ## project start parameter into bounds
+  if(par > lbnd & par < ubnd){
+    return(par)
+  } else {
+    rng <- ubnd-lbnd
+    if(!is.finite(rng))
+      rng <- 5
+    if(par < lbnd)
+      return(lbnd+0.05*rng)
+    if(par > ubnd)
+      return(ubnd-0.05*rng)
+  }
+}
+
+
 
 bFitMod <- function(dose, resp, model, S, placAdj = FALSE,
                     type = c("Bayes", "bootstrap"),
@@ -136,12 +167,15 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
     if(model != "linInt"){ 
       np <- nPar - 1   
     } else {
-      placAdj <- FALSE ## can procedd as if placAdj = FALSE
+      placAdj <- FALSE ## can proceed as if placAdj = FALSE
     }
   }
   if(length(prnr) != np)
     stop(length(prnr), " priors specified, need ", np," for selected model")
   checkPrior(prior)
+  if(is.null(start)){
+    prBnds <- getPrBnds(prior)    
+  }
   
   ## add some checks here (scale > 0, a > b, alpha,beta>0)  
   prior <- as.double(do.call("c", prior))
@@ -156,8 +190,12 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
     gfit <- fitMod(dose, resp, S=S, model=model, type = "general",
                    bnds = ll[[model]],
                    placAdj = placAdj, addArgs=list(off = off, scal = scal))
-    if(is.null(start))
+    if(is.null(start)){
       start <- coef(gfit)
+      for(i in 1:length(start)){
+        start[i] <- projPrBnds(start[i], prBnds[i,1], prBnds[i,2])
+      }
+    }
     if(is.null(ctrl$w))
       ctrl$w <- rep(1.0, nPar)#sqrt(diag(vcov(gfit)))
   }
@@ -210,7 +248,6 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
 bFitMod.bootstrap <- function(dose, resp, S, model, placAdj,
                               nSim, control, bnds, off, scal,
                               nodes){
-  ##
   if(model %in% c("emax", "exponential", "betaMod", "logistic", "sigEmax")){
     if(missing(bnds)){
       message("Message: Need bounds in \"bnds\" for nonlinear models, using default bounds from \"defBnds\".")
@@ -228,7 +265,12 @@ bFitMod.bootstrap <- function(dose, resp, S, model, placAdj,
                       doseNam = "dose", respNam = "resp")
     coef(fit)
   }
-  t(apply(sims, 1, func))
+  out <- apply(sims, 1, func)
+  if(is.matrix(out)){
+    return(t(out))
+  } else {
+    return(matrix(out, nrow = nSim, ncol = 1))
+  }
 }
 
 ## to do write print, predict and summary method

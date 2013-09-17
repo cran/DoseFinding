@@ -1,15 +1,26 @@
 ## wrapper function for MCTtest and fitMod calls
-MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"), 
-                   addCovars = ~1, placAdj = FALSE, selModel = c("AIC", "maxT", "aveAIC"),
-                   alpha = 0.025, df = NULL, critV = NULL, doseType = c("TD", "ED"), Delta, p,
+MCPMod <- function(dose, resp, data = NULL, models = NULL, S=NULL,
+                   type = c("normal", "general"), 
+                   addCovars = ~1, placAdj = FALSE,
+                   selModel = c("AIC", "maxT", "aveAIC"),
+                   alpha = 0.025, df = NULL, critV = NULL,
+                   doseType = c("TD", "ED"), Delta, p,
                    pVal = TRUE, alternative = c("one.sided", "two.sided"), 
                    na.action = na.fail, mvtcontrol = mvtnorm.control(),
                    bnds, control = NULL){
 
   direction <- attr(models, "direction")
   ## first perform multiple contrast test
-  test <- MCTtest(dose, resp, data, models, S, type, addCovars, placAdj, alpha, df,
-                  critV, pVal, alternative, na.action, mvtcontrol)
+  if(!is.null(data)){
+    callMCT <- list(deparse(substitute(dose)), deparse(substitute(resp)), data,
+                    models, S, type, addCovars, placAdj, alpha, df,
+                    critV, pVal, alternative, na.action, mvtcontrol)
+    test <- do.call(MCTtest, callMCT)
+  } else {
+    test <- MCTtest(dose, resp, data, models, S, type, addCovars, placAdj, alpha, df,
+                    critV, pVal, alternative, na.action, mvtcontrol)
+  }
+
   
   ## now pre-select models based on contrasts
   tstat <- test$tStat
@@ -32,11 +43,13 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
   
   mods <- vector("list", length(namsU));z <- 1
   if(missing(bnds)){
-    if(!missing(data)){
+    if(!is.null(data)){
       cal <- as.character(match.call())
-      dose <- data[, cal[2]]
-    } 
-    bnds <- defBnds(max(dose))
+      doseVec <- data[, cal[2]]
+    } else {
+      doseVec <- dose
+    }
+    bnds <- defBnds(max(doseVec))
   } else {
     if(!is.list(bnds))
       stop("bnds needs to be a list")
@@ -52,9 +65,16 @@ MCPMod <- function(dose, resp, data, models, S, type = c("normal", "general"),
       max(tstat[attr(x, "model") == nams])
   }
   for(i in 1:length(namsU)){
-    mods[[i]] <- fitMod(dose, resp, data, namsU[i], S, type, addCovars,
-                        placAdj, bnds[[namsU[i]]], df, start=NULL, na.action, control,
-                        addArgs)
+    if(!is.null(data)){
+      callMod <- list(deparse(substitute(dose)), deparse(substitute(resp)), data,
+                      namsU[i], S, type, addCovars, placAdj, bnds[[namsU[i]]],
+                      df, NULL, na.action, control, addArgs)
+      mods[[i]] <- do.call(fitMod, callMod)
+    } else {
+      mods[[i]] <- fitMod(dose, resp, data, namsU[i], S, type, addCovars,
+                          placAdj, bnds[[namsU[i]]], df, NULL,
+                          na.action, control, addArgs)
+    }
   }
   crit <- sapply(mods, modcrit)
   names(crit) <- names(mods) <- namsU
