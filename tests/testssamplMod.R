@@ -4,7 +4,6 @@ library(DoseFinding)
 ## compare bFitMod on example data set with jags
 
 data(biom)
-path <- "~/Projekte/DoseFindingPackage/"
 
 ## (i) fit biom data
 ## data to fit
@@ -21,6 +20,7 @@ res <- bFitMod(dose, drFit, vCov, model = "sigEmax", prior=prior, nSim = 100)
 
 ## ## jags code (commented out, only for "manual" testing)
 ## library(rjags)
+## path <- "~/Projekte/DoseFindingPackage/"
 ## modelstr <- "
 ## model{
 ##   y[] ~ dmnorm(mu[], Omega[,])
@@ -89,6 +89,10 @@ vCov <- vcov(anMod)
 bnds <- matrix(c(0.001, 0.5, 1.5, 10), 2, 2)
 res <- bFitMod(dose, drFit, vCov, model = "sigEmax", nSim = 100, bnds=bnds,
                type = "bootstrap")
+dd <- dose[-1];resp <- drFit[2:5]-drFit[1]
+vc <- cbind(-1,diag(4))%*%vCov%*%t(cbind(-1,diag(4)))
+res <- bFitMod(dd, resp, vc, model = "linear", nSim = 100, bnds=bnds,
+               placAdj = TRUE, type = "bootstrap")
 
 ########################################################################
 ## test dose calculations, when model = "linInt" and placAdj=TRUE

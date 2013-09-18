@@ -21,7 +21,7 @@
   on this assumption. Degrees of freedom specified in \samp{df}.
 }
 \usage{
-MCTtest(dose, resp, data, models, S, type = c("normal", "general"),
+MCTtest(dose, resp, data = NULL, models, S = NULL, type = c("normal", "general"),
         addCovars = ~1, placAdj = FALSE, alpha = 0.025, df = NULL,
         critV = NULL, pVal = TRUE,
         alternative = c("one.sided", "two.sided"), na.action = na.fail,

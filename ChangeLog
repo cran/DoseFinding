@@ -1,3 +1,14 @@
+2013-09-17 Bjoern Bornkamp (version 0.9-8)
+      * MCPMod Major changes needed (also in fitMod and MCTtest) to allow
+	for dose/response names different from "dose", "resp" when a
+	data-frame is specified (the problem existed as MCTtest, fitMod 
+	were called from inside MCPMod).
+      * bFitMod.Bayes Ensure that the starting values for the parameters
+	are within the bounds specified by the prior (if no starting
+	values are specified). Thanks to Tobias Mielke for reporting this.
+      * bFitMod.bootstrap Remove bug for model = "linear" and placAdj = TRUE.
+	Thanks to Tobias Mielke for reporting this.
+
 2013-08-15 Bjoern Bornkamp (version 0.9-7)
       * fitMod ensure that the data set returned with DRMod objects
 	is in the original order (not sorted by dose). Also ensure the right

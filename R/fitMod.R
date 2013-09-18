@@ -63,7 +63,8 @@ getGrid <- function(Ngrd, bnds, dim){
   mat
 }
 
-fitMod <- function(dose, resp, data, model, S, type = c("normal", "general"),
+fitMod <- function(dose, resp, data = NULL, model = NULL, S = NULL,
+                   type = c("normal", "general"),
                    addCovars = ~1, placAdj = FALSE, bnds, df = NULL,
                    start = NULL, na.action = na.fail, control = NULL,
                    addArgs = NULL){
