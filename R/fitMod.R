@@ -324,8 +324,8 @@ fitModel.bndnls <- function(dataFit, model, addCovars, type, bnds, control,
     if(dim == 1){ ## refine bounds
       N <- ctrl$gridSize$dim1
       dif <- (bnds[2]-bnds[1])/N # distance between grid points
-      bnds[1] <- max(c(start-1.1*dif), bnds[1])
-      bnds[2] <- min(c(start+1.1*dif), bnds[2])
+      bnds[1] <- max(c(strt-1.1*dif), bnds[1])
+      bnds[2] <- min(c(strt+1.1*dif), bnds[2])
     }
   } else {
     strt <- start;resid <- Inf

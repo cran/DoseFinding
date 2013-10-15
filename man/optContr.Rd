@@ -21,9 +21,16 @@
   Note that the directionality (i.e. whether in "increase" in the
   response variable is beneficial or a "decrease", is inferred from the
   specified \samp{models} object, see \code{\link{Mods}} for details).
+
+  Constrained contrasts (type = "constrained") add the additional
+  constraint in the optimization that the sign of the contrast
+  coefficient for control and active treatments need to be different
+  (the iterative algorithm for calculating the constrained contrasts was
+  derived by E. Glimm).
 }
 \usage{
-optContr(models, doses, w, S, placAdj = FALSE)
+optContr(models, doses, w, S, placAdj = FALSE,
+         type = c("unconstrained", "constrained"))
 
 \method{plot}{optContr}(x, superpose = TRUE, xlab = "Dose",
      ylab = NULL, plotType = c("contrasts", "means"), ...)
@@ -63,7 +70,15 @@ optContr(models, doses, w, S, placAdj = FALSE)
   adjusted estimates, will give the same results as multiplying the
   original contrast matrix to the unadjusted estimates.
 }
-
+\item{type}{
+  For \samp{type = "constrained"} the contrast coefficients of the zero
+  dose group are constrained to be different from the coefficients of
+  the active treatment groups. So that a weighted sum of the active
+  treatments is compared against the zero dose group. For an increasing
+  trend the coefficient of the zero dose group is negative and all other
+  coefficients have to be positive (for a decreasing trend the other way
+  round).
+}
 \item{x, superpose, xlab, ylab, plotType}{
   Arguments for the plot method for optContr objects. plotType
   determines, whether the contrasts or the underlying (standardized)
@@ -108,13 +123,18 @@ dosPlac <- doses[-1]
 ## matrix proportional to cov-matrix of plac. adj. estimates for balanced data
 S <- diag(5)+matrix(1, 5,5)
 ## note that we explicitly hand over the doses here
-contMat0 <- optContr( models, doses=dosPlac, S = S, placAdj = TRUE)
+contMat0 <- optContr(models, doses=dosPlac, S = S, placAdj = TRUE)
 ## -> contMat0 is no longer a contrast matrix (columns do not sum to 0)
 colSums(contMat0$contMat)
 ## calculate contrast matrix for unadjusted estimates from this matrix
 ## (should be same as above)
 aux <- rbind(-colSums(contMat0$contMat), contMat0$contMat)
 t(t(aux)/sqrt(colSums(aux^2))) ## compare to contMat$contMat
+
+## now calculate constrained contrasts 
+optContr(models, w = rep(50,6), type = "constrained")
+optContr(models, doses=dosPlac, S = S, placAdj = TRUE,
+         type = "constrained")
 }
 
 

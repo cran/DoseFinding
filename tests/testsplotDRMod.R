@@ -1,6 +1,6 @@
 ## library(DoseFinding)
 
-## commented out for time reasons
+## ## commented out for time reasons
 
 ## resp <- c(1.23, 1.31, 1.32, 1.36, 1.38)
 ## dose <- c(0, 1.25, 2.5, 5, 10)
