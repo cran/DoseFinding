@@ -173,9 +173,7 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
   if(length(prnr) != np)
     stop(length(prnr), " priors specified, need ", np," for selected model")
   checkPrior(prior)
-  if(is.null(start)){
-    prBnds <- getPrBnds(prior)    
-  }
+  prBnds <- getPrBnds(prior)    
   
   ## add some checks here (scale > 0, a > b, alpha,beta>0)  
   prior <- as.double(do.call("c", prior))
@@ -194,6 +192,11 @@ bFitMod.Bayes <- function(dose, resp, S, model, placAdj,
       start <- coef(gfit)
       for(i in 1:length(start)){
         start[i] <- projPrBnds(start[i], prBnds[i,1], prBnds[i,2])
+      }
+    } else {
+      for(i in 1:length(start)){
+        if((start[i] < prBnds[i,1]) | (start[i] > prBnds[i,2]))
+          stop("specified start value not consistent with bounds on prior distribution")
       }
     }
     if(is.null(ctrl$w))
@@ -347,7 +350,7 @@ predict.bFitMod <- function(object, predType = c("full-model", "effect-curve"),
                      placAdj = placAdj, model = model, scal = scal,
                      off = off, nodes = nodes)
 
-  if(predType == "EffectCurve"){
+  if(predType == "effect-curve"){
     out <- out - out[,1]
   }
   if(!is.null(summaryFct)){

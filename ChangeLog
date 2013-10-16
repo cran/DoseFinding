@@ -1,3 +1,17 @@
+2013-10-15 Bjoern Bornkamp (version 0.9-9)
+      * bFitMod.Bayes Stop if starting values lie outside of bounds
+	specified for the prior distribution
+      * predict.bFitMod Remove incorrect "if" statement (use
+	"effect-curve" not "EffectCurve")
+      * fitModels.bndnls now uses narrowed bounds for 1d models again
+	(as in 0.9-5 and earlier), thanks to Tobias Mielke for reporting
+	the three points above.
+      * optContr now allows for constrained contrasts, i.e. where the
+	contrast coefficients in placebo and active treatment groups are
+	required to have different signs (thanks for Ekkehard Glimm for
+	providing a simple and efficient algorithm for calculating these
+	contrasts).
+
 2013-09-17 Bjoern Bornkamp (version 0.9-8)
       * MCPMod Major changes needed (also in fitMod and MCTtest) to allow
 	for dose/response names different from "dose", "resp" when a

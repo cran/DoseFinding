@@ -1,35 +1,102 @@
 ## functions for calculating optimal contrasts and critical value
 
-optC <- function(mu, Sinv = NULL){
+optC <- function(mu, Sinv = NULL, placAdj = FALSE){
   ## calculate optimal contrast for given mu and Sinv (Sinv = proportional to inv covariance matrix)
-  aux <- rowSums(Sinv)  # Sinv %*% 1
-  mn <- sum(mu * aux)/sum(aux) # formula is: S^(-1)(mu-mu*S^(-1)*1/(1*S^(-1)1)1)
-  val <- Sinv %*% (mu - mn)
-  ## now center so that sum is 0
-  ## and standardize to have norm 1
-  val <- val - sum(val)
-  val/sqrt(sum(val^2))
+  if(!placAdj){
+    aux <- rowSums(Sinv)  # Sinv %*% 1
+    mn <- sum(mu * aux)/sum(aux) # formula is: S^(-1)(mu-mu*S^(-1)*1/(1*S^(-1)1)1)
+    val <- Sinv %*% (mu - mn)
+    ## now center so that sum is 0
+    ## and standardize to have norm 1
+    val <- val - sum(val)
+  } else { # placAdj = TRUE
+    val <- Sinv %*% mu     
+  }
+    val/sqrt(sum(val^2))
 }
 
-placAdjoptC <- function(mu, Sinv = NULL){
-  ## calculate optimal contrast for placebo-adjusted estimates
-  ## Sinv is (proportional to) the inverse covariance of the plac.-adj. estimates
-  val <- Sinv %*% mu
-  val/sqrt(sum(val^2)) ## standardize to have norm 1 (for uniqueness)
+constOptC <- function(mu, Sinv = NULL, placAdj = FALSE){
+  ## calculate optimal contrasts under the additional constraint that
+  ## the control and the active treatment groups have a different sign
+  ## in the contrast
+  S <- solve(Sinv) # ugly fix, we should use S as argument
+  if(!placAdj){
+    k <- length(mu)
+    CC <- cbind(-1,diag(k-1))
+    SPa <- CC%*%S%*%t(CC)
+    muPa <- as.numeric(CC%*%mu)
+  } else {
+    k <- length(mu)+1
+    SPa <- S
+    muPa <- mu
+  }
+  ## determine direction of effect
+  unContr <- solve(SPa)%*%muPa # unconstrained optimal contrast
+  mult <- ifelse(-sum(unContr) <= 0, 1, -1) # 1 increasing, -1 decreasing
+  nonzero <- 1:(k-1)
+  contrB <- numeric(k-1)
+  repeat{ # solve least-squares problem until there are no violators
+    contr <- solve(SPa)%*%muPa
+    contrB[nonzero] <- contr
+    ind <- (mult*contr) < 0 # which are the new violators
+    if(sum(ind) == 0) # if no violators stop
+      break
+    contrB[nonzero[ind]] <- 0 # set violators to 0
+    nonzero <- setdiff(nonzero, nonzero[which(ind)]) # remove violators
+    SPa <- SPa[!ind,!ind]
+    muPa <- muPa[!ind]
+  }
+  if(!placAdj)
+    contrB <- c(-sum(contrB), contrB)
+  contrB/sqrt(sum(contrB^2))
 }
 
-modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE){
+
+modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE, type){
   ## call optC on matrix
+  ## check whether constant shape was specified and remove (can happen for linInt model)
+  if(!placAdj){ 
+    ind <- apply(means, 2, function(x){
+      length(unique(x)) > 1
+    })
+  } else { ## placAdj
+    ind <- apply(means, 2, function(x){
+      all(x != 0)
+    })
+  }
+  if(all(!ind))
+    stop("All models correspond to a constant shapes, no optimal contrasts calculated ")
+  if(any(!ind)){
+    nam <- colnames(means)[!ind]
+    namsC <- paste(nam, collapse = ", ")
+    if(length(nam) == 1){
+      message("The ", namsC, " model has a constant shape, cannot
+calculate optimal contrasts for this shape.")
+    } else {
+      message("The ", namsC, " models have a constant shape, cannot
+calculate optimal contrasts for these shapes.")
+    }
+    means <- means[,ind, drop=FALSE]
+  }
+
   if(is.null(Sinv))
     Sinv <- solve(W)
-  if(!placAdj){
-    return(apply(means, 2, optC, Sinv = Sinv))
-  } else {
-    return(apply(means, 2, placAdjoptC, Sinv = Sinv))    
+  if(type == "unconstrained"){
+    out <- apply(means, 2, optC, Sinv = Sinv, placAdj = placAdj)
+  } else { # type == "constrained"
+    out <- apply(means, 2, constOptC, Sinv = Sinv, placAdj = placAdj)
   }
+  if(!is.matrix(out)){ ## can happen for placAdj=T and only 1 act dose
+    nam <- names(out)
+    out <- matrix(out, nrow = 1)
+    colnames(out) <- nam
+  }
+
+  out
 }
 
-optContr <-  function(models, doses, w, S, placAdj = FALSE){
+optContr <-  function(models, doses, w, S, placAdj = FALSE,
+                      type = c("unconstrained", "constrained")){
   ## calculate optimal contrasts and critical value
   if(!(inherits(models, "Mods")))
     stop("models needs to be of class Mods")
@@ -39,6 +106,7 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE){
   off <- attr(models, "off")
   nodes <- attr(models, "doses")
   mu <- getResp(models, doses)
+  type <- match.arg(type)
   if(any(doses == 0) & placAdj)
     stop("If placAdj == TRUE there should be no placebo group in \"doses\"")
   ## check for n and vCov arguments 
@@ -58,10 +126,11 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE){
       stop("S needs to be a matrix")
     Sinv <- solve(S)
   }
-   
-  contMat <- modContr(mu, Sinv=Sinv, placAdj = placAdj)
+  contMat <- modContr(mu, Sinv=Sinv, placAdj = placAdj, type = type)
   rownames(contMat) <- doses
-  res <- list(contMat = contMat, muMat = mu)
+  corMat <- cov2cor(t(contMat) %*% S %*% contMat)
+  res <- list(contMat = contMat, muMat = mu, corMat = corMat)
+  attr(res, "type") <- type
   attr(res, "placAdj") <- placAdj
   class(res) <- "optContr"
   res

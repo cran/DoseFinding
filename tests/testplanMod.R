@@ -78,6 +78,7 @@
 
 ## ################################################################################
 ## ## test 3: study example
+## nSim <- 100
 ## doses <- c(0,1,3,10,30,50,75,150,300,450)
 ## n <- c(100,rep(38,8),100)
 ## sigma <- 380
@@ -88,7 +89,7 @@
 ## model <- "sigEmax"
 ## pp <- planMod(model, mm, n, sigma, doses=doses,
 ##               simulation = TRUE, cores = 4,
-##               alpha = 0.025, nSim = 1000,
+##               alpha = 0.025, nSim = nSim,
 ##               p = 0.5, pLB = 0.25, pUB = 0.75)
 ## print(pp)
 ## summary(pp, Delta = 130, p = 0.5)
@@ -105,20 +106,20 @@
 ## model <- "linear"
 ## pp <- planMod(model, mm, n, sigma, doses=doses,
 ##               simulation = TRUE, cores = 4,
-##               alpha = 0.025, nSim = 10000,
+##               alpha = 0.025, nSim = nSim,
 ##               p = 0.5, pLB = 0.25, pUB = 0.75)
 
 ## ## now model selection
 ## model <- c("sigEmax", "emax")
 ## pp1 <- planMod(model, mm, n, sigma, doses=doses, asyApprox = FALSE,
 ##               simulation = TRUE,  cores = 4,
-##               alpha = 0.025, nSim = 1000,
+##               alpha = 0.025, nSim = nSim,
 ##               p = 0.5, pLB = 0.25, pUB = 0.75)
 ## print(pp1)
 ## summary(pp1)
 ## plot(pp1)
 ## plot(pp1, type="ED", 0.5)
-## plot(pp1, type="TD", Delta = 130, direction = "decreasing")
+## plot(pp1, type="TD", Delta = 130, direction = "increasing")
 
 
 ## ## ################################################################################
@@ -137,7 +138,7 @@
 ## altb <- defBnds(200)
 ## pp <- planMod(model, fmodels, n, sigma, doses=doses,
 ##               asyApprox = FALSE, simulation = TRUE, cores = 4,
-##               alpha = 0.025, nSim = 1000, bnds=altb,
+##               alpha = 0.025, nSim = nSim, bnds=altb,
 ##               p = 0.5, pLB = 0.25, pUB = 0.75)
 ## pp
 ## summary(pp, p = 0.5, Delta = 0.3)
