@@ -242,6 +242,8 @@ print.summary.MCPMod <- function(x, ...){
 plot.MCPMod <- function(x, CI = FALSE, level = 0.95,
                         plotData = c("means", "meansCI", "raw", "none"),
                         plotGrid = TRUE, colMn = 1, colFit = 1, ...){
+  if(is.null(x$mods))
+    stop("No models significant, nothing to plot")
   plotFunc(x, CI, level, plotData, plotGrid, colMn, colFit, ...)
 }
 

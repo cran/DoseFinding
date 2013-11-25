@@ -18,8 +18,8 @@
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-9\cr
-Date: \tab 2013-10-15\cr
+Version: \tab 0.9-10\cr
+Date: \tab 2013-11-25\cr
 License: \tab GPL-3
 }
 The main functions are:\cr

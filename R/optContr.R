@@ -15,7 +15,7 @@ optC <- function(mu, Sinv = NULL, placAdj = FALSE){
     val/sqrt(sum(val^2))
 }
 
-constOptC <- function(mu, Sinv = NULL, placAdj = FALSE){
+constOptC <- function(mu, Sinv = NULL, placAdj = FALSE, direction){
   ## calculate optimal contrasts under the additional constraint that
   ## the control and the active treatment groups have a different sign
   ## in the contrast
@@ -32,40 +32,37 @@ constOptC <- function(mu, Sinv = NULL, placAdj = FALSE){
   }
   ## determine direction of effect
   unContr <- solve(SPa)%*%muPa # unconstrained optimal contrast
-  mult <- ifelse(-sum(unContr) <= 0, 1, -1) # 1 increasing, -1 decreasing
-  nonzero <- 1:(k-1)
-  contrB <- numeric(k-1)
-  repeat{ # solve least-squares problem until there are no violators
-    contr <- solve(SPa)%*%muPa
-    contrB[nonzero] <- contr
-    ind <- (mult*contr) < 0 # which are the new violators
-    if(sum(ind) == 0) # if no violators stop
-      break
-    contrB[nonzero[ind]] <- 0 # set violators to 0
-    nonzero <- setdiff(nonzero, nonzero[which(ind)]) # remove violators
-    SPa <- SPa[!ind,!ind]
-    muPa <- muPa[!ind]
-  }
+  mult <- ifelse(direction == "increasing", 1, -1) # 1 increasing, -1 decreasing
+  ## prepare call of quadprog::solve.QP
+  D <- SPa
+  d <- rep(0,k-1)
+  tA <- rbind(muPa, 
+              mult*diag(k-1))
+  A <- t(tA)
+  bvec <- c(1,rep(0,k-1))
+  contr <- solve.QP(D, d, A, bvec, meq=1)$solution
+  contr[abs(contr) < 1e-10] <- 0
   if(!placAdj)
-    contrB <- c(-sum(contrB), contrB)
-  contrB/sqrt(sum(contrB^2))
+    contr <- c(-sum(contr), contr)
+  contr/sqrt(sum(contr^2))
 }
 
 
-modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE, type){
+modContr <- function(means, W = NULL, Sinv = NULL, placAdj = FALSE,
+                     type, direction){
   ## call optC on matrix
   ## check whether constant shape was specified and remove (can happen for linInt model)
   if(!placAdj){ 
     ind <- apply(means, 2, function(x){
-      length(unique(x)) > 1
+      length(unique(x)) > 1 
     })
   } else { ## placAdj
     ind <- apply(means, 2, function(x){
-      all(x != 0)
+      any(x != 0) 
     })
   }
   if(all(!ind))
-    stop("All models correspond to a constant shapes, no optimal contrasts calculated ")
+    stop("All models correspond to a constant shapes, no optimal contrasts calculated.")
   if(any(!ind)){
     nam <- colnames(means)[!ind]
     namsC <- paste(nam, collapse = ", ")
@@ -84,14 +81,14 @@ calculate optimal contrasts for these shapes.")
   if(type == "unconstrained"){
     out <- apply(means, 2, optC, Sinv = Sinv, placAdj = placAdj)
   } else { # type == "constrained"
-    out <- apply(means, 2, constOptC, Sinv = Sinv, placAdj = placAdj)
+    out <- apply(means, 2, constOptC, Sinv = Sinv,
+                 placAdj = placAdj, direction = direction)
   }
   if(!is.matrix(out)){ ## can happen for placAdj=T and only 1 act dose
     nam <- names(out)
     out <- matrix(out, nrow = 1)
     colnames(out) <- nam
   }
-
   out
 }
 
@@ -105,8 +102,16 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE,
   scal <- attr(models, "scal")
   off <- attr(models, "off")
   nodes <- attr(models, "doses")
+  direction <- attr(models, "direction")
   mu <- getResp(models, doses)
+  if(placAdj){ 
+    mu0 <- getResp(models, 0)
+    mu <- mu-matrix(mu0[1,], byrow = TRUE,
+                    nrow=nrow(mu), ncol=ncol(mu))
+  }
   type <- match.arg(type)
+  if(type == "constrained")
+    require(quadprog, quietly = TRUE)
   if(any(doses == 0) & placAdj)
     stop("If placAdj == TRUE there should be no placebo group in \"doses\"")
   ## check for n and vCov arguments 
@@ -126,7 +131,8 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE,
       stop("S needs to be a matrix")
     Sinv <- solve(S)
   }
-  contMat <- modContr(mu, Sinv=Sinv, placAdj = placAdj, type = type)
+  contMat <- modContr(mu, Sinv=Sinv, placAdj = placAdj,
+                      type = type, direction = direction)
   rownames(contMat) <- doses
   corMat <- cov2cor(t(contMat) %*% S %*% contMat)
   res <- list(contMat = contMat, muMat = mu, corMat = corMat)
