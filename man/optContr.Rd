@@ -24,9 +24,9 @@
 
   Constrained contrasts (type = "constrained") add the additional
   constraint in the optimization that the sign of the contrast
-  coefficient for control and active treatments need to be different
-  (the iterative algorithm for calculating the constrained contrasts was
-  derived by E. Glimm).
+  coefficient for control and active treatments need to be
+  different. The quadratic programming algorithm from the quadprog
+  package is used to calculate the contrasts.
 }
 \usage{
 optContr(models, doses, w, S, placAdj = FALSE,

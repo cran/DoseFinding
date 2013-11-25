@@ -1,14 +1,14 @@
-f14dd6bb3d32179fde7646a7f202c7d6 *ChangeLog
-8af8d261fb5adb59bec04579508f26c2 *DESCRIPTION
+8c9def62e5a4d31656425a148125b0d1 *ChangeLog
+8490bad0ea0244da13ab41c69b3e88cc *DESCRIPTION
 57f27b27abd7f617aeb441cce4cffd7d *NAMESPACE
-b15a025550b609617928c6d75a20224f *R/MCPMod.R
+b5248a72b64098b76efa2a9ad7967c87 *R/MCPMod.R
 54c4ad3fdd1369c6ffbbc1fb44df535f *R/MCTtest.R
 95d1355549230f7dd0d4bdce8e329444 *R/Mods.R
 592f72eeba13cb6b39cf9ff7c157713b *R/bFitMod.R
 1b2659335d745655ba45716238695ad0 *R/drmodels.R
 a401c6bfa1c5e935586571d81d38d4b2 *R/fitMod.R
 67fd322a12215ed9eadd8280498d910b *R/guesst.R
-aedc6afb1d2375a330a22fc2b67a6389 *R/optContr.R
+acae63e0589d5d9bfad80f283c02e499 *R/optContr.R
 a0cd800f53f1f23941a187e27f368aca *R/optDesign.R
 b547581e4a508d0205fc6952c5c63962 *R/planMod.R
 49d36ae6f084c62844dbdb7e4d622559 *R/powMCT.R
@@ -18,7 +18,7 @@ b547581e4a508d0205fc6952c5c63962 *R/planMod.R
 f614357f8e699f33db693e52a1b39334 *data/glycobrom.rda
 33017675ed1b1a520c4635da8b1e9747 *data/migraine.rda
 67d721d20a92e2c79456e51cf1c47c09 *data/neurodeg.rda
-b3a013fdadb82c0e0c047beacde181d2 *man/DoseFinding-package.Rd
+1b35bb7af9d48ca2184f5c30b46339c9 *man/DoseFinding-package.Rd
 cdce05c5b303cd6e7e0c402f8daa1ba6 *man/IBScovars.Rd
 0ec152705949973d80637db75da1566c *man/MCPMod.Rd
 4994bbdbfd0903666ebd63c9f0932c9b *man/MCTtest.Rd
@@ -33,7 +33,7 @@ cfcbf0d6d7adb9a377c0778a5ae27792 *man/glycobrom.Rd
 cedf7b4ea00494ad51abe03662591ca2 *man/migraine.Rd
 61695b83d772755fbe846c01951495c1 *man/mvtnorm-control.Rd
 11ba13c89dea79042e8920741ec9dd07 *man/neurodeg.Rd
-b299ddbef9e0cbc0e4c1a05ba4d51b0d *man/optContr.Rd
+0b4445a98edcb2e72430a5aea0a4fac6 *man/optContr.Rd
 e2d72ac955bd881d583c99c398bf15ed *man/optDesign.Rd
 3eb479565d289f6c1b870956f8e23cd1 *man/planMod.Rd
 0b2ff6c1486fcbca1cd7c2e07addabc0 *man/powMCT.Rd
@@ -49,7 +49,7 @@ e2d72ac955bd881d583c99c398bf15ed *man/optDesign.Rd
 f353f42a989ac880a97b3ca288e2db77 *tests/testsFitting.R
 ca78043f8f89137edb6f30bcac695b89 *tests/testsMCPMod.R
 58330c0774f9948caa04eefc4042d52d *tests/testsMCT.R
-b09bf140e02896a3dd2f926e4ab1f746 *tests/testsoptContr.R
+7dadf99a348b417a3cca1159e47c847b *tests/testsoptContr.R
 cd414c0c1f4a4e9f08d9fbbe49e1b0be *tests/testsplotDRMod.R
 bf4c9e3f690de48ad885d286bd338166 *tests/testssampSize.R
 76113f14a1ad0983944e954cc8d5d7e7 *tests/testssamplMod.R
