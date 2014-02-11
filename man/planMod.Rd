@@ -67,17 +67,19 @@ planMod(model, altModels, n, sigma, S, doses, asyApprox = TRUE,
     An object of class \samp{Mods}, defining the true mean vectors under which
     operating characteristics should be calculated.
   }
-  \item{n, sigma, S}{
+\item{n, sigma, S}{
     Either a vector \samp{n} and \samp{sigma} or \samp{S} need to be
     specified.  When \samp{n} and \samp{sigma} are specified it is
     assumed computations are made for a normal homoscedastic ANOVA model
-    with group sample sizes given by \samp{n}, i.e. the covariance
-    matrix used is \code{sigma^2*diag(1/n)} and the degrees of freedom
-    are calculated as \code{sum(n)-nrow(contMat)}. When a single number
-    is specified for \samp{n} it is assumed this is the sample size per
-    group and balanced allocations are used.\cr
+    with group sample sizes given by \samp{n} and residual standard
+    deviation \samp{sigma}, i.e. the covariance matrix used for the
+    estimates is thus \code{sigma^2*diag(1/n)} and the degrees of
+    freedom are calculated as \code{sum(n)-nrow(contMat)}. When a single
+    number is specified for \samp{n} it is assumed this is the sample
+    size per group and balanced allocations are used.\cr
 
-    When \samp{S} is specified this will be used as covariance matrix.
+    When \samp{S} is specified this will be used as covariance matrix
+    for the estimates.
   }
   \item{doses}{
     Doses to use

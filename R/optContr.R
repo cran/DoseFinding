@@ -102,7 +102,9 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE,
   scal <- attr(models, "scal")
   off <- attr(models, "off")
   nodes <- attr(models, "doses")
-  direction <- attr(models, "direction")
+  direction <- unique(attr(models, "direction"))
+  if(length(direction) > 1)
+    stop("need to provide either \"increasing\" or \"decreasing\" as direction to optContr")
   mu <- getResp(models, doses)
   if(placAdj){ 
     mu0 <- getResp(models, 0)

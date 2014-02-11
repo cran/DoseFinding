@@ -48,13 +48,15 @@ getAddArgs <- function(addArgs, doses = NULL){
   list(scal=addArgs0$scal, off=addArgs0$off)
 }
 
-checkEntries <- function(modL, doses){
+checkEntries <- function(modL, doses, fullMod){
   biModels <- c("emax", "linlog", "linear", "quadratic",
                 "exponential", "logistic", "betaMod", "sigEmax",
                 "linInt")
-  lapply(names(modL), function(nam){
+  checkNam <- function(nam){
     if(is.na(match(nam, biModels)))
       stop("Invalid model specified: ", nam)
+  }
+  checkStand <- function(nam){
     pars <- modL[[nam]]
     ## checks for as many invalid values as possible
     if(!is.numeric(pars) & !is.null(pars))
@@ -63,7 +65,7 @@ checkEntries <- function(modL, doses){
     if((nam %in% c("linear", "linlog")) & !is.null(pars))
       stop("For model ", nam, ", model entry needs to be equal to NULL")
     if((nam %in% c("emax", "sigEmax", "betaMod", "logistic", "exponential")) & any(pars <= 0))
-      stop("For model ", nam, ", model entries needs to be positive")
+      stop("For model ", nam, " model entries needs to be positive")
     if((nam %in% c("emax", "exponential", "quadratic")) & is.matrix(nam))
       stop("For model ", nam, " parameters need to specified in a vector")
     if((nam %in% c("sigEmax", "betaMod", "logistic"))){
@@ -84,11 +86,21 @@ checkEntries <- function(modL, doses){
         stop("Need to provide guesstimates for each active dose. ", len,
              " specified, need ", length(doses)-1, ".")
     }
-  })
+  }
+  if(!fullMod){
+    lapply(names(modL), function(nam){
+      checkNam(nam)
+      checkStand(nam)
+    })
+  } else {
+    lapply(names(modL), function(nam){
+      checkNam(nam)
+    })
+  }
 }
-
+  
 Mods <- function(..., doses, placEff = 0, maxEff, direction = c("increasing", "decreasing"),
-                 addArgs = NULL){
+                 addArgs = NULL, fullMod = FALSE){
   if(missing(doses))
     stop("Need to specify dose levels")
   doses <- sort(doses)
@@ -96,27 +108,42 @@ Mods <- function(..., doses, placEff = 0, maxEff, direction = c("increasing", "d
     stop("Only dose-levels >= 0 allowed")
   if(abs(doses[1]) > .Machine$double.eps ^ 0.5)
     stop("Need to include placebo dose")
-  modL <- list(...)
-  nams <- names(modL)
-  ## perform some simple check for a valid standModel list
-  if(length(nams) != length(unique(nams)))
-    stop("only one list entry allowed for each model class")
-  checkEntries(modL, doses)
-  ## get additional arguments
-  lst <- getAddArgs(addArgs, doses)
   ## check for adequate addArgs
+  lst <- getAddArgs(addArgs, doses)
   if(lst$scal < max(doses))
     stop("\"scal\" parameter needs to be >= max(doses)")
   if(lst$scal < 0)
     stop("\"scal\" parameter needs to be positive")    
   if(lst$off < 0)
     stop("\"off\" parameter needs to be positive")    
-
-  direction <- match.arg(direction)
-  if(missing(maxEff))
-    maxEff <- ifelse(direction == "increasing", 1, -1)
-  
-  modL <- fullMod(modL, doses, placEff, maxEff, lst$scal, lst$off)
+  ## obtain model list
+  modL <- list(...)
+  nams <- names(modL)
+  ## perform some simple check for a valid standModel list
+  if(length(nams) != length(unique(nams)))
+    stop("only one list entry allowed for each model class")
+  checkEntries(modL, doses, fullMod)
+  if(!fullMod){ ## assume standardized models
+    direction <- match.arg(direction)
+    if (missing(maxEff)) 
+      maxEff <- ifelse(direction == "increasing", 1, -1)
+    modL <- fullMod(modL, doses, placEff, maxEff, lst$scal, lst$off)
+  } else {
+    ## calculate placEff and maxEff from model pars. For unimodal
+    ## models maxEff determination might fail if the dose with maximum
+    ## efficacy is not among those used!
+    resp <- calcResp(modL, doses, lst$off, lst$scal, lst$nodes)
+    placEff <- resp[1,]
+    maxEff <- apply(resp, 2, function(x){
+      difs <- x-x[1]
+      indMax <- which.max(difs)
+      indMin <- which.min(difs)
+      if(difs[indMax] > 0)
+        return(difs[indMax])
+      if(difs[indMin] < 0)
+        return(difs[indMin])
+    })
+  }
   attr(modL, "placEff") <- placEff
   attr(modL, "maxEff") <- maxEff
   attr(modL, "direction") <- ifelse(maxEff > 0, "increasing", "decreasing")
@@ -218,6 +245,9 @@ plotModels <- function(models, nPoints = 200, superpose = FALSE,
     stop("\"models\" needs to be of class Mods")
   nM <- modCount(models, fullMod = TRUE)
 
+  if(nM > 50)
+    stop("too many models in Mods object to plot (> 50 models).")
+  
   doseSeq <- sort(union(seq(min(doses), max(doses), length = nPoints), 
                         doses))
   resp <- calcResp(models, doseSeq, off, scal, nodes)
@@ -549,7 +579,6 @@ calcTDgrad <- function(model, pars, Delta,
     return(c(0, .p1, .p2, .p3))
   }
   if(model == "betaMod"){
-    require(numDeriv, quietly = TRUE)
     h0 <- function(cf, scal, Delta){
       func <- function(x, delta1, delta2, Emax, scal, Delta){
         betaMod(x, 0, 1, delta1, delta2, scal)-Delta/Emax
@@ -558,7 +587,11 @@ calcTDgrad <- function(model, pars, Delta,
       uniroot(func, lower=0, upper=mode, delta1=cf[3], delta2=cf[4],
               Emax=cf[2], scal=scal, Delta=Delta)$root
     }
-    return(grad(h0, cf, scal=scal, Delta=Delta))
+    td <- h0(cf, scal, Delta) ## calculate target dose
+    .p1 <- -td*(scal-td)/(cf[2]*(cf[3]*(scal-td)-cf[4]*td))
+    .p2 <- .p1*cf[2]*(log(td/scal)+log(cf[3]+cf[4])-log(cf[3]))
+    .p3 <- .p1*cf[2]*(log(1-td/scal)+log(cf[3]+cf[4])-log(cf[4]))
+    return(c(0, .p1, .p2, .p3))
   }
   if(model == "exponential"){
     .p1 <- -Delta*cf[3]/(cf[2]*Delta+cf[2]^2)

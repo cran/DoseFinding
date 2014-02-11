@@ -80,7 +80,6 @@ crt <- calcCrit(rep(1/6, 6), fMod, probs, c(0, 10, 25, 50, 100, 150),
                 Delta=0.1, designCrit = "TD")
 exp(deswgts$crit - crt)
 
-
 # Paper p. 1230 line 10
 fMod <- Mods(betaMod = c(1.39, 1.39), doses=c(0, 150), addArgs=list(scal=200),
               placEff=0, maxEff=0.4)
@@ -89,6 +88,10 @@ doses <- c(0, 27, 94.89, 150)
 probs <- 1
 deswgts <- optDesign(fMod, probs, doses, Delta=0.1, designCrit = "TD")
 deswgts
+## efficiency compared to standard design (last column)
+crt <- calcCrit(rep(1/6, 6), fMod, probs, c(0, 10, 25, 50, 100, 150),
+                Delta=0.1, designCrit = "TD")
+exp(deswgts$crit - crt)
 
 # Paper p. 1230 line 1
 fMod <- Mods(betaMod = c(0.23, 2.31), doses=c(0,150), addArgs=list(scal=200),
@@ -97,6 +100,10 @@ doses <- c(0, 0.35, 150)
 probs <- 1
 deswgts <- optDesign(fMod, probs, doses, Delta=0.2, designCrit = "TD")
 deswgts
+## efficiency compared to standard design (last column)
+crt <- calcCrit(rep(1/6, 6), fMod, probs, c(0, 10, 25, 50, 100, 150),
+                Delta=0.2, designCrit = "TD")
+exp(deswgts$crit - crt)
 
 ########################################################################
 #### mixed Paper p. 1233, l. 2 (note the off and probably also the
