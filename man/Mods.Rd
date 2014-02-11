@@ -38,7 +38,8 @@
 }
 \usage{
 Mods(..., doses, placEff = 0, maxEff,
-     direction = c("increasing", "decreasing"), addArgs=NULL)
+     direction = c("increasing", "decreasing"), addArgs=NULL,
+     fullMod = FALSE)
 
 getResp(fmodels, doses)
 
@@ -67,7 +68,11 @@ getResp(fmodels, doses)
     defaults are used \samp{list(scal = 1.2*max(doses), off =
     0.01*max(doses), nodes = doses)}.
   }
-  
+  \item{fullMod}{
+    Logical determining, whether the model parameters specified in the Mods
+    function (via the ... argument) should be interpreted as
+    standardized or the full model parameters.
+  }
   \item{placEff, maxEff}{
     Specify used placebo effect and the maximum effect over placebo.
     Either a numeric vector of the same size as the number of candidate
@@ -190,6 +195,19 @@ ED(fmodels, p=0.5, EDtype = "discrete", doses=doses)
 
 plot(fmodels, plotTD = TRUE, Delta = 0.3)
 
+## example for specifying all model parameters (fullMod=TRUE)
+fmods <- Mods(emax = c(0, 1, 0.1), linear = cbind(c(-0.4,0), c(0.2,0.1)),
+              sigEmax = c(0, -1.1, 0.5, 3),
+              doses = 0:4, fullMod = TRUE)
+getResp(fmods, doses=seq(0,4,length=11))
+## calculate doses giving an improvement of 0.3 over placebo
+TD(fmods, Delta=0.3)
+## discrete version
+TD(fmods, Delta=0.3, TDtype = "discrete", doses=0:4)
+## doses giving 50\% of the maximum effect
+ED(fmods, p=0.5)
+ED(fmods, p=0.5, EDtype = "discrete", doses=0:4)
+plot(fmods)
 }
 
 

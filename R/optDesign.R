@@ -155,7 +155,7 @@ optDesign <- function(models, probs, doses,
       stop("n needs to be of length 1")
   }
   if(missing(Delta)){
-    if(substr(designCrit, 1, 3) == "TD")
+    if(designCrit %in% c("TD", "Dopt&TD"))
       stop("need to specify target difference \"Delta\"")
   } else {
     if(Delta <= 0)
@@ -183,14 +183,17 @@ optDesign <- function(models, probs, doses,
     stop("standDopt needs to contain a logical value")
   standInt <- as.integer(standDopt) # use standardized or non-stand. D-optimality
   nD <- length(doses)
-  if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
+  if(designCrit == "TD" | designCrit == "Dopt&TD"){ # check whether TD exists in (0,max(dose))
+    if(length(unique(direction)) > 1)
+      stop("need to provide either \"increasing\" or \"decreasing\" as direction to optDesign, when TD optimal designs should be calculated")
+    direction <- unique(direction)
     tdMods <- TD(models, Delta, "continuous", direction)
     tdMods[tdMods > max(doses)] <- NA
     if(any(is.na(tdMods)))
       stop("TD does not exist for ",
            paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
   }
-  if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
+  if(designCrit == "Dopt" | designCrit == "Dopt&TD"){ # check whether Fisher matrix can be singular
     np <- nPars(names(models))
     if(max(np) > length(doses))
       stop("need at least as many dose levels as there are parameters to calculate Dopt design.")
@@ -330,14 +333,17 @@ calcCrit <- function(design, models, probs, doses,
     stop("need to specify clinical relevance parameter")
   direction <- attr(models, "direction")
 
-  if(designCrit == "TD" | designCrit == "TD&Dopt"){ # check whether TD exists in (0,max(dose))
+  if(designCrit == "TD" | designCrit == "Dopt&TD"){ # check whether TD exists in (0,max(dose))
+    if(length(unique(direction)) > 1)
+      stop("need to provide either \"increasing\" or \"decreasing\" as direction to optDesign, when TD optimal designs should be calculated")
+    direction <- unique(direction)
     tdMods <- TD(models, Delta, "continuous", direction)
     tdMods[tdMods > max(doses)] <- NA
     if(any(is.na(tdMods)))
       stop("TD does not exist for ",
            paste(names(tdMods)[is.na(tdMods)], collapse=", " ), " model(s)")
   }
-  if(designCrit == "Dopt" | designCrit == "TD&Dopt"){ # check whether Fisher matrix can be singular
+  if(designCrit == "Dopt" | designCrit == "Dopt&TD"){ # check whether Fisher matrix can be singular
     np <- nPars(names(models))
     if(max(np) > length(doses))
       stop("need more dose levels to calculate Dopt design.")

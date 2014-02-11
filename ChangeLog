@@ -1,3 +1,14 @@
+2014-02-11 Bjoern Bornkamp (version 0.9-11)
+      * Mods Introduce fullMod argument to allow specification
+	of full model parameters (again).
+      * calcTDgrad now calculates the analytical gradient for TD
+	optimal designs for the beta model. The previous numerical
+	gradient could get unstable for particular parameter values.
+	Thanks to Tobias Mielke for the calculations!
+      * planMod.Rd, powMCT.Rd More description on what "sigma" is
+      * optDesign, optContr Catch Mods objects with multiple direction
+	attributes properly in these functions.	
+
 2013-11-25 Bjoern Bornkamp (version 0.9-10)
       * plot.MCPMod In case of no significant model, do not plot anything.
       * optContr Bugfix in function constOptC, previous algorithm selected
