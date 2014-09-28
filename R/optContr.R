@@ -40,7 +40,7 @@ constOptC <- function(mu, Sinv = NULL, placAdj = FALSE, direction){
               mult*diag(k-1))
   A <- t(tA)
   bvec <- c(1,rep(0,k-1))
-  contr <- solve.QP(D, d, A, bvec, meq=1)$solution
+  contr <- quadprog::solve.QP(D, d, A, bvec, meq=1)$solution
   contr[abs(contr) < 1e-10] <- 0
   if(!placAdj)
     contr <- c(-sum(contr), contr)
@@ -112,8 +112,11 @@ optContr <-  function(models, doses, w, S, placAdj = FALSE,
                     nrow=nrow(mu), ncol=ncol(mu))
   }
   type <- match.arg(type)
-  if(type == "constrained")
-    require(quadprog, quietly = TRUE)
+  if(type == "constrained"){
+    avail <- requireNamespace("quadprog", quietly = TRUE)
+    if(!avail)
+      stop("Need suggested package quadprog to calculate constrained contrasts")
+  }
   if(any(doses == 0) & placAdj)
     stop("If placAdj == TRUE there should be no placebo group in \"doses\"")
   ## check for n and vCov arguments 

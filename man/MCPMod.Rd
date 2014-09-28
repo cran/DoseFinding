@@ -188,10 +188,10 @@ Pinheiro, J. C., Bretz, F., and Branson, M. (2006). Analysis of dose-response st
 approaches, \emph{in} N. Ting (ed.). \emph{Dose Finding in Drug Development}, Springer, New York,
 pp. 146--171
 
-Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013)
+Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2014)
 Model-based dose finding under model uncertainty using general
-parametric models, \emph{Technical report, preprint available under
-http://arxiv.org/abs/1305.0889}
+parametric models, \emph{Statistics in Medicine}, \bold{33},
+1646--1661
 
 Bretz, F., Pinheiro, J. C., and Branson, M. (2004), On a hybrid method
 in dose-finding studies, \emph{Methods of Information in Medicine},

@@ -1,7 +1,7 @@
 ## ## commented out for time (and dependency reasons)
-## library(DoseFinding)
-## library(quadprog)
-## library(Rsolnp)
+require("DoseFinding")
+if(!(require("quadprog") & require("Rsolnp")))
+  stop("need packages quadprog and Rsolnp to run these tests")
 
 ## ## calculation of optimal contrast by enumerating all active sets
 ## allActiveSets <- function(S, mu, mult){

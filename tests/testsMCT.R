@@ -1,5 +1,7 @@
-library(DoseFinding)
-library(multcomp)
+require("DoseFinding")
+if(!require("multcomp"))
+  stop("need multcomp package to run this test")
+
 ########################################################################
 #### multContTest
 # functions to sample random DF data

@@ -158,8 +158,8 @@ planMod <- function(model, altModels, n, sigma, S, doses,
   
   if(simulation){
     cat("Running simulations\n")
-    require(parallel, quietly = TRUE)
-    sim <- mclapply(1:ncol(muMat), function(i){
+    requireNamespace("parallel", quietly = TRUE)
+    sim <- parallel::mclapply(1:ncol(muMat), function(i){
       if(showSimProgress){
         if(cores == 1){
           cat(sprintf("Scenario %d/%d\n", i, ncol(muMat)))

@@ -1,3 +1,13 @@
+2014-09-28 Bjoern Bornkamp (version 0.9-12)
+      * glycobrom dataset: Included column for number of observations
+	per treatment.
+      * calcCrit now takes into account "nold" in determining whether
+	enough design points were specified to be able to calculate
+	the design criteria.
+      * bFitMod documentation for plot.bFitMod and predict.bFitMod
+	methods added. coef.bFitMod method added. Thanks to Lieven Nils
+	Kennes for pointing towards the issue.
+
 2014-02-11 Bjoern Bornkamp (version 0.9-11)
       * Mods Introduce fullMod argument to allow specification
 	of full model parameters (again).

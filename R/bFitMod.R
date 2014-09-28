@@ -489,3 +489,7 @@ plot.bFitMod <- function (x, plotType = c("dr-curve", "effect-curve"),
   res$mean <- pred
   invisible(res)
 }
+
+coef.bFitMod <- function (object, ...){
+  object$samples
+}

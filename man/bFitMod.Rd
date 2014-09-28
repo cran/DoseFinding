@@ -1,5 +1,8 @@
 \name{bFitMod}
 \alias{bFitMod}
+\alias{coef.bFitMod}
+\alias{predict.bFitMod}
+\alias{plot.bFitMod}
 \title{
   Fit a dose-response model using Bayesian or bootstrap methods.
 }
@@ -22,6 +25,18 @@ bFitMod(dose, resp, model, S, placAdj = FALSE,
         start = NULL, prior = NULL, nSim = 1000,
         MCMCcontrol = list(), control = NULL, bnds, 
         addArgs = NULL)
+
+\method{coef}{bFitMod}(object, ...)
+
+\method{predict}{bFitMod}(object, predType = c("full-model", "effect-curve"),
+        summaryFct = function(x) quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975)),
+        doseSeq = NULL, lenSeq = 101, ...)
+
+\method{plot}{bFitMod}(x, plotType = c("dr-curve", "effect-curve"),
+        quant = c(0.025, 0.5, 0.975), 
+        plotData = c("means", "meansCI", "none"),
+        level = 0.95, lenDose = 201, ...)
+
 }
 \arguments{
   \item{dose}{ Numeric specifying the dose variable. }
@@ -50,7 +65,7 @@ bFitMod(dose, resp, model, S, placAdj = FALSE,
     for \samp{type = "Bayes"}.
     The list needs to have as many entries as there are model
     parameters. The ordering of the list entries should be the same as
-    in the arguments list of the model see (see \code{\link{drmodels}}).
+     in the arguments list of the model see (see \code{\link{drmodels}}).
     For example for the Emax model the first entry determines the prior
     for e0, the second to eMax and the third to ed50.
     
@@ -92,8 +107,50 @@ bFitMod(dose, resp, model, S, placAdj = FALSE,
   \item{addArgs}{
     List containing two entries named "scal" and "off" for the "betaMod"
     and "linlog" model. When addArgs is NULL the following defaults are
-    used \samp{list(scal = 1.2*max(doses), off = 0.01*max(doses))}.
+    used \samp{list(scal = 1.2*max(doses), off = 0.01*max(doses))}}
+  \item{x, object}{
+   A bFitMod object 
+  }
+  \item{predType, summaryFct, doseSeq, lenSeq}{
+    Arguments for the predict method.
+
+    \samp{predType}: predType determines whether predictions are returned
+    for the dose-response curve or the effect curve (difference to placebo).
+
+    \samp{summaryFct}: If equal to NULL predictions are calculated for
+    each sampled parameter value. Otherwise a summary function is
+    applied to the dose-response predictions for each parameter value.
+    The default is to calculate 0.025, 0.25, 0.5, 0.75, 0.975 quantiles
+    of the predictions for each dose.
+
+    \samp{doseSeq}: Where to calculate predictions. If not specified
+    predictions are calculated on a grid of length \samp{lenSeq} between
+    minimum and maximum dose.
+
+    \samp{lenSeq}: Length of the default grid where to calculate
+    predictions.
+  }
+  \item{plotType, quant, plotData, level, lenDose}{
+    Arguments for plot method.
+
+    \samp{plotType}: Determining whether the dose-response curve or the
+    effect curve should be plotted.
+
+    \samp{quant}: Vector of quantiles to display in plot
+
+    \samp{plotData}: Determines how the original data are plotted:
+    Either as means or as means with CI or not. The level of the CI is
+    determined by the argument \samp{level}.
+
+    \samp{level}: Level for CI, when plotData is equal to
+    \samp{meansCI}.
+
+    \samp{lenDose}: Number of grid values to use for display.
+  }
+  \item{...}{
+    Additional arguments are ignored.
 }
+
 }
 \details{
   Componentwise univariate slice samplers are implemented (see Neal,

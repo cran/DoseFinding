@@ -18,8 +18,8 @@
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-11\cr
-Date: \tab 2014-02-11\cr
+Version: \tab 0.9-12\cr
+Date: \tab 2014-09-28\cr
 License: \tab GPL-3
 }
 The main functions are:\cr
@@ -64,10 +64,10 @@ Maintainer: Bjoern Bornkamp <bbnkmp@gmail.com>
   and modeling procedures, \emph{Journal of Biopharmaceutical
     Statistics}, \bold{16}, 639--656
 
-  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013)
+  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2014)
   Model-based dose finding under model uncertainty using general
-  parametric models, \emph{Technical report, preprint available under
-  http://arxiv.org/abs/1305.0889}
+  parametric models, \emph{Statistics in Medicine}, \bold{33},
+  1646--1661
   
   Seber, G.A.F. and Wild, C.J. (2003). Nonlinear Regression, Wiley
 }

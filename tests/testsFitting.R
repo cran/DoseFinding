@@ -1,4 +1,4 @@
-library(DoseFinding)
+require("DoseFinding")
 ## effect curve estimate for linear type models!!
 
 ########################################################################

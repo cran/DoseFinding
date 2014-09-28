@@ -109,10 +109,10 @@ MCTtest(dose, resp, data = NULL, models, S = NULL, type = c("normal", "general")
   Inference in General Parametric Models, \emph{Biometrical Journal},
   \bold{50}, 346--363
 
-  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2013).
-  Multiple comparisons and modelling for dose-finding using general
-  parametric models, \emph{Technical report, preprint available under
-  http://arxiv.org/abs/1305.0889}
+  Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2014)
+  Model-based dose finding under model uncertainty using general
+  parametric models, \emph{Statistics in Medicine}, \bold{33},
+  1646--1661
 }
 \author{
   Bjoern Bornkamp

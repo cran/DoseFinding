@@ -1,4 +1,4 @@
-library(DoseFinding)
+require("DoseFinding")
 ########################################################################
 ## test Bayesian fitting
 ## compare bFitMod on example data set with jags
@@ -119,5 +119,4 @@ td1 <- TD(gsample, 0.3)
 td2 <- TD(gsample, 0.3, TDtype="d", doses = seq(0,4,length=101))
 ed1 <- ED(gsample, 0.8)
 ed2 <- ED(gsample, 0.8, EDtype="d", doses = seq(0,4,length=101))
-
 

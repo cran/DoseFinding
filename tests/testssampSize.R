@@ -1,4 +1,4 @@
-## library(DoseFinding)
+## require("DoseFinding")
 
 ## S <- diag(rep(1,4))/c(5,6,7,8)
 ## contrastModels <- Mods(emax=c(0.25,0.01),exponential=c(1.5),

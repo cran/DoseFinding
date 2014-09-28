@@ -1,5 +1,4 @@
-library(DoseFinding)
-
+require("DoseFinding")
 ########################################################################
 #### multContTest
 # functions to sample random DF data

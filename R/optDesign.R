@@ -53,7 +53,9 @@ callOptim <- function(func, method, nD, control, lowbnd, uppbnd){
   } else if(method == "Nelder-Mead"){
     res <- optim(getStart(nD), fn=func, control = control)
   } else if(method == "solnp"){ # no need for transformed values for solnp
-    require(Rsolnp, quietly = TRUE)
+    avail <- requireNamespace("Rsolnp", quietly = TRUE)
+    if(!avail)
+      stop("Need suggested package Rsolnp for this calculation to use solnp optimizer")
     ## get starting value (need feasible starting value for solnp)
     ## try whether equal allocation is feasible
     eq <- rep(1/nD, nD)
@@ -70,8 +72,8 @@ callOptim <- function(func, method, nD, control, lowbnd, uppbnd){
     }
     con <- list(trace = 0)
     con[(namc <- names(control))] <- control
-    res <- solnp(strt, fun=func, eqfun=eqfun, eqB=1,
-                 control = con, LB = lowbnd, UB = uppbnd)
+    res <- Rsolnp::solnp(strt, fun=func, eqfun=eqfun, eqB=1,
+                         control = con, LB = lowbnd, UB = uppbnd)
   } 
   res
 }
@@ -375,13 +377,14 @@ calcCrit <- function(design, models, probs, doses,
   res <- numeric(nrow(design))
   ## check for sufficient number of design points
   iter <- 1:nrow(design)
-  count <- apply(design, 1, function(x) sum(x > 0.0001))
+  design0 <- sweep(design, 2, nold, "+")
+  count <- apply(design0, 1, function(x) sum(x > 0.0001))
   ind <- count < max(p[probs > 0])
   if(any(ind)){
     iter <- iter[!ind]
     res[ind] <- NA
     if(all(is.na(res)))
-      warning("need more at least as many dose levels in the design as parameters in the model")
+      warning("need at least as many dose levels in the design as parameters in the model")
   }
   for(i in iter){
     res[i] <- optFunc(design[i,], xvec=as.double(lst$modgrads),

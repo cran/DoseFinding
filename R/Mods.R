@@ -819,7 +819,9 @@ calcEDgrad <- function(model, pars, maxD, p, off, scal, nodes){
   if(model == "linInt"){
     stop("linInt model not implemented")
   }
-  require(numDeriv, quietly = TRUE)
+  avail <- requireNamespace("numDeriv", quietly = TRUE)
+  if(!avail)
+    stop("Need suggested package numDeriv for this calculation")
   func0 <- function(pars, model, p, maxD, off, scal){
     calcED(model, pars, p, maxD, EDtype = "continuous", off=off, scal=scal)
   }
@@ -828,7 +830,7 @@ calcEDgrad <- function(model, pars, maxD, p, off, scal, nodes){
     scal0 <- scal
   if(model == "linlog")
     off0 <- off
-  grad(func0, pars, model=model, p=p, maxD=maxD, off=off, scal=scal)
+  numDeriv::grad(func0, pars, model=model, p=p, maxD=maxD, off=off, scal=scal)
 }
 
 

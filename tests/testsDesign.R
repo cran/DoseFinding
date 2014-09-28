@@ -1,4 +1,4 @@
-library(DoseFinding)
+require("DoseFinding")
 ## Some examples from the JASA paper (for validation)
 ########################################################################
 # Emax model p.1228 l. 5
@@ -295,3 +295,15 @@ uppbnd <- c(1.0,0.3,1.0,1.0,1.0)
 trueModels <- Mods(linear=NULL, doses=doses, placEff = 0, maxEff = 1)
 optDesign(models=trueModels, probs=1, doses=doses, designCrit="Dopt",
           lowbnd=lowbnd,uppbnd=uppbnd)
+
+########################################################################
+## TD optimal design for beta model (previously instabilities for
+## numerical gradients)
+mm <- Mods(betaMod=c(1.5,0.8), doses=seq(0,1,by=0.25), placEff=0, maxEff=1)
+optDesign(mm, probs=1, designCrit="TD", Delta=0.5)
+## Output from GUI
+## placEff=0, maxEff=1
+## TD-optimalität mit Delta= 0.5
+## Model: BetaMod mit delta1=1.5, delta2=0.8
+## Dosen      0        0.25     0.5      0.75    1
+## Design     0.4895   0.3552   0.1448   0       0.0105

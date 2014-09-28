@@ -1,4 +1,4 @@
-library(DoseFinding)
+require("DoseFinding")
 data(IBScovars)
 lmfit <- lm(resp~factor(dose)+gender, data=IBScovars)
 cf <- coef(lmfit)[-c(6)]
@@ -97,5 +97,3 @@ fit <- fitMod(doseVec, cf, model="linInt", S=vc, type = "general", placAdj=TRUE)
 vcov(fit)
 plot(fit, CI=TRUE, plotData="meansCI")
 predict(fit, predType = "effect-curve", se.fit=TRUE)
-
-

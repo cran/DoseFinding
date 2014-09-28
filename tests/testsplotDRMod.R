@@ -1,4 +1,4 @@
-## library(DoseFinding)
+require("DoseFinding")
 
 ## ## commented out for time reasons
 
