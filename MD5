@@ -1,8 +1,8 @@
-585a7360f58e2dbf8494faee7b5dee18 *ChangeLog
-473bcb326558e94940e4f8a4b8ffc6ec *DESCRIPTION
+aaeec03561ddc76840c7a08cecb2c60e *ChangeLog
+e42d2b4a9ea54e301e1735b555cec187 *DESCRIPTION
 d66ce8f07e721ea44ac142113f8e3874 *NAMESPACE
 b5248a72b64098b76efa2a9ad7967c87 *R/MCPMod.R
-0066a36825434887203ceb031394a65f *R/MCTtest.R
+54c4ad3fdd1369c6ffbbc1fb44df535f *R/MCTtest.R
 435c213ea0f2f71c0ef20dac48cbcea1 *R/Mods.R
 0f3143aa232414a7b949bc6ee57631ae *R/bFitMod.R
 1b2659335d745655ba45716238695ad0 *R/drmodels.R
@@ -12,14 +12,13 @@ a401c6bfa1c5e935586571d81d38d4b2 *R/fitMod.R
 c66296c23da834c40e98d42edab58113 *R/optDesign.R
 b335402d91473c599e922d50e6a70966 *R/planMod.R
 49d36ae6f084c62844dbdb7e4d622559 *R/powMCT.R
-de1f24ce932e3e3be780a9cf0d846a19 *R/qmvtDF.R
 1386200078d09ca5a79ab0db0c1ac87d *R/sampSize.R
 4eececc090f50b4ec9018ee1c745f398 *data/IBScovars.rda
 3cc70c1f72990c43612c447828d99095 *data/biom.rda
 a946f02e98832a2e7d4280c301d9f389 *data/glycobrom.rda
 33017675ed1b1a520c4635da8b1e9747 *data/migraine.rda
 67d721d20a92e2c79456e51cf1c47c09 *data/neurodeg.rda
-cd381fb8748f7bb72ac54a8a97534480 *man/DoseFinding-package.Rd
+8d95b79c5002954c00e4a1aaac8e9e1e *man/DoseFinding-package.Rd
 cdce05c5b303cd6e7e0c402f8daa1ba6 *man/IBScovars.Rd
 78519be51d2f0b2612f4c55447ec03e2 *man/MCPMod.Rd
 f343b9ec17bc7c54b70d656aad5f958d *man/MCTtest.Rd
@@ -36,7 +35,7 @@ cedf7b4ea00494ad51abe03662591ca2 *man/migraine.Rd
 462934ffd93550659f19ddd18babbdd4 *man/neurodeg.Rd
 039b9a4f2059a303414113166bdcb12e *man/optContr.Rd
 e2d72ac955bd881d583c99c398bf15ed *man/optDesign.Rd
-c21c5257b3db5c3f21e2f1d8c5f8f89f *man/planMod.Rd
+0b8a60d7ac4d6a6777c5accaef138df9 *man/planMod.Rd
 88e0330d04925e504b0a7d1c481bf61b *man/powMCT.Rd
 71f35352372d214de20b143753a71483 *man/sampSize.Rd
 7865230dee75123f353f9c60377aedb3 *man/targdose.Rd
