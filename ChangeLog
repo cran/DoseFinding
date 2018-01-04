@@ -1,3 +1,6 @@
+2017-12-07 Bjoern Bornkamp (version 0.9-16)
+      * Fixed minor bug in print.summary.planMod
+	
 2016-07-26 Bjoern Bornkamp (version 0.9-15)
       * Mods Added parameter names for all models in the output list
         (thanks to Dong Xi for catching this)	
