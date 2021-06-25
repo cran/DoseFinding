@@ -18,8 +18,8 @@
 \tabular{ll}{
 Package: \tab DoseFinding\cr
 Type: \tab Package\cr
-Version: \tab 0.9-17\cr
-Date: \tab 2019-11-15\cr
+Version: \tab 1.0-1\cr
+Date: \tab 2021-06-24\cr
 License: \tab GPL-3
 }
 The main functions are:\cr
@@ -52,6 +52,10 @@ Maintainer: Bjoern Bornkamp <bbnkmp@gmail.com>
   Dette, H., Bretz, F., Pepelyshev, A. and Pinheiro,
   J. C. (2008). Optimal Designs for Dose Finding Studies, \emph{Journal
   of the American Statisical Association}, \bold{103}, 1225--1237
+  
+  O'Quigley, J., Iasonos, A. and Bornkamp, B. (2017) Handbook of
+  methods for designing, monitoring, and analyzing dose-finding trials,
+  CRC press, Part 3: Dose-Finding Studies in Phase II
   
   Pinheiro, J. C., Bornkamp, B., and Bretz, F. (2006). Design and
   analysis of dose finding studies combining multiple comparisons

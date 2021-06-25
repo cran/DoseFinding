@@ -65,7 +65,7 @@ MCTtest <- function(dose, resp, data = NULL, models, S = NULL,
     attr(critV, "Calc") <- FALSE
   }
   if(pVal){
-    pVals <- pValues(contMat, corMat, df, tStat,
+    pVals <- MCTpval(contMat, corMat, df, tStat,
                      alternative, mvtcontrol)
   }
   res <- list(contMat = contMat, corMat = corMat, tStat = tStat,
@@ -157,6 +157,11 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
   } else { # data handed over via vectors
     if(addCovars != ~1)
       stop("need to hand over data and covariates in data frame")
+    if(!(is.numeric(resp) && is.null(dim(resp)))) {
+      warning(cal[3], " is not a numeric but a ", class(resp)[1],
+              ", converting with as.numeric()")
+      resp <- as.numeric(resp)
+    }
     if(length(dose) != length(resp))
       stop(cal[2], " and ", cal[3], " not of equal length")
     dd <- na.action(data.frame(dose, resp))
@@ -183,7 +188,7 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
       stop("S needs to be of class matrix")
     nD <- length(dd[[doseNam]])
     if(nrow(S) != nD | ncol(S) != nD)
-      stop("S and dose have non-confirming size")
+      stop("S and dose have non-conforming size")
   }
   ord <- order(dd[[doseNam]])
   dd <- dd[ord, ]
@@ -194,7 +199,7 @@ checkAnalyArgs <- function(dose, resp, data, S, type,
               doseNam=doseNam, respNam=respNam))
 }
 
-pValues <- function(contMat, corMat, df, tStat,
+MCTpval <- function(contMat, corMat, df, tStat,
                     alternative = c("one.sided", "two.sided"),
                     control = mvtnorm.control()){
   ## function to calculate p-values
