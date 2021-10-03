@@ -1,8 +1,8 @@
 Package: DoseFinding
 Type: Package
 Title: Planning and Analyzing Dose Finding Experiments
-Version: 1.0-1
-Date: 2021-06-24
+Version: 1.0-2
+Date: 2021-10-03
 Authors@R: c(
    person("Bjoern", "Bornkamp", email = "bbnkmp@mail.de", comment = c(ORCID = "0000-0002-6294-8185"), role = c("aut", "cre")),
    person("Jose", "Pinheiro", role = "aut"),
@@ -23,10 +23,10 @@ VignetteBuilder: knitr
 License: GPL-3
 LazyLoad: yes
 NeedsCompilation: yes
-Packaged: 2021-06-24 15:50:18 UTC; bjoern
+Packaged: 2021-10-03 12:15:14 UTC; bjoern
 Author: Bjoern Bornkamp [aut, cre] (<https://orcid.org/0000-0002-6294-8185>),
   Jose Pinheiro [aut],
   Frank Bretz [aut],
   Ludger Sandig [aut]
 Repository: CRAN
-Date/Publication: 2021-06-25 11:20:10 UTC
+Date/Publication: 2021-10-03 12:50:02 UTC
