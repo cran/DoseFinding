@@ -1,3 +1,12 @@
+2022-01-05 Bjoern Bornkamp (version 1.0-3)
+      * Stop and throw error if calculated df=0 in powMCT (passed to
+	mvtnorm where df=0 implies use of a normal distribution)
+      * Added function plotMods to plot candidate models using ggplot2
+	and function plotContr to plot optimal contrasts using ggplot2
+	(thanks to Sophie Sun for testing and feedback)
+      * Added documentation for quadratic model (definition of delta)
+      * Fixed local options in guesst for logistic and sigEmax models
+
 2021-10-03 Bjoern Bornkamp (version 1.0-2)
       * Define USE_FC_LEN_T and add length of character arguments in
 	Fortran code called from C, to reflect recent changes in gfortran.

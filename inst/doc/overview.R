@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- overview----------------------------------------------------------------
+## ---- overview, fig.asp = .4--------------------------------------------------
 library(DoseFinding)
 data(IBScovars)
 head(IBScovars)
@@ -16,7 +16,7 @@ head(IBScovars)
 models <- Mods(linear = NULL, emax = 0.2, quadratic = -0.17,
                doses = c(0, 1, 2, 3, 4))
 ## plot models
-plot(models)
+plotMods(models)
 ## perform multiple contrast test
 ## functions powMCT and sampSizeMCT provide tools for sample size
 ## calculation for multiple contrast tests

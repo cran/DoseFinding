@@ -25,8 +25,8 @@ doses <- c(0, 12.5, 25, 50, 100)
 mods <- Mods(emax = c(2.6, 12.5), sigEmax = c(30.5, 3.5), quadratic = -0.00776,
              placEff = 1.25, maxEff = 0.15, doses = doses)
 
-## ---- plot_models, fig.asp = 0.42---------------------------------------------
-plot(mods, ylab = "FEV1", layout = c(4, 1))
+## ---- plot_models-------------------------------------------------------------
+plotMods(mods, ylab = "FEV1")
 
 ## ---- contrasts---------------------------------------------------------------
 optC <- optContr(mods, w=1)

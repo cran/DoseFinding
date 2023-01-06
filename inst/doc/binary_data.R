@@ -27,28 +27,13 @@ prob <- inv_logit(emax(dose_vector, -2.2, 1.6, 0.5) + 0.3 * x1 + 0.3 * (x2 == "B
 dat <- data.frame(y = rbinom(N, 1, prob),
                   dose = dose_vector, x1 = x1, x2 = x2)
 
-## ---- setup-------------------------------------------------------------------
+## ---- setup, fig.width = 8, out.width = '100%'--------------------------------
 mods <- Mods(emax = c(0.25, 1), sigEmax = rbind(c(1, 3), c(2.5, 4)), betaMod = c(1.1, 1.1),
              placEff = logit(0.1), maxEff = logit(0.35)-logit(0.1),
              doses = doses)
-plot(mods)
-
-## ---- prob_scale--------------------------------------------------------------
-plot_prob <- function(models, dose_seq) {
-  rsp <- getResp(models, doses = dose_seq) # returs a dose x model matrix
-  modnam <- factor(colnames(rsp), levels = colnames(rsp))
-  pdat <- data.frame(resp = inv_logit(as.numeric(rsp)),
-                     mod = rep(modnam, each = length(dose_seq)),
-                     dose = rep(dose_seq, times = length(modnam)))
-  gg <- ggplot(pdat, aes(dose, resp)) +
-    geom_line(size = 1.2) +
-    scale_y_continuous(breaks = seq(0, 1, by=0.1)) +
-    facet_wrap(vars(mod)) +
-    ylab("response (probability scale)")
-  return(gg)
-}
-
-plot_prob(mods, seq(0, 4, by = 0.05))
+plotMods(mods)
+## plot candidate models on probability scale
+plotMods(mods, trafo = inv_logit)
 
 ## ---- test_no_covariates------------------------------------------------------
 fit_nocov <- glm(y~factor(dose) + 0, data = dat, family = binomial)
