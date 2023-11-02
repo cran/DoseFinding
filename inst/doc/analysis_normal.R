@@ -1,4 +1,4 @@
-## ---- settings-knitr, include=FALSE-------------------------------------------
+## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
                       comment = NA,
@@ -6,12 +6,12 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- load_data---------------------------------------------------------------
+## ----load_data----------------------------------------------------------------
 library(DoseFinding)
 data(glycobrom)
 print(glycobrom)
 
-## ---- simulate_dataset--------------------------------------------------------
+## ----simulate_dataset---------------------------------------------------------
 set.seed(1, kind = "Mersenne-Twister", sample.kind = "Rejection", normal.kind = "Inversion")
 rand <- rep(MASS::mvrnorm(60, 0, 60 * 0.015^2, empirical = TRUE), 5)
 NVA <- data.frame(dose = rep(glycobrom$dose, each = 60),
@@ -20,48 +20,48 @@ ggplot(NVA) + geom_jitter(aes(dose, FEV1), height = 0, width = 4) +
   labs(title = "Simulated FEV1 by dose (jittered horizontally)") +
   xlab("dose [μg]") + ylab("FEV1 [l]")
 
-## ---- models------------------------------------------------------------------
+## ----models-------------------------------------------------------------------
 doses <- c(0, 12.5, 25, 50, 100)
 mods <- Mods(emax = c(2.6, 12.5), sigEmax = c(30.5, 3.5), quadratic = -0.00776,
              placEff = 1.25, maxEff = 0.15, doses = doses)
 
-## ---- plot_models-------------------------------------------------------------
+## ----plot_models--------------------------------------------------------------
 plotMods(mods, ylab = "FEV1")
 
-## ---- contrasts---------------------------------------------------------------
+## ----contrasts----------------------------------------------------------------
 optC <- optContr(mods, w=1)
 print(optC)
 plot(optC)
 
-## ---- mctest_normal-----------------------------------------------------------
+## ----mctest_normal------------------------------------------------------------
 test_normal <- MCTtest(dose = dose, resp = FEV1, models = mods, data = NVA)
 print(test_normal)
 
-## ---- fit_lm_1----------------------------------------------------------------
+## ----fit_lm_1-----------------------------------------------------------------
 fitlm <- lm(FEV1 ~ factor(dose) - 1, data = NVA)
 mu_hat <- coef(fitlm)
 S_hat <- vcov(fitlm)
 anova_df <- fitlm$df.residual
 
-## ---- mctest_generalizes------------------------------------------------------
+## ----mctest_generalizes-------------------------------------------------------
 test_general <- MCTtest(dose = doses, resp = mu_hat, S = S_hat, df = anova_df,
                         models = mods, type = "general")
 print(test_general)
 
-## ---- compare_normal_generalized----------------------------------------------
+## ----compare_normal_generalized-----------------------------------------------
 cbind(normal = test_normal$tStat, generalized = test_general$tStat)
 cbind(normal = attr(test_normal$tStat, "pVal"), generalized = attr(test_general$tStat, "pVal"))
 
-## ---- fit_single--------------------------------------------------------------
+## ----fit_single---------------------------------------------------------------
 fit_single <- fitMod(dose, FEV1, NVA, model = "emax")
 plot(fit_single)
 
-## ---- fit_lm_2----------------------------------------------------------------
+## ----fit_lm_2-----------------------------------------------------------------
 fitlm <- lm(FEV1 ~ factor(dose) - 1, data = NVA)
 mu_hat <- coef(fitlm)
 S_hat <- vcov(fitlm)
 
-## ---- bootstrap_draw----------------------------------------------------------
+## ----bootstrap_draw-----------------------------------------------------------
 one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
   sim <- drop(rmvnorm(1, mu_hat, S_hat))
   fit <- lapply(c("emax", "sigEmax", "quadratic"), function(mod)
@@ -71,7 +71,7 @@ one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
   return(pred)
 }
 
-## ---- bootstrap_summarize-----------------------------------------------------
+## ----bootstrap_summarize------------------------------------------------------
 # bs_predictions is a doses x replications matrix,
 # probs is a 4-element vector of increasing probabilities for the quantiles
 #   that will be used in the plotting code for outer and inner confidence intervals
@@ -84,7 +84,7 @@ summarize_predictions <- function(bs_predictions, probs) {
   return(bs_df)
 }
 
-## ---- bootstrap_plot----------------------------------------------------------
+## ----bootstrap_plot-----------------------------------------------------------
 dose_seq <- 0:100
 bs_rep <- replicate(1000, one_bootstrap_prediction(mu_hat, S_hat, doses, defBnds(max(doses)), dose_seq))
 bs_summary <- summarize_predictions(bs_rep, probs = c(0.025, 0.25, 0.75, 0.975))

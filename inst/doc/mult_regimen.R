@@ -1,4 +1,4 @@
-## ---- settings-knitr, include=FALSE-------------------------------------------
+## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
                       comment = NA,
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- data--------------------------------------------------------------------
+## ----data---------------------------------------------------------------------
 library(DoseFinding)
 library(ggplot2)
 ## collect estimates and dosage information in one place
@@ -46,7 +46,7 @@ plot_estimates <- function(est) {
 est <- example_estimates()
 plot_estimates(est)
 
-## ---- candidate_models--------------------------------------------------------
+## ----candidate_models---------------------------------------------------------
 mods <- list(
   od = Mods(emax = c(5, 50),
             sigEmax = rbind(c(75, 3.5), c(25, 0.7)),
@@ -60,7 +60,7 @@ mods <- list(
 plotMods(mods$od, superpose = TRUE, xlab = "daily dose")
 plotMods(mods$bid, superpose = TRUE, xlab = "daily dose")
 
-## ---- contrasts---------------------------------------------------------------
+## ----contrasts----------------------------------------------------------------
 calculate_contrasts <- function(est, mods) {
   S_hat <- est$S_hat
   i <- est$index
@@ -86,7 +86,7 @@ calculate_contrasts <- function(est, mods) {
 cont_mat <- calculate_contrasts(est, mods)
 print(round(cont_mat, 2))
 
-## ---- test--------------------------------------------------------------------
+## ----test---------------------------------------------------------------------
 mct_test <- function(cont_mat, est) {
   cont_cov <- t(cont_mat) %*% est$S_hat %*% cont_mat
   t_stat <- drop(est$mu_hat %*% cont_mat) / sqrt(diag(cont_cov))
@@ -98,7 +98,7 @@ mct_test <- function(cont_mat, est) {
 }
 mct_test(cont_mat, est)
 
-## ---- estimation_1------------------------------------------------------------
+## ----estimation_1-------------------------------------------------------------
 ## calculate response under `model` for od/bid with common e0, but separate remaining parameters
 ## arguments:
 ## - model: as a string like "emax",
@@ -113,7 +113,7 @@ eval_model_shared_e0 <- function(model, dose_od, dose_bid, par, i_par) {
   return(resp)
 }
 
-## ---- estimation_2------------------------------------------------------------
+## ----estimation_2-------------------------------------------------------------
 ## find sensible starting values for `fit_model_shared_e0` by fitting separate models,
 ## index:  list of vectors named "placebo", "od", "bid", used for indexing `dose`
 ## bounds: passed through to `fitMod`
@@ -144,7 +144,7 @@ fit_model_shared_e0 <- function(model, dose, mu_hat, S_hat_inv, lower, upper, st
   return(fit)
 }
 
-## ---- estimation_3------------------------------------------------------------
+## ----estimation_3-------------------------------------------------------------
 ## predict population response in each regimen for dose_seq_*
 ## note: both dose_seq_* vectors should contain a 0 if response at placebo is of interest
 one_bootstrap_sample <- function(est, dose_seq_od, dose_seq_bid) {

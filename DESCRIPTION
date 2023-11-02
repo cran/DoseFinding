@@ -1,17 +1,18 @@
 Package: DoseFinding
 Type: Package
 Title: Planning and Analyzing Dose Finding Experiments
-Version: 1.0-5
-Date: 2023-06-27
+Version: 1.1-1
+Date: 2023-11-02
 Authors@R: c(
-   person("Bjoern", "Bornkamp", email = "bbnkmp@mail.de", comment = c(ORCID = "0000-0002-6294-8185"), role = c("aut", "cre")),
+   person("Bjoern", "Bornkamp", email = "bjoern.bornkamp@novartis.com", comment = c(ORCID = "0000-0002-6294-8185"), role = c("aut", "cre")),
    person("Jose", "Pinheiro", role = "aut"),
    person("Frank", "Bretz", role = "aut"),
-   person("Ludger", "Sandig", role = "aut"))
+   person("Ludger", "Sandig", role = "aut"),
+   person("Marius", "Thomas", role = "aut"))
 Depends: ggplot2, lattice, mvtnorm, R (>= 2.15.0)
 Suggests: numDeriv, Rsolnp, quadprog, parallel, multcomp, knitr,
-        rmarkdown, MASS, testthat
-Maintainer: Bjoern Bornkamp <bbnkmp@mail.de>
+        rmarkdown, MASS, testthat, RBesT
+Maintainer: Bjoern Bornkamp <bjoern.bornkamp@novartis.com>
 Description: The DoseFinding package provides functions for the design and analysis
 	     of dose-finding experiments (with focus on pharmaceutical Phase
 	     II clinical trials). It provides functions for: multiple contrast
@@ -23,10 +24,11 @@ VignetteBuilder: knitr
 License: GPL-3
 LazyLoad: yes
 NeedsCompilation: yes
-Packaged: 2023-06-27 08:30:12 UTC; bjoern
+Packaged: 2023-11-02 06:46:48 UTC; bjoern
 Author: Bjoern Bornkamp [aut, cre] (<https://orcid.org/0000-0002-6294-8185>),
   Jose Pinheiro [aut],
   Frank Bretz [aut],
-  Ludger Sandig [aut]
+  Ludger Sandig [aut],
+  Marius Thomas [aut]
 Repository: CRAN
-Date/Publication: 2023-06-27 09:30:02 UTC
+Date/Publication: 2023-11-02 13:20:22 UTC

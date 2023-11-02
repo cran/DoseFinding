@@ -1,4 +1,4 @@
-## ---- settings-knitr, include=FALSE-------------------------------------------
+## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
                       comment = NA,
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- setup, fig.asp = 1, out.width = "50%", fig.width = 5--------------------
+## ----setup, fig.asp = 1, out.width = "50%", fig.width = 5---------------------
 library(DoseFinding)
 library(ggplot2)
 doses <- c(0, 12.5, 25, 50, 100)
@@ -14,17 +14,17 @@ guess <- list(emax = c(2.6, 12.5), sigEmax = c(30.5, 3.5), quadratic = -0.00776)
 mods <- do.call(Mods, append(guess, list(placEff = 1.25, maxEff = 0.15, doses = doses)))
 plotMods(mods)
 
-## ---- power_sample_size_1-----------------------------------------------------
+## ----power_sample_size_1------------------------------------------------------
 contMat <- optContr(mods, w=1)
 pows <- powN(upperN = 100, lowerN = 10, step = 10, contMat = contMat,
              sigma = 0.34, altModels = mods, alpha = 0.05, alRatio = rep(1, 5))
 plot(pows)
 
-## ---- power_sample_size_2-----------------------------------------------------
+## ----power_sample_size_2------------------------------------------------------
 sampSizeMCT(upperN = 150, contMat = contMat, sigma = 0.34, altModels = mods,
             power = 0.9, alRatio = rep(1, 5), alpha = 0.05, sumFct = min)
 
-## ---- power_effect_size-------------------------------------------------------
+## ----power_effect_size--------------------------------------------------------
 plot_power_vs_treatment_effect <- function(guess, doses, group_size, placEff, maxEffs,
                                            sigma_low, sigma_mid, sigma_high, alpha) {
   mods_args_fixed <- append(guess, list(placEff = placEff, doses = doses))
@@ -53,12 +53,12 @@ plot_power_vs_treatment_effect(guess, doses, group_size = 90, placEff = 1.25,
                                maxEffs = seq(0.01, 0.3, length.out = 15),
                                sigma_low = 0.3, sigma_mid = 0.34, sigma_high = 0.4, alpha = 0.05)
 
-## ---- power_miss_1------------------------------------------------------------
+## ----power_miss_1-------------------------------------------------------------
 guess_miss <- list(exponential = guesst(50, 0.2, "exponential", Maxd = max(doses)))
 mods_miss <- do.call(Mods, c(guess, guess_miss, list(placEff = 1.25, maxEff = 0.15, doses = doses)))
 plot(mods_miss, superpose = TRUE)
 
-## ---- power_miss_2------------------------------------------------------------
+## ----power_miss_2-------------------------------------------------------------
 plot_power_misspec <- function(guess, guess_miss, placEff, maxEff, doses,
                                upperN, lowerN, step, sigma, alpha) {
   mods_extra_par <- list(placEff = placEff, maxEff = maxEff, doses = doses)
@@ -86,7 +86,7 @@ plot_power_misspec <- function(guess, guess_miss, placEff, maxEff, doses,
 plot_power_misspec(guess, guess_miss, placEff = 1.25, maxEff = 0.15, doses = doses,
                    upperN = 100, lowerN = 10, step = 10, sigma = 0.34, alpha = 0.05)
 
-## ---- tdci93, warning = FALSE-------------------------------------------------
+## ----tdci93, warning = FALSE--------------------------------------------------
 set.seed(42)
 ## Note: Warnings related to vcov.DRMod can be ignored if small relative to the total number of simulations
 pm <- planMod("sigEmax", Mods(sigEmax=c(30.5, 3.5), placEff=1.25, maxEff=0.15, doses=doses),
@@ -94,7 +94,7 @@ pm <- planMod("sigEmax", Mods(sigEmax=c(30.5, 3.5), placEff=1.25, maxEff=0.15, d
               bnds = defBnds(max(doses)))
 summary(pm,  Delta=0.12)
 
-## ---- tdci1650----------------------------------------------------------------
+## ----tdci1650-----------------------------------------------------------------
 pm <- planMod("sigEmax", Mods(sigEmax=c(30.5, 3.5), placEff=1.25, maxEff=0.15, doses=doses),
               n=1650, sigma = 0.34, doses=doses, simulation=TRUE, nSim=5000, showSimProgress = FALSE,
               bnds = defBnds(max(doses)))

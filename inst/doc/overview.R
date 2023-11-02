@@ -1,4 +1,4 @@
-## ---- settings-knitr, include=FALSE-------------------------------------------
+## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
                       comment = NA,
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- overview, fig.asp = .4--------------------------------------------------
+## ----overview, fig.asp = .4---------------------------------------------------
 library(DoseFinding)
 data(IBScovars)
 head(IBScovars)
@@ -24,13 +24,13 @@ test <- MCTtest(dose, resp, IBScovars, models=models,
                 addCovars = ~ gender)
 test
 
-## ---- overview 2--------------------------------------------------------------
+## ----overview 2---------------------------------------------------------------
 fitemax <- fitMod(dose, resp, data=IBScovars, model="emax",
                   bnds = c(0.01,5))
 ## display fitted dose-effect curve
 plot(fitemax, CI=TRUE, plotData="meansCI")
 
-## ---- overview 3--------------------------------------------------------------
+## ----overview 3---------------------------------------------------------------
 ## optimal design for estimation of the smallest dose that gives an
 ## improvement of 0.2 over placebo, a model-averaged design criterion
 ## is used (over the models defined in Mods)

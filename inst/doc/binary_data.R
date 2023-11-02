@@ -1,4 +1,4 @@
-## ---- settings-knitr, include=FALSE-------------------------------------------
+## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
                       comment = NA,
@@ -6,7 +6,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
 options(rmarkdown.html_vignette.check_title = FALSE)
 theme_set(theme_bw())
 
-## ---- example_data------------------------------------------------------------
+## ----example_data-------------------------------------------------------------
 library(DoseFinding)
 library(ggplot2)
 
@@ -27,7 +27,7 @@ prob <- inv_logit(emax(dose_vector, -2.2, 1.6, 0.5) + 0.3 * x1 + 0.3 * (x2 == "B
 dat <- data.frame(y = rbinom(N, 1, prob),
                   dose = dose_vector, x1 = x1, x2 = x2)
 
-## ---- setup, fig.width = 8, out.width = '100%'--------------------------------
+## ----setup, fig.width = 8, out.width = '100%'---------------------------------
 mods <- Mods(emax = c(0.25, 1), sigEmax = rbind(c(1, 3), c(2.5, 4)), betaMod = c(1.1, 1.1),
              placEff = logit(0.1), maxEff = logit(0.35)-logit(0.1),
              doses = doses)
@@ -35,13 +35,13 @@ plotMods(mods)
 ## plot candidate models on probability scale
 plotMods(mods, trafo = inv_logit)
 
-## ---- test_no_covariates------------------------------------------------------
+## ----test_no_covariates-------------------------------------------------------
 fit_nocov <- glm(y~factor(dose) + 0, data = dat, family = binomial)
 mu_hat <- coef(fit_nocov)
 S_hat <- vcov(fit_nocov)
 MCTtest(doses, mu_hat, S = S_hat, models = mods, type = "general")
 
-## ---- estimate_no_covariates--------------------------------------------------
+## ----estimate_no_covariates---------------------------------------------------
 one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
   sim <- drop(rmvnorm(1, mu_hat, S_hat))
   fit <- lapply(c("emax", "sigEmax", "betaMod"), function(mod)
@@ -85,7 +85,7 @@ predict_and_plot <- function(mu_hat, S_hat, doses, dose_seq, n_rep) {
 dose_seq <- seq(0, 4, length.out = 51)
 predict_and_plot(mu_hat, S_hat, doses, dose_seq, 1000)
 
-## ---- test_covariates---------------------------------------------------------
+## ----test_covariates----------------------------------------------------------
 fit_cov <- glm(y~factor(dose) + 0 + x1 + x2, data = dat, family = binomial)
 
 covariate_adjusted_estimates <- function(mu_hat, S_hat, formula_rhs, doses, other_covariates, n_sim) {
@@ -106,7 +106,7 @@ ca <- covariate_adjusted_estimates(coef(fit_cov), vcov(fit_cov), ~factor(dose)+0
                                    doses, dat[, c("x1", "x2")], 1000)
 MCTtest(doses, ca$mu_star, S = ca$S_star, type = "general", models = mods)
 
-## ---- compare-----------------------------------------------------------------
+## ----compare------------------------------------------------------------------
 ggplot(data.frame(dose = rep(doses, 4),
                   est = c(inv_logit(mu_hat), diag(S_hat), inv_logit(ca$mu_star), diag(ca$S_star)),
                   name = rep(rep(c("mean", "var"), each = length(doses)), times = 2),
@@ -115,7 +115,7 @@ ggplot(data.frame(dose = rep(doses, 4),
   scale_color_discrete(name = "adjusted") +
   facet_wrap(vars(name), scales = "free_y") + ylab("")
 
-## ---- estimate_covariates-----------------------------------------------------
+## ----estimate_covariates------------------------------------------------------
 predict_and_plot(ca$mu_star, ca$S_star, doses, dose_seq, 1000) +
   labs(title = "Covariate adjusted bootstrap estimates for population response probability")
 
@@ -125,7 +125,7 @@ predict_and_plot(ca$mu_star, ca$S_star, doses, dose_seq, 1000) +
 optCont <- optContr(mods, doses, w = 1)
 MCTtest(doses, ca$mu_star, S = ca$S_star, type = "general", contMat = optCont)
 
-## ---- sample_size-------------------------------------------------------------
+## ----sample_size--------------------------------------------------------------
 ## for simplicity: contrasts as discussed in the previous section
 contMat <- optContr(mods, w=1)
 
