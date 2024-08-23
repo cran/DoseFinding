@@ -1,6 +1,6 @@
 ## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = FALSE,
                       comment = NA,
                       dev = "png", dpi = 150, fig.asp = 0.618, fig.width = 7, out.width = "85%", fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
@@ -148,7 +148,7 @@ fit_model_shared_e0 <- function(model, dose, mu_hat, S_hat_inv, lower, upper, st
 ## predict population response in each regimen for dose_seq_*
 ## note: both dose_seq_* vectors should contain a 0 if response at placebo is of interest
 one_bootstrap_sample <- function(est, dose_seq_od, dose_seq_bid) {
-  mu_new <- drop(rmvnorm(1, est$mu_hat, est$S_hat))
+  mu_new <- drop(mvtnorm::rmvnorm(1, est$mu_hat, est$S_hat))
   mod_info <- list(list(name = "emax", bounds = rbind(c(0.15, 225)),
                         i_par = list(od = 2:3, bid = 4:5), n_par_gaic = 5),
                    list(name = "sigEmax", bounds = rbind(c(0.15, 225), c(0.5, 5)),

@@ -1,6 +1,6 @@
 ## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = FALSE,
                       comment = NA,
                       dev = "png", dpi = 150, fig.asp = 0.618, fig.width = 7, out.width = "85%", fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
@@ -43,7 +43,7 @@ MCTtest(doses, mu_hat, S = S_hat, models = mods, type = "general")
 
 ## ----estimate_no_covariates---------------------------------------------------
 one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
-  sim <- drop(rmvnorm(1, mu_hat, S_hat))
+  sim <- drop(mvtnorm::rmvnorm(1, mu_hat, S_hat))
   fit <- lapply(c("emax", "sigEmax", "betaMod"), function(mod)
     fitMod(doses, sim, model = mod, S = S_hat, type = "general", bnds = bounds[[mod]]))
   index <- which.min(sapply(fit, gAIC))
@@ -97,7 +97,7 @@ covariate_adjusted_estimates <- function(mu_hat, S_hat, formula_rhs, doses, othe
   ## average on probability scale then backtransform to logit scale
   mu_star <- logit(tapply(inv_logit(X %*% mu_hat), pdat$dose, mean))
   ## estimate covariance matrix of mu_star
-  pred <- replicate(n_sim, logit(tapply(inv_logit(X %*% drop(rmvnorm(1, mu_hat, S_hat))),
+  pred <- replicate(n_sim, logit(tapply(inv_logit(X %*% drop(mvtnorm::rmvnorm(1, mu_hat, S_hat))),
                                         pdat$dose, mean)))
   return(list(mu_star = as.numeric(mu_star), S_star = cov(t(pred))))
 }

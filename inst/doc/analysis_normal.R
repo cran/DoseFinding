@@ -1,6 +1,6 @@
 ## ----settings-knitr, include=FALSE--------------------------------------------
 library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = TRUE,
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, cache = FALSE,
                       comment = NA,
                       dev = "png", dpi = 150, fig.asp = 0.618, fig.width = 7, out.width = "85%", fig.align = "center")
 options(rmarkdown.html_vignette.check_title = FALSE)
@@ -63,7 +63,7 @@ S_hat <- vcov(fitlm)
 
 ## ----bootstrap_draw-----------------------------------------------------------
 one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
-  sim <- drop(rmvnorm(1, mu_hat, S_hat))
+  sim <- drop(mvtnorm::rmvnorm(1, mu_hat, S_hat))
   fit <- lapply(c("emax", "sigEmax", "quadratic"), function(mod)
     fitMod(doses, sim, model = mod, S = S_hat, type = "general", bnds = bounds[[mod]]))
   index <- which.min(sapply(fit, gAIC))
