@@ -42,48 +42,11 @@ S_hat <- vcov(fit_nocov)
 MCTtest(doses, mu_hat, S = S_hat, models = mods, type = "general")
 
 ## ----estimate_no_covariates---------------------------------------------------
-one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
-  sim <- drop(mvtnorm::rmvnorm(1, mu_hat, S_hat))
-  fit <- lapply(c("emax", "sigEmax", "betaMod"), function(mod)
-    fitMod(doses, sim, model = mod, S = S_hat, type = "general", bnds = bounds[[mod]]))
-  index <- which.min(sapply(fit, gAIC))
-  pred <- predict(fit[[index]], doseSeq = dose_seq, predType = "ls-means")
-  return(pred)
-}
-
-## bs_predictions is a doses x replications matrix,
-## probs is a 4-element vector of increasing probabilities for the quantiles
-summarize_predictions <- function(bs_predictions, probs) {
-  stopifnot(length(probs) == 4)
-  med <- apply(bs_predictions, 1, median)
-  quants <- apply(bs_predictions, 1, quantile, probs = probs)
-  bs_df <- as.data.frame(cbind(med, t(quants)))
-  names(bs_df) <- c("median", "low_out", "low_in", "high_in", "high_out")
-  return(bs_df)
-}
-
-predict_and_plot <- function(mu_hat, S_hat, doses, dose_seq, n_rep) {
-  bs_rep <- replicate(
-    n_rep, one_bootstrap_prediction(mu_hat, S_hat, doses, defBnds(max(doses)), dose_seq))
-  bs_summary <- summarize_predictions(bs_rep, probs = c(0.025, 0.25, 0.75, 0.975))
-  bs_summary <- as.data.frame(inv_logit(bs_summary)) # back to probability scale
-  ci_half_width <- qnorm(0.975) * sqrt(diag(S_hat))
-  glm_summary <- data.frame(dose = doses, mu_hat = inv_logit(mu_hat),
-                            low = inv_logit(mu_hat - ci_half_width),
-                            high = inv_logit(mu_hat + ci_half_width))
-  gg <- ggplot(cbind(bs_summary, dose_seq = dose_seq)) + geom_line(aes(dose_seq, median)) +
-    geom_ribbon(aes(x = dose_seq, ymin = low_in, ymax = high_in), alpha = 0.2) +
-    geom_ribbon(aes(x = dose_seq, ymin = low_out, ymax = high_out), alpha = 0.2) +
-    geom_point(aes(dose, mu_hat), glm_summary) +
-    geom_errorbar(aes(dose, ymin = low, ymax = high), glm_summary, width = 0, alpha = 0.5) +
-    scale_y_continuous(breaks = seq(0, 1, 0.05)) +
-    xlab("Dose") + ylab("Response Probability") +
-    labs(title = "Bootstrap estimates for population response probability",
-         subtitle = "confidence levels 50% and 95%")
-  return(gg)
-}
-dose_seq <- seq(0, 4, length.out = 51)
-predict_and_plot(mu_hat, S_hat, doses, dose_seq, 1000)
+fit_mod_av <- maFitMod(doses, mu_hat, S = S_hat,
+                       models = c("emax", "sigEmax", "betaMod"))
+plot(fit_mod_av, plotData = "meansCI",
+     title = "Bootstrap estimates for population response probability",
+     trafo = function(x) 1/(1+exp(-x)))
 
 ## ----test_covariates----------------------------------------------------------
 fit_cov <- glm(y~factor(dose) + 0 + x1 + x2, data = dat, family = binomial)
@@ -116,8 +79,12 @@ ggplot(data.frame(dose = rep(doses, 4),
   facet_wrap(vars(name), scales = "free_y") + ylab("")
 
 ## ----estimate_covariates------------------------------------------------------
-predict_and_plot(ca$mu_star, ca$S_star, doses, dose_seq, 1000) +
-  labs(title = "Covariate adjusted bootstrap estimates for population response probability")
+fit_cov_adj <- maFitMod(doses, ca$mu_star, S = ca$S_star,
+                        models = c("emax", "sigEmax", "betaMod"))
+# plotting on probability scale, need to transform predictions on logit scale
+plot(fit_cov_adj, plotData = "meansCI",
+     title = "Bootstrap estimates for population response probability",
+     trafo = function(x) 1/(1+exp(-x)))
 
 ## -----------------------------------------------------------------------------
 ## here we have balanced sample sizes across groups, so we select w = 1

@@ -58,47 +58,21 @@ plot(fit_single)
 
 ## ----fit_lm_2-----------------------------------------------------------------
 fitlm <- lm(FEV1 ~ factor(dose) - 1, data = NVA)
+dose <- unique(NVA$dose)
 mu_hat <- coef(fitlm)
 S_hat <- vcov(fitlm)
 
 ## ----bootstrap_draw-----------------------------------------------------------
-one_bootstrap_prediction <- function(mu_hat, S_hat, doses, bounds, dose_seq) {
-  sim <- drop(mvtnorm::rmvnorm(1, mu_hat, S_hat))
-  fit <- lapply(c("emax", "sigEmax", "quadratic"), function(mod)
-    fitMod(doses, sim, model = mod, S = S_hat, type = "general", bnds = bounds[[mod]]))
-  index <- which.min(sapply(fit, gAIC))
-  pred <- predict(fit[[index]], doseSeq = dose_seq, predType = "ls-means")
-  return(pred)
-}
+fit_mod_av <- maFitMod(dose, mu_hat, S = S_hat,
+                       models = c("emax", "sigEmax", "quadratic"))
 
 ## ----bootstrap_summarize------------------------------------------------------
-# bs_predictions is a doses x replications matrix,
-# probs is a 4-element vector of increasing probabilities for the quantiles
-#   that will be used in the plotting code for outer and inner confidence intervals
-summarize_predictions <- function(bs_predictions, probs) {
-  stopifnot(length(probs) == 4)
-  med <- apply(bs_predictions, 1, median)
-  quants <- apply(bs_predictions, 1, quantile, probs = probs)
-  bs_df <- as.data.frame(cbind(med, t(quants)))
-  names(bs_df) <- c("median", "outer_low", "inner_low", "inner_high", "outer_high")
-  return(bs_df)
-}
-
-## ----bootstrap_plot-----------------------------------------------------------
-dose_seq <- 0:100
-bs_rep <- replicate(1000, one_bootstrap_prediction(mu_hat, S_hat, doses, defBnds(max(doses)), dose_seq))
-bs_summary <- summarize_predictions(bs_rep, probs = c(0.025, 0.25, 0.75, 0.975))
-ci_half_width <- qt(0.975, fitlm$df.residual) * sqrt(diag(S_hat))
-lm_summary <- data.frame(dose = doses, mu_hat = mu_hat,
-                         low = mu_hat - ci_half_width, high = mu_hat + ci_half_width)
-
-ggplot(cbind(bs_summary, dose_seq = dose_seq)) + geom_line(aes(dose_seq, median)) +
-  geom_ribbon(aes(x = dose_seq, ymin = inner_low, ymax = inner_high), alpha = 0.2) +
-  geom_ribbon(aes(x = dose_seq, ymin = outer_low, ymax = outer_high), alpha = 0.2) +
-  geom_point(aes(dose, mu_hat), lm_summary) +
-  geom_errorbar(aes(dose, ymin = low, ymax = high), lm_summary, width = 0, alpha = 0.5) +
-  scale_y_continuous(breaks = seq(1.2,1.45,by=0.02)) +
-  xlab("Dose") + ylab("FEV1") +
-  labs(title = "ANOVA and bootstrap estimates for FEV1 population average",
-       subtitle = "confidence levels 50% and 95%")
+# point estimates (median) and bootstrap quantile intervals can be extracted via
+ma_pred <- predict(fit_mod_av, doseSeq = c(0, 12.5, 25, 50, 100))
+# individual bootstrap estimates via
+indiv_pred <- predict(fit_mod_av, doseSeq = c(0, 12.5, 25, 50, 100),
+                      summaryFct = NULL)
+# plotting can be done via
+plot(fit_mod_av, plotData = "meansCI",
+     ylab = "Model averaging estimate with 95% CI")
 
