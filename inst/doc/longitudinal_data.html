@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Longitudinal Data MCP-Mod</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Longitudinal Data MCP-Mod</h1>
+
+
+
+<p>In this vignette we illustrate how to use the
+<code>DoseFinding</code> package with longitudinal, continuous
+observations by fitting a mixed model for repeated measures (MMRM) and
+applying the generalized MCP-Mod methodology to the resulting estimates.
+We also show how to apply futility analyses during the trial, following
+<span class="citation">Bornkamp et al. (<a href="#ref-bornkamp2024">2024</a>)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(DoseFinding)</span></code></pre></div>
+<div id="data-simulation-code" class="section level2">
+<h2>Data Simulation Code</h2>
+<p>In order to illustrate the methodology, we are going to consider data
+as simulated in Section 4.1 of <span class="citation">Bornkamp et al.
+(<a href="#ref-bornkamp2024">2024</a>)</span>. We include the
+corresponding functions here for completeness. This can be helpful for
+users who want to simulate their own data during trial design.</p>
+<div id="calculate-mean-response-from-emax-model" class="section level3">
+<h3>Calculate Mean Response from Emax Model</h3>
+<p>The <code>calcMean</code> function calculates the mean response at
+each dose and each time point under the Emax model with <span class="math inline">\(\text{E}_0 = 0\)</span> and <span class="math inline">\(\text{ED}_{50} = 1\)</span> with the <span class="math inline">\(\text{E}_{max}\)</span> parameter gradually
+increasing so that a pre-specified maximum effect is achieved at the
+last visit. The function takes three arguments: <code>dose</code> is a
+vector of doses, <code>times</code> is a vector of time points, and
+<code>maxEff</code> is the maximum effect at the final analysis (i.e.,
+for the highest dose at the last visit). It returns a matrix of mean
+responses, where the rows correspond to doses and the columns correspond
+to time points.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>calcMean <span class="ot">&lt;-</span> <span class="cf">function</span>(dose, times, maxEff) {</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  emaxLastVisit <span class="ot">&lt;-</span> <span class="fu">Mods</span>(<span class="at">emax =</span> <span class="dv">1</span>, <span class="at">doses =</span> dose, <span class="at">maxEff =</span> maxEff)<span class="sc">$</span>emax[<span class="st">&quot;eMax&quot;</span>]</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  maxTime <span class="ot">&lt;-</span> <span class="fu">max</span>(times)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">outer</span>(dose, times, <span class="cf">function</span>(doses, times) {</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>    Emax <span class="ot">&lt;-</span> emaxLastVisit <span class="sc">*</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">exp</span>(<span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> times)) <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">-</span> <span class="fu">exp</span>(<span class="sc">-</span><span class="fl">0.5</span> <span class="sc">*</span> maxTime))</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>    Emax <span class="sc">*</span> doses <span class="sc">/</span> (doses <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  })</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>}</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">calcMean</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>  <span class="at">dose =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>),</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>  <span class="at">times =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>  <span class="at">maxEff =</span> <span class="fl">0.1</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a>)</span></code></pre></div>
+<pre><code>     [,1]       [,2]       [,3]       [,4]       [,5]       [,6]       [,7]
+[1,]    0 0.00000000 0.00000000 0.00000000 0.00000000 0.00000000 0.00000000
+[2,]    0 0.01650577 0.02651703 0.03258916 0.03627210 0.03850591 0.03986079
+[3,]    0 0.02475866 0.03977554 0.04888374 0.05440814 0.05775886 0.05979118
+[4,]    0 0.03301154 0.05303405 0.06517832 0.07254419 0.07701182 0.07972157
+[5,]    0 0.03961385 0.06364086 0.07821399 0.08705303 0.09241418 0.09566588
+           [,8]       [,9]      [,10]      [,11]
+[1,] 0.00000000 0.00000000 0.00000000 0.00000000
+[2,] 0.04068256 0.04118099 0.04148330 0.04166667
+[3,] 0.06102384 0.06177149 0.06222496 0.06250000
+[4,] 0.08136512 0.08236198 0.08296661 0.08333333
+[5,] 0.09763814 0.09883438 0.09955993 0.10000000</code></pre>
+</div>
+<div id="generate-normal-mean-vector-and-covariance-matrix" class="section level3">
+<h3>Generate Normal Mean Vector and Covariance Matrix</h3>
+<p>The <code>parGen</code> function returns the mean and
+(compound-symmetry) covariance matrix for the continuous outcomes, given
+the same input as for <code>calcMean</code> above, plus the baseline
+mean <code>bslMean</code>, and the standard deviation <code>errSD</code>
+and constant correlation <code>rho</code> of the residuals:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>parGen <span class="ot">&lt;-</span> <span class="cf">function</span>(times, doses, maxEff, <span class="at">bslMean =</span> <span class="dv">0</span>, <span class="at">errSD =</span> <span class="fl">0.55</span>, <span class="at">rho =</span> <span class="fl">0.9</span>) {</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  times <span class="ot">&lt;-</span> <span class="fu">sort</span>(times)</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  ndim <span class="ot">&lt;-</span> <span class="fu">length</span>(times)</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="do">## matrix of outcome means for each dose and visit</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>  MeanMat <span class="ot">&lt;-</span> <span class="fu">calcMean</span>(doses, times, maxEff) <span class="sc">+</span> bslMean</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  <span class="fu">rownames</span>(MeanMat) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;Dose&quot;</span>, doses)</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="fu">colnames</span>(MeanMat) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;Week&quot;</span>, times)</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="do">## cov mat. for err</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  sdV <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">length</span>(errSD) <span class="sc">==</span> <span class="dv">1</span>) {</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>    <span class="fu">rep</span>(errSD, ndim)</span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(errSD) <span class="sc">==</span> ndim) {</span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a>    errSD</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb4-16"><a href="#cb4-16" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">&quot;Length of err sd should either be 1 (homogeneous) or equal to the number of visits in times&quot;</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" tabindex="-1"></a>  }</span>
+<span id="cb4-18"><a href="#cb4-18" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" tabindex="-1"></a>  <span class="do">## CS covariance structure</span></span>
+<span id="cb4-20"><a href="#cb4-20" tabindex="-1"></a>  R <span class="ot">&lt;-</span> <span class="fu">diag</span>(<span class="dv">1</span>, ndim)</span>
+<span id="cb4-21"><a href="#cb4-21" tabindex="-1"></a>  R[<span class="fu">lower.tri</span>(R)] <span class="ot">&lt;-</span> R[<span class="fu">upper.tri</span>(R)] <span class="ot">&lt;-</span> rho</span>
+<span id="cb4-22"><a href="#cb4-22" tabindex="-1"></a>  Sigm <span class="ot">&lt;-</span> <span class="fu">diag</span>(sdV) <span class="sc">%*%</span> R <span class="sc">%*%</span> <span class="fu">diag</span>(sdV)</span>
+<span id="cb4-23"><a href="#cb4-23" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">visit =</span> times, <span class="at">Sigm =</span> Sigm, <span class="at">MeanMat =</span> MeanMat, <span class="at">bslMean =</span> bslMean)</span>
+<span id="cb4-25"><a href="#cb4-25" tabindex="-1"></a>}</span>
+<span id="cb4-26"><a href="#cb4-26" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb4-28"><a href="#cb4-28" tabindex="-1"></a>pars <span class="ot">&lt;-</span> <span class="fu">parGen</span>(</span>
+<span id="cb4-29"><a href="#cb4-29" tabindex="-1"></a>  <span class="at">times =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">10</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" tabindex="-1"></a>  <span class="at">doses =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>),</span>
+<span id="cb4-31"><a href="#cb4-31" tabindex="-1"></a>  <span class="at">maxEff =</span> <span class="fl">0.1</span>,</span>
+<span id="cb4-32"><a href="#cb4-32" tabindex="-1"></a>  <span class="at">bslMean =</span> <span class="fl">1.5</span></span>
+<span id="cb4-33"><a href="#cb4-33" tabindex="-1"></a>)</span>
+<span id="cb4-34"><a href="#cb4-34" tabindex="-1"></a>pars</span></code></pre></div>
+<pre><code>$visit
+ [1]  0  1  2  3  4  5  6  7  8  9 10
+
+$Sigm
+         [,1]    [,2]    [,3]    [,4]    [,5]    [,6]    [,7]    [,8]    [,9]
+ [1,] 0.30250 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225
+ [2,] 0.27225 0.30250 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225
+ [3,] 0.27225 0.27225 0.30250 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225
+ [4,] 0.27225 0.27225 0.27225 0.30250 0.27225 0.27225 0.27225 0.27225 0.27225
+ [5,] 0.27225 0.27225 0.27225 0.27225 0.30250 0.27225 0.27225 0.27225 0.27225
+ [6,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.30250 0.27225 0.27225 0.27225
+ [7,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.30250 0.27225 0.27225
+ [8,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.30250 0.27225
+ [9,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.30250
+[10,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225
+[11,] 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225 0.27225
+        [,10]   [,11]
+ [1,] 0.27225 0.27225
+ [2,] 0.27225 0.27225
+ [3,] 0.27225 0.27225
+ [4,] 0.27225 0.27225
+ [5,] 0.27225 0.27225
+ [6,] 0.27225 0.27225
+ [7,] 0.27225 0.27225
+ [8,] 0.27225 0.27225
+ [9,] 0.27225 0.27225
+[10,] 0.30250 0.27225
+[11,] 0.27225 0.30250
+
+$MeanMat
+        Week0    Week1    Week2    Week3    Week4    Week5    Week6    Week7
+Dose0     1.5 1.500000 1.500000 1.500000 1.500000 1.500000 1.500000 1.500000
+Dose0.5   1.5 1.516506 1.526517 1.532589 1.536272 1.538506 1.539861 1.540683
+Dose1     1.5 1.524759 1.539776 1.548884 1.554408 1.557759 1.559791 1.561024
+Dose2     1.5 1.533012 1.553034 1.565178 1.572544 1.577012 1.579722 1.581365
+Dose4     1.5 1.539614 1.563641 1.578214 1.587053 1.592414 1.595666 1.597638
+           Week8    Week9   Week10
+Dose0   1.500000 1.500000 1.500000
+Dose0.5 1.541181 1.541483 1.541667
+Dose1   1.561771 1.562225 1.562500
+Dose2   1.582362 1.582967 1.583333
+Dose4   1.598834 1.599560 1.600000
+
+$bslMean
+[1] 1.5</code></pre>
+<p>Note that we assume here that the time is in weeks, but that could of
+course easily be adapted as needed for your project.</p>
+</div>
+<div id="simulate-longitudinal-outcomes" class="section level3">
+<h3>Simulate Longitudinal Outcomes</h3>
+<p>The <code>datGen</code> function simulates the longitudinal outcome
+data, given a sample size of patients <code>N</code>, a list of
+parameters <code>pars</code> (as generated by <code>parGen</code>), a
+vector of <code>doses</code> and corresponding allocation ratios
+<code>alRatio</code>, the enrollment time of the last patient
+<code>LPFV.t</code>. The distribution of the recruitment time can be
+specified by <code>RecrDist</code> and <code>RandRecr</code>, with the
+following options:</p>
+<ul>
+<li><code>RecrDist = &quot;Quad&quot;</code>: quadratic, <span class="math inline">\(a t^2\)</span>, where <span class="math inline">\(a = N / LPFV.t^2\)</span>.
+<ul>
+<li><code>RandRecr = TRUE</code>: <span class="math inline">\(t \sim
+\sqrt{N \cdot \text{Unif}(0,1) / a}\)</span>.</li>
+<li><code>RandRecr = FALSE</code>: <span class="math inline">\(t =
+\sqrt{i / a}\)</span>, where <span class="math inline">\(i = 1, \dotsc,
+N\)</span>.</li>
+</ul></li>
+<li><code>Exp</code>: exponential, with rate <span class="math inline">\(\lambda = -\log(0.9 / N) / LPFV.t\)</span>.
+<ul>
+<li><code>RandRecr = TRUE</code>: <span class="math inline">\(t \sim
+\text{Exp}(\lambda)\)</span>.</li>
+<li><code>RandRecr = FALSE</code>: <span class="math inline">\(t =
+F_{\text{Exp}(\lambda)}^{-1}(i/N)\)</span> for <span class="math inline">\(i = 1, \dotsc, N-1\)</span>; <span class="math inline">\(t = LPFV.t\)</span> for <span class="math inline">\(i = N\)</span>.</li>
+</ul></li>
+<li><code>Unif</code>: uniform, <span class="math inline">\(t \sim
+\text{Unif}(0, LPFV.t)\)</span>.
+<ul>
+<li><code>RandRecr = TRUE</code>: <span class="math inline">\(t \sim
+\text{Unif}(0, LPFV.t)\)</span>.</li>
+<li><code>RandRecr = FALSE</code>: <span class="math inline">\(t = i
+\cdot LPFV.t / N\)</span> for <span class="math inline">\(i = 1, \dotsc,
+N\)</span>.</li>
+</ul></li>
+</ul>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>datGen <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">N =</span> <span class="dv">300</span>, pars, doses, alRatio, LPFV.t, <span class="at">RecrDist =</span> <span class="st">&quot;Quad&quot;</span>, <span class="at">RandRecr =</span> <span class="cn">TRUE</span>) {</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  K <span class="ot">&lt;-</span> <span class="fu">length</span>(doses)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  nt <span class="ot">&lt;-</span> <span class="fu">length</span>(pars<span class="sc">$</span>visit)</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="do">## generate list of dose arms</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  nblk <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(N <span class="sc">/</span> <span class="fu">sum</span>(alRatio)) <span class="co"># number of blocks</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  d <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">lapply</span>(<span class="dv">1</span><span class="sc">:</span>nblk, <span class="cf">function</span>(i) <span class="fu">sample</span>(<span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>K, alRatio), <span class="fu">sum</span>(alRatio))))</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  d <span class="ot">&lt;-</span> d[<span class="dv">1</span><span class="sc">:</span>N]</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  err <span class="ot">&lt;-</span> mvtnorm<span class="sc">::</span><span class="fu">rmvnorm</span>(N, <span class="at">mean =</span> <span class="fu">rep</span>(<span class="dv">0</span>, nt), <span class="at">sigma =</span> pars<span class="sc">$</span>Sigm) <span class="co"># error term</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  Y <span class="ot">&lt;-</span> pars<span class="sc">$</span>MeanMat[d, ] <span class="sc">+</span> err <span class="co"># complete outcomes</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>  <span class="do">## enrollment time (week)</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>  randT <span class="ot">&lt;-</span> <span class="cf">if</span> (RecrDist <span class="sc">==</span> <span class="st">&quot;Quad&quot;</span>) {</span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>    a <span class="ot">&lt;-</span> N <span class="sc">/</span> LPFV.t<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>    <span class="cf">if</span> (RandRecr) {</span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a>      <span class="fu">sqrt</span>(N <span class="sc">*</span> <span class="fu">runif</span>(N) <span class="sc">/</span> a)</span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a>      <span class="fu">sqrt</span>(<span class="fu">c</span>(<span class="dv">1</span><span class="sc">:</span>N) <span class="sc">/</span> a)</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>    }</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (RecrDist <span class="sc">==</span> <span class="st">&quot;Exp&quot;</span>) {</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>    lamb <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fu">log</span>(<span class="fl">0.9</span> <span class="sc">/</span> N) <span class="sc">/</span> LPFV.t</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>    <span class="cf">if</span> (RandRecr) {</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a>      <span class="fu">rexp</span>(N, <span class="at">rate =</span> lamb)</span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>      <span class="fu">c</span>(<span class="fu">qexp</span>((<span class="dv">1</span><span class="sc">:</span>(N <span class="sc">-</span> <span class="dv">1</span>)) <span class="sc">/</span> N, lamb), LPFV.t)</span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>    }</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>  } <span class="cf">else</span> <span class="cf">if</span> (RecrDist <span class="sc">==</span> <span class="st">&quot;Unif&quot;</span>) {</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>    <span class="cf">if</span> (RandRecr) {</span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>      <span class="fu">runif</span>(N, <span class="dv">0</span>, LPFV.t)</span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>      (<span class="dv">1</span><span class="sc">:</span>N) <span class="sc">*</span> LPFV.t <span class="sc">/</span> N</span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>    }</span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>  }</span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a>  trdat <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span><span class="sc">:</span>N, doses[d], randT, Y)</span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>  <span class="fu">colnames</span>(trdat)[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>] <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;SUBJID&quot;</span>, <span class="st">&quot;Dose&quot;</span>, <span class="st">&quot;enroll.time&quot;</span>)</span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>  out <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">as_tibble</span>(trdat) <span class="sc">|&gt;</span></span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a>    tidyr<span class="sc">::</span><span class="fu">gather</span>(<span class="st">&quot;Visit&quot;</span>, <span class="st">&quot;response&quot;</span>, <span class="sc">-</span><span class="fu">c</span>(<span class="st">&quot;SUBJID&quot;</span>, <span class="st">&quot;Dose&quot;</span>, <span class="st">&quot;enroll.time&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">arrange</span>(SUBJID)</span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a>  out<span class="sc">$</span>week <span class="ot">&lt;-</span> <span class="fu">rep</span>(pars<span class="sc">$</span>visit, N)</span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a>  out<span class="sc">$</span>cal.time <span class="ot">&lt;-</span> out<span class="sc">$</span>enroll.time <span class="sc">+</span> out<span class="sc">$</span>week</span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a></span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a>  bsl <span class="ot">&lt;-</span> out <span class="sc">|&gt;</span></span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(week <span class="sc">&lt;=</span> <span class="dv">0</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="st">&quot;SUBJID&quot;</span>, <span class="st">&quot;response&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">base =</span> <span class="st">&quot;response&quot;</span>)</span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a>  out <span class="ot">&lt;-</span> bsl <span class="sc">|&gt;</span></span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">left_join</span>(out, <span class="at">by =</span> <span class="st">&quot;SUBJID&quot;</span>, <span class="at">multiple =</span> <span class="st">&quot;all&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">chg =</span> response <span class="sc">-</span> base) <span class="sc">|&gt;</span></span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span> dplyr<span class="sc">::</span><span class="fu">all_of</span>(<span class="st">&quot;response&quot;</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">rename</span>(<span class="at">response =</span> <span class="st">&quot;chg&quot;</span>)</span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a></span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a>  out <span class="sc">|&gt;</span></span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate</span>(<span class="at">USUBJID =</span> <span class="fu">paste0</span>(<span class="st">&quot;PAT&quot;</span>, SUBJID)) <span class="sc">|&gt;</span></span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate_at</span>(<span class="st">&quot;Visit&quot;</span>, <span class="cf">function</span>(x) <span class="fu">factor</span>(x, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="st">&quot;Week&quot;</span>, pars<span class="sc">$</span>visit))) <span class="sc">|&gt;</span></span>
+<span id="cb6-58"><a href="#cb6-58" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">mutate_at</span>(<span class="st">&quot;Dose&quot;</span>, <span class="cf">function</span>(x) <span class="fu">factor</span>(x, <span class="at">levels =</span> doses)) <span class="sc">|&gt;</span></span>
+<span id="cb6-59"><a href="#cb6-59" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">arrange</span>(SUBJID, week)</span>
+<span id="cb6-60"><a href="#cb6-60" tabindex="-1"></a>}</span>
+<span id="cb6-61"><a href="#cb6-61" tabindex="-1"></a></span>
+<span id="cb6-62"><a href="#cb6-62" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb6-63"><a href="#cb6-63" tabindex="-1"></a>dat <span class="ot">&lt;-</span> <span class="fu">datGen</span>(</span>
+<span id="cb6-64"><a href="#cb6-64" tabindex="-1"></a>  <span class="at">N =</span> <span class="dv">300</span>,</span>
+<span id="cb6-65"><a href="#cb6-65" tabindex="-1"></a>  <span class="at">pars =</span> pars,</span>
+<span id="cb6-66"><a href="#cb6-66" tabindex="-1"></a>  <span class="at">doses =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>),</span>
+<span id="cb6-67"><a href="#cb6-67" tabindex="-1"></a>  <span class="at">alRatio =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb6-68"><a href="#cb6-68" tabindex="-1"></a>  <span class="at">LPFV.t =</span> <span class="dv">10</span>,</span>
+<span id="cb6-69"><a href="#cb6-69" tabindex="-1"></a>  <span class="at">RecrDist =</span> <span class="st">&quot;Quad&quot;</span>,</span>
+<span id="cb6-70"><a href="#cb6-70" tabindex="-1"></a>  <span class="at">RandRecr =</span> <span class="cn">TRUE</span></span>
+<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a>)</span>
+<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a><span class="fu">head</span>(dat, <span class="dv">15</span>)</span></code></pre></div>
+<pre><code># A tibble: 15 × 9
+   SUBJID  base Dose  enroll.time Visit   week cal.time response USUBJID
+    &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;       &lt;dbl&gt; &lt;fct&gt;  &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  
+ 1      1  1.78 0.5          8.69 Week0      0     8.69    0     PAT1   
+ 2      1  1.78 0.5          8.69 Week1      1     9.69   -0.653 PAT1   
+ 3      1  1.78 0.5          8.69 Week2      2    10.7    -0.221 PAT1   
+ 4      1  1.78 0.5          8.69 Week3      3    11.7     0.136 PAT1   
+ 5      1  1.78 0.5          8.69 Week4      4    12.7     0.224 PAT1   
+ 6      1  1.78 0.5          8.69 Week5      5    13.7    -0.420 PAT1   
+ 7      1  1.78 0.5          8.69 Week6      6    14.7    -0.125 PAT1   
+ 8      1  1.78 0.5          8.69 Week7      7    15.7    -0.442 PAT1   
+ 9      1  1.78 0.5          8.69 Week8      8    16.7     0.305 PAT1   
+10      1  1.78 0.5          8.69 Week9      9    17.7    -0.313 PAT1   
+11      1  1.78 0.5          8.69 Week10    10    18.7     0.142 PAT1   
+12      2  1.92 0            7.68 Week0      0     7.68    0     PAT2   
+13      2  1.92 0            7.68 Week1      1     8.68   -0.242 PAT2   
+14      2  1.92 0            7.68 Week2      2     9.68   -0.307 PAT2   
+15      2  1.92 0            7.68 Week3      3    10.7    -0.306 PAT2   </code></pre>
+<p>So we see that the function generates a <code>data.frame</code> with
+the subject ID, baseline value, dose, enrollment time, visit and week
+plus calendar time for each longitudinal observation.</p>
+</div>
+<div id="cut-interim-data" class="section level3">
+<h3>Cut Interim Data</h3>
+<p>The <code>intDat</code> function cuts the interim data when a certain
+proportion <code>pct</code> of patients have their final outcome. It
+returns a list with the interim analysis time <code>int.time</code>, the
+cut data <code>dat</code> and the distribution of the last visit
+<code>dist</code> (i.e., the number of patients with their last visit at
+each time point).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>intDat <span class="ot">&lt;-</span> <span class="cf">function</span>(data, <span class="at">pct =</span> <span class="fl">0.5</span>) {</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  N <span class="ot">&lt;-</span> <span class="fu">max</span>(data<span class="sc">$</span>SUBJID)</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  tmax <span class="ot">&lt;-</span> <span class="fu">max</span>(data<span class="sc">$</span>week)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  sorted_final_cal_time <span class="ot">&lt;-</span> data <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(week <span class="sc">==</span> tmax) <span class="sc">|&gt;</span> </span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">pull</span>(cal.time) <span class="sc">|&gt;</span> </span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>    <span class="fu">sort</span>()</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  N_required <span class="ot">&lt;-</span> <span class="fu">ceiling</span>(pct <span class="sc">*</span> N)</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  t.cut <span class="ot">&lt;-</span> sorted_final_cal_time[N_required]</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">list</span>(<span class="at">int.time =</span> t.cut)</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  out<span class="sc">$</span>dat <span class="ot">&lt;-</span> <span class="fu">subset</span>(data, cal.time <span class="sc">&lt;=</span> t.cut)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>  out<span class="sc">$</span>dist <span class="ot">&lt;-</span> out<span class="sc">$</span>dat <span class="sc">|&gt;</span></span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">group_by</span>(SUBJID) <span class="sc">|&gt;</span></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">summarize</span>(<span class="at">lastvis =</span> <span class="fu">max</span>(week)) <span class="sc">|&gt;</span></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">group_by</span>(lastvis) <span class="sc">|&gt;</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>        <span class="at">n =</span> dplyr<span class="sc">::</span><span class="fu">n</span>(), </span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>        <span class="at">pct =</span> (<span class="dv">100</span> <span class="sc">*</span> dplyr<span class="sc">::</span><span class="fu">n</span>() <span class="sc">/</span> N)</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>    )</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>  out</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a>}</span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a>int_dat <span class="ot">&lt;-</span> <span class="fu">intDat</span>(dat, <span class="at">pct =</span> <span class="fl">0.5</span>)</span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a>int_dat</span></code></pre></div>
+<pre><code>$int.time
+[1] 17.08316
+
+$dat
+# A tibble: 3,003 × 9
+   SUBJID  base Dose  enroll.time Visit  week cal.time response USUBJID
+    &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;       &lt;dbl&gt; &lt;fct&gt; &lt;int&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;chr&gt;  
+ 1      1  1.78 0.5          8.69 Week0     0     8.69    0     PAT1   
+ 2      1  1.78 0.5          8.69 Week1     1     9.69   -0.653 PAT1   
+ 3      1  1.78 0.5          8.69 Week2     2    10.7    -0.221 PAT1   
+ 4      1  1.78 0.5          8.69 Week3     3    11.7     0.136 PAT1   
+ 5      1  1.78 0.5          8.69 Week4     4    12.7     0.224 PAT1   
+ 6      1  1.78 0.5          8.69 Week5     5    13.7    -0.420 PAT1   
+ 7      1  1.78 0.5          8.69 Week6     6    14.7    -0.125 PAT1   
+ 8      1  1.78 0.5          8.69 Week7     7    15.7    -0.442 PAT1   
+ 9      1  1.78 0.5          8.69 Week8     8    16.7     0.305 PAT1   
+10      2  1.92 0            7.68 Week0     0     7.68    0     PAT2   
+# ℹ 2,993 more rows
+
+$dist
+# A tibble: 4 × 3
+  lastvis     n   pct
+    &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
+1       7    49  16.3
+2       8    49  16.3
+3       9    52  17.3
+4      10   150  50  </code></pre>
+</div>
+</div>
+<div id="longitudinal-data-analysis" class="section level2">
+<h2>Longitudinal Data Analysis</h2>
+<p>Given a longitudinal dataset (at an interim analysis), we can perform
+two analyses:</p>
+<ol style="list-style-type: decimal">
+<li>Completers analysis: Subset the data to patients who have reached
+the last visit, and then apply a simple linear model.</li>
+<li>Repeated measures analysis: Fit a mixed model for repeated measures
+(MMRM) to the data.</li>
+</ol>
+<p>In both cases, we then calculate the least square means <span class="math inline">\(\widehat{\mu}_{0t}\)</span> and the covariance
+matrix <span class="math inline">\(S_{0t}\)</span> of the least square
+means, as well as the residual standard deviation <span class="math inline">\(\sigma\)</span> of the model.</p>
+<p>Let’s code these in two corresponding functions:</p>
+<div id="completers-analysis" class="section level3">
+<h3>Completers Analysis</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>analyzeCompleters <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, <span class="at">eval.time =</span> <span class="st">&quot;Week12&quot;</span>) {</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  complDat <span class="ot">&lt;-</span> dat <span class="sc">|&gt;</span> </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(Visit <span class="sc">==</span> eval.time)</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">lm</span>(response <span class="sc">~</span> Dose <span class="sc">+</span> base, <span class="at">data =</span> complDat)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  lsm <span class="ot">&lt;-</span> emmeans<span class="sc">::</span><span class="fu">emmeans</span>(fit, <span class="sc">~</span> Dose)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  summ <span class="ot">&lt;-</span> <span class="fu">subset</span>(<span class="fu">summary</span>(lsm))</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  rowIDs <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">rownames</span>(summ))</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a>    <span class="at">mu0t =</span> summ<span class="sc">$</span>emmean,</span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a>    <span class="at">sigma =</span> <span class="fu">sigma</span>(fit),</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a>    <span class="at">S0t =</span> <span class="fu">vcov</span>(lsm)</span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a>  )</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a>}</span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>resultCompleters <span class="ot">&lt;-</span> <span class="fu">analyzeCompleters</span>(</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>  <span class="at">dat =</span> int_dat<span class="sc">$</span>dat,</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a>  <span class="at">eval.time =</span> <span class="st">&quot;Week10&quot;</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a>)</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a>resultCompleters</span></code></pre></div>
+<pre><code>$mu0t
+[1] 0.027117535 0.009118393 0.105201847 0.052822933 0.138610940
+
+$sigma
+[1] 0.2481969
+
+$S0t
+                0           0.5             1             2             4
+0    1.991855e-03  3.221810e-06 -2.208779e-06  8.119581e-06 -1.270757e-05
+0.5  3.221810e-06  1.927259e-03 -1.512849e-06  5.561308e-06 -8.703735e-06
+1   -2.208779e-06 -1.512849e-06  1.926090e-03 -3.812669e-06  5.967025e-06
+2    8.119581e-06  5.561308e-06 -3.812669e-06  2.478083e-03 -2.193508e-05
+4   -1.270757e-05 -8.703735e-06  5.967025e-06 -2.193508e-05  2.087719e-03</code></pre>
+</div>
+<div id="repeated-measures-analysis" class="section level3">
+<h3>Repeated Measures Analysis</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>analyzeRepeated <span class="ot">&lt;-</span> <span class="cf">function</span>(dat, <span class="at">eval.time =</span> <span class="st">&quot;Week12&quot;</span>) {</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  form <span class="ot">&lt;-</span> <span class="st">&quot;response ~  Visit + Dose + base + Dose*Visit + base*Visit&quot;</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  postBaselineDat <span class="ot">&lt;-</span> dat <span class="sc">|&gt;</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(week <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>    <span class="fu">droplevels</span>()</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> mmrm<span class="sc">::</span><span class="fu">mmrm</span>(<span class="fu">as.formula</span>(<span class="fu">paste0</span>(form, <span class="st">&quot; + us(Visit | USUBJID)&quot;</span>)), <span class="at">data =</span> postBaselineDat)</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>  lsm <span class="ot">&lt;-</span> emmeans<span class="sc">::</span><span class="fu">emmeans</span>(fit, <span class="sc">~</span> Dose <span class="sc">+</span> Visit)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  summ <span class="ot">&lt;-</span> <span class="fu">subset</span>(<span class="fu">summary</span>(lsm), Visit <span class="sc">==</span> eval.time)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  rowIDs <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">rownames</span>(summ))</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  <span class="fu">list</span>(</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>    <span class="at">mu0t =</span> summ<span class="sc">$</span>emmean,</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>    <span class="at">sigma =</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(mmrm<span class="sc">::</span><span class="fu">VarCorr</span>(fit)))[eval.time],</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>    <span class="at">S0t =</span> <span class="fu">vcov</span>(lsm)[rowIDs, rowIDs]</span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>  )</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>}</span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co"># Let&#39;s try it out:</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a>resultRepeated <span class="ot">&lt;-</span> <span class="fu">analyzeRepeated</span>(</span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a>  <span class="at">dat =</span> int_dat<span class="sc">$</span>dat,</span>
+<span id="cb12-20"><a href="#cb12-20" tabindex="-1"></a>  <span class="at">eval.time =</span> <span class="st">&quot;Week10&quot;</span></span>
+<span id="cb12-21"><a href="#cb12-21" tabindex="-1"></a>)</span>
+<span id="cb12-22"><a href="#cb12-22" tabindex="-1"></a>resultRepeated</span></code></pre></div>
+<pre><code>$mu0t
+[1] 0.008607189 0.017659190 0.102106486 0.081538734 0.162164897
+
+$sigma
+   Week10 
+0.2437212 
+
+$S0t
+                0 Week10    0.5 Week10      1 Week10      2 Week10
+0 Week10    1.461548e-03  1.209716e-06 -1.381468e-06  3.593112e-06
+0.5 Week10  1.209716e-06  1.436477e-03 -6.873193e-07  2.096943e-06
+1 Week10   -1.381468e-06 -6.873193e-07  1.426125e-03 -2.107403e-06
+2 Week10    3.593112e-06  2.096943e-06 -2.107403e-06  1.692186e-03
+4 Week10   -6.027456e-06 -3.486542e-06  3.554832e-06 -1.056883e-05
+                4 Week10
+0 Week10   -6.027456e-06
+0.5 Week10 -3.486542e-06
+1 Week10    3.554832e-06
+2 Week10   -1.056883e-05
+4 Week10    1.516377e-03</code></pre>
+</div>
+</div>
+<div id="generalized-mcp-mod" class="section level2">
+<h2>Generalized MCP-Mod</h2>
+<div id="final-analysis" class="section level3">
+<h3>Final Analysis</h3>
+<p>At the final analysis, we would like to use the generalized MCP-Mod
+methodology to test the hypothesis of a dose-response relationship. This
+is easily done by providing the least square means via <code>resp</code>
+and their covariance matrix via <code>S</code> to the
+<code>MCTtest</code> function, which will then perform the MCP-Mod
+analysis. We just need to also specify the dose levels and the models we
+want to test: Here we just use three models, it could be more in
+practice.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>doses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>models <span class="ot">&lt;-</span> <span class="fu">Mods</span>(</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  <span class="at">emax =</span> <span class="dv">2</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="at">sigEmax =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">3</span>),</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="at">quadratic =</span> <span class="sc">-</span><span class="fl">0.2</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="at">doses =</span> doses</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a>resultFinal <span class="ot">&lt;-</span> <span class="fu">analyzeRepeated</span>(</span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a>  <span class="at">dat =</span> dat,</span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a>  <span class="at">eval.time =</span> <span class="st">&quot;Week10&quot;</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a>)</span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a>testFinal <span class="ot">&lt;-</span> <span class="fu">MCTtest</span>(</span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a>  <span class="at">dose =</span> doses,</span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a>  <span class="at">resp =</span> resultFinal<span class="sc">$</span>mu0t,</span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a>  <span class="at">S =</span> resultFinal<span class="sc">$</span>S0t,</span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a>  <span class="at">models =</span> models,</span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">&quot;one.sided&quot;</span>,</span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;general&quot;</span>,</span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a>  <span class="at">critV =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a>  <span class="at">pVal =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a>)</span>
+<span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a>testFinal</span></code></pre></div>
+<pre><code>Multiple Contrast Test
+
+Contrasts:
+      emax sigEmax quadratic
+0   -0.657  -0.788    -0.722
+0.5 -0.271  -0.204    -0.222
+1   -0.013   0.250     0.166
+2    0.310   0.363     0.612
+4    0.632   0.378     0.166
+
+Contrast Correlation:
+           emax sigEmax quadratic
+emax      1.000   0.921     0.827
+sigEmax   0.921   1.000     0.941
+quadratic 0.827   0.941     1.000
+
+Multiple Contrast Test:
+          t-Stat   adj-p
+emax       3.461 &lt; 0.001
+sigEmax    3.286 &lt; 0.001
+quadratic  2.778 0.00498
+
+Critical value: 2.179 (alpha = 0.025, one-sided)</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>testFinal<span class="sc">$</span>critV</span></code></pre></div>
+<pre><code>[1] 2.178844
+attr(,&quot;Calc&quot;)
+[1] TRUE</code></pre>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a>testFinal<span class="sc">$</span>tStat</span></code></pre></div>
+<pre><code>     emax   sigEmax quadratic 
+ 3.460999  3.285689  2.778312 
+attr(,&quot;pVal&quot;)
+[1] 0.0004862437 0.0008942596 0.0049845942</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">attr</span>(testFinal<span class="sc">$</span>tStat, <span class="st">&quot;pVal&quot;</span>)</span></code></pre></div>
+<pre><code>[1] 0.0004862437 0.0008942596 0.0049845942</code></pre>
+</div>
+<div id="futility-interim-analysis" class="section level3">
+<h3>Futility Interim Analysis</h3>
+<p>Here we show how to apply the futility analysis during the trial, as
+described in <span class="citation">Bornkamp et al. (<a href="#ref-bornkamp2024">2024</a>)</span>. The idea is that based on the
+available interim data, we calculate the predictive or conditional power
+to detect a significant dose-response relationship at the final
+analysis. If this value is below a certain threshold, we may want to
+stop the trial for futility. We can use the <code>powMCTInterim</code>
+function to calculate these values. To do so, we need two additional
+ingredients:</p>
+<ol style="list-style-type: decimal">
+<li>The contrast matrix for the models we want to test, which is
+provided via the argument <code>contMat</code>.</li>
+<li>The covariance matrix at the final analysis, denoted by <span class="math inline">\(S_{[0,1]}\)</span> in <span class="citation">Bornkamp et al. (<a href="#ref-bornkamp2024">2024</a>)</span> and provided via the argument
+<code>S_01</code> here. Here we assume that this matrix is diagonal,
+with constant entries <span class="math inline">\(\sigma^2 / n\)</span>,
+where <span class="math inline">\(\sigma\)</span> is the residual
+standard deviation of the model and <span class="math inline">\(n\)</span> is the number of patients in the final
+analysis.</li>
+<li>For the conditional power, we also need to specify the assumed dose
+group means at the primary analysis time-point. This is provided via the
+argument <code>mu_assumed</code>. Typically, this is based on adding the
+observed placebo response rate to the originally planned treatment
+effect (before study start).</li>
+</ol>
+<p>Let’s calculate these now for the example interim data from
+above:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a>w <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, <span class="fu">length</span>(doses))</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>contMat <span class="ot">&lt;-</span> <span class="fu">optContr</span>(<span class="at">models =</span> models, <span class="at">w =</span> w)<span class="sc">$</span>contMat</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a></span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>n_final <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">60</span>, <span class="fu">length</span>(doses))</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a>S01 <span class="ot">&lt;-</span> <span class="fu">diag</span>(resultRepeated<span class="sc">$</span>sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> n_final)</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co"># Predictive power:</span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>predPower <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="at">contMat =</span> contMat,,</span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>  <span class="at">mu_0t =</span> resultRepeated<span class="sc">$</span>mu0t,</span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>  <span class="at">S_0t =</span> resultRepeated<span class="sc">$</span>S0t,</span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a>  <span class="at">S_01 =</span> S01,</span>
+<span id="cb22-13"><a href="#cb22-13" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb22-14"><a href="#cb22-14" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;predictive&quot;</span>,</span>
+<span id="cb22-15"><a href="#cb22-15" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">&quot;one.sided&quot;</span></span>
+<span id="cb22-16"><a href="#cb22-16" tabindex="-1"></a>)</span>
+<span id="cb22-17"><a href="#cb22-17" tabindex="-1"></a>predPower</span></code></pre></div>
+<pre><code>[1] 0.9829986
+attr(,&quot;error&quot;)
+[1] 4.060934e-06
+attr(,&quot;msg&quot;)
+[1] &quot;Normal Completion&quot;</code></pre>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Conditional power:</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a>deltaAssumed <span class="ot">&lt;-</span> pars<span class="sc">$</span>MeanMat[, <span class="st">&quot;Week10&quot;</span>] <span class="sc">-</span> pars<span class="sc">$</span>bslMean </span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>deltaAssumed <span class="ot">&lt;-</span> deltaAssumed <span class="sc">-</span> deltaAssumed[<span class="dv">1</span>]  <span class="co"># assumed treatment difference vs placebo</span></span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>mu_assumed <span class="ot">&lt;-</span> resultRepeated<span class="sc">$</span>mu0t[<span class="dv">1</span>] <span class="sc">+</span> deltaAssumed <span class="co"># to obtain group means add observed placebo response</span></span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>condPower <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a>  <span class="at">contMat =</span> contMat,</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a>  <span class="at">mu_0t =</span> resultRepeated<span class="sc">$</span>mu0t,</span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a>  <span class="at">S_0t =</span> resultRepeated<span class="sc">$</span>S0t,</span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a>  <span class="at">S_01 =</span> S01,</span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a>  <span class="at">mu_assumed =</span> mu_assumed,</span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a>  <span class="at">alpha =</span> <span class="fl">0.025</span>,</span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a>  <span class="at">type =</span> <span class="st">&quot;conditional&quot;</span>,</span>
+<span id="cb24-14"><a href="#cb24-14" tabindex="-1"></a>  <span class="at">alternative =</span> <span class="st">&quot;one.sided&quot;</span></span>
+<span id="cb24-15"><a href="#cb24-15" tabindex="-1"></a>)</span>
+<span id="cb24-16"><a href="#cb24-16" tabindex="-1"></a>condPower</span></code></pre></div>
+<pre><code>[1] 0.9720396
+attr(,&quot;error&quot;)
+[1] 8.29779e-06
+attr(,&quot;msg&quot;)
+[1] &quot;Normal Completion&quot;</code></pre>
+</div>
+</div>
+<div id="simulation-study" class="section level2">
+<h2>Simulation study</h2>
+<p>In practice, it will in most cases be important to run a simulation
+study to evaluate the performance of the proposed combination of
+generalized MCP-Mod with MMRM. In particular, in order to calibrate the
+futility threshold for the interim analysis, it is important to
+understand the power loss at the final analysis in relation to the
+futility threshold. The following code may serve as the starting point
+for such a simulation study, and can be adapted as needed. We include
+here the argument documentation in <code>roxygen2</code> format for
+simplicity. The code can also be used to reproduce the simulation study
+in Section 4.1 of <span class="citation">Bornkamp et al. (<a href="#ref-bornkamp2024">2024</a>)</span>.</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="do">##&#39; @param times Vector assessment times</span></span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="do">##&#39; @param bslMean Mean at baseline</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a><span class="do">##&#39; @param errSD Residual standard deviation (on absolute scale)</span></span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="do">##&#39; @param rho Correlation of measurements over time (within patient)</span></span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a><span class="do">##&#39; @param maxEff Maximum effect achieved at last time-point for the highest dose</span></span>
+<span id="cb26-6"><a href="#cb26-6" tabindex="-1"></a><span class="do">##&#39; @param RecrDist Recruitment distribution (see function datGen)</span></span>
+<span id="cb26-7"><a href="#cb26-7" tabindex="-1"></a><span class="do">##&#39; @param LPFV.t Time for the last patient first visit</span></span>
+<span id="cb26-8"><a href="#cb26-8" tabindex="-1"></a><span class="do">##&#39; @param models DoseFinding::Mods object</span></span>
+<span id="cb26-9"><a href="#cb26-9" tabindex="-1"></a><span class="do">##&#39; @param ia_timing Information time when IAs are performed (% of patients having last visit)</span></span>
+<span id="cb26-10"><a href="#cb26-10" tabindex="-1"></a><span class="do">##&#39; @param N Overall sample size</span></span>
+<span id="cb26-11"><a href="#cb26-11" tabindex="-1"></a><span class="do">##&#39; @param doses doses to use</span></span>
+<span id="cb26-12"><a href="#cb26-12" tabindex="-1"></a><span class="do">##&#39; @param alRatio allocation ratios to the different doses</span></span>
+<span id="cb26-13"><a href="#cb26-13" tabindex="-1"></a><span class="do">##&#39; @param eval.time Name of final</span></span>
+<span id="cb26-14"><a href="#cb26-14" tabindex="-1"></a><span class="do">##&#39; @param alpha Type 1 error for test</span></span>
+<span id="cb26-15"><a href="#cb26-15" tabindex="-1"></a><span class="do">##&#39; @param nSim Number of simulations</span></span>
+<span id="cb26-16"><a href="#cb26-16" tabindex="-1"></a><span class="do">##&#39; @param delta_assumed Vector of treatment effects assumed at the different doses</span></span>
+<span id="cb26-17"><a href="#cb26-17" tabindex="-1"></a><span class="do">##&#39; @return Data frame with all results</span></span>
+<span id="cb26-18"><a href="#cb26-18" tabindex="-1"></a>sim_one_trial <span class="ot">&lt;-</span> <span class="cf">function</span>(times, bslMean, errSD, rho, maxEff,</span>
+<span id="cb26-19"><a href="#cb26-19" tabindex="-1"></a>                          RecrDist, LPFV.t, models, <span class="at">ia_timing =</span> <span class="fu">seq</span>(<span class="fl">0.3</span>, <span class="fl">0.8</span>, <span class="fl">0.05</span>), <span class="at">N =</span> <span class="dv">531</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" tabindex="-1"></a>                          <span class="at">doses =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>), <span class="at">alRatio =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>),</span>
+<span id="cb26-21"><a href="#cb26-21" tabindex="-1"></a>                          <span class="at">eval.time =</span> <span class="st">&quot;Week12&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.025</span>, <span class="at">nSim =</span> <span class="dv">1000</span>, delta_assumed) {</span>
+<span id="cb26-22"><a href="#cb26-22" tabindex="-1"></a>  contMat <span class="ot">&lt;-</span> <span class="fu">optContr</span>(<span class="at">models =</span> models, <span class="at">w =</span> alRatio <span class="sc">/</span> <span class="fu">sum</span>(alRatio))<span class="sc">$</span>contMat</span>
+<span id="cb26-23"><a href="#cb26-23" tabindex="-1"></a>  pars <span class="ot">&lt;-</span> <span class="fu">parGen</span>(times, doses,</span>
+<span id="cb26-24"><a href="#cb26-24" tabindex="-1"></a>    <span class="at">maxEff =</span> maxEff, <span class="at">bslMean =</span> bslMean, <span class="at">errSD =</span> errSD,</span>
+<span id="cb26-25"><a href="#cb26-25" tabindex="-1"></a>    <span class="at">rho =</span> rho</span>
+<span id="cb26-26"><a href="#cb26-26" tabindex="-1"></a>  )</span>
+<span id="cb26-27"><a href="#cb26-27" tabindex="-1"></a>  mydat <span class="ot">&lt;-</span> <span class="fu">datGen</span>(N, pars, doses, alRatio, <span class="at">LPFV.t =</span> LPFV.t, <span class="at">RecrDist =</span> RecrDist, <span class="at">RandRecr =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb26-28"><a href="#cb26-28" tabindex="-1"></a></span>
+<span id="cb26-29"><a href="#cb26-29" tabindex="-1"></a>  <span class="do">## fit final data</span></span>
+<span id="cb26-30"><a href="#cb26-30" tabindex="-1"></a>  fit.final <span class="ot">&lt;-</span> <span class="fu">analyzeCompleters</span>(mydat)</span>
+<span id="cb26-31"><a href="#cb26-31" tabindex="-1"></a>  test <span class="ot">&lt;-</span> <span class="fu">MCTtest</span>(</span>
+<span id="cb26-32"><a href="#cb26-32" tabindex="-1"></a>    <span class="at">dose =</span> doses, <span class="at">resp =</span> fit.final<span class="sc">$</span>mu0t, <span class="at">S =</span> fit.final<span class="sc">$</span>S0t, <span class="at">models =</span> models,</span>
+<span id="cb26-33"><a href="#cb26-33" tabindex="-1"></a>    <span class="at">alternative =</span> <span class="st">&quot;one.sided&quot;</span>, <span class="at">type =</span> <span class="st">&quot;general&quot;</span>, <span class="at">critV =</span> <span class="cn">TRUE</span>, <span class="at">pVal =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb26-34"><a href="#cb26-34" tabindex="-1"></a>    <span class="at">alpha =</span> alpha</span>
+<span id="cb26-35"><a href="#cb26-35" tabindex="-1"></a>  )</span>
+<span id="cb26-36"><a href="#cb26-36" tabindex="-1"></a>  maxT <span class="ot">&lt;-</span> <span class="fu">max</span>(test<span class="sc">$</span>tStat)</span>
+<span id="cb26-37"><a href="#cb26-37" tabindex="-1"></a>  cVal <span class="ot">&lt;-</span> test<span class="sc">$</span>critVal</span>
+<span id="cb26-38"><a href="#cb26-38" tabindex="-1"></a></span>
+<span id="cb26-39"><a href="#cb26-39" tabindex="-1"></a>  n_final <span class="ot">&lt;-</span> mydat <span class="sc">|&gt;</span></span>
+<span id="cb26-40"><a href="#cb26-40" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">filter</span>(Visit <span class="sc">==</span> eval.time) <span class="sc">|&gt;</span></span>
+<span id="cb26-41"><a href="#cb26-41" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">group_by</span>(Dose) <span class="sc">|&gt;</span></span>
+<span id="cb26-42"><a href="#cb26-42" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">count</span>()</span>
+<span id="cb26-43"><a href="#cb26-43" tabindex="-1"></a></span>
+<span id="cb26-44"><a href="#cb26-44" tabindex="-1"></a>  IAtm <span class="ot">&lt;-</span> pp_long <span class="ot">&lt;-</span> cp_long <span class="ot">&lt;-</span> cp_long2 <span class="ot">&lt;-</span> pp_compl <span class="ot">&lt;-</span> cp_compl <span class="ot">&lt;-</span> cp_compl2 <span class="ot">&lt;-</span> inf_long <span class="ot">&lt;-</span> inf_compl <span class="ot">&lt;-</span> <span class="fu">numeric</span>()</span>
+<span id="cb26-45"><a href="#cb26-45" tabindex="-1"></a>  IAdist <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="at">nrow =</span> <span class="fu">length</span>(times), <span class="at">ncol =</span> <span class="fu">length</span>(ia_timing))</span>
+<span id="cb26-46"><a href="#cb26-46" tabindex="-1"></a></span>
+<span id="cb26-47"><a href="#cb26-47" tabindex="-1"></a>  <span class="do">## fit interim data</span></span>
+<span id="cb26-48"><a href="#cb26-48" tabindex="-1"></a>  <span class="cf">for</span> (ia <span class="cf">in</span> <span class="fu">seq_along</span>(ia_timing)) {</span>
+<span id="cb26-49"><a href="#cb26-49" tabindex="-1"></a>    tp <span class="ot">&lt;-</span> ia_timing[ia] <span class="co"># prop pts completes visit of eval.time</span></span>
+<span id="cb26-50"><a href="#cb26-50" tabindex="-1"></a>    cutDat <span class="ot">&lt;-</span> <span class="fu">intDat</span>(mydat, tp)</span>
+<span id="cb26-51"><a href="#cb26-51" tabindex="-1"></a>    middat <span class="ot">&lt;-</span> cutDat<span class="sc">$</span>dat</span>
+<span id="cb26-52"><a href="#cb26-52" tabindex="-1"></a>    IAtm[ia] <span class="ot">&lt;-</span> cutDat<span class="sc">$</span>int.time</span>
+<span id="cb26-53"><a href="#cb26-53" tabindex="-1"></a>    IAdist[times <span class="sc">%in%</span> cutDat<span class="sc">$</span>dist<span class="sc">$</span>lastvis, ia] <span class="ot">&lt;-</span> cutDat<span class="sc">$</span>dist<span class="sc">$</span>pct</span>
+<span id="cb26-54"><a href="#cb26-54" tabindex="-1"></a></span>
+<span id="cb26-55"><a href="#cb26-55" tabindex="-1"></a>    <span class="do">## using all data from every patient (longitudinal MMRM)</span></span>
+<span id="cb26-56"><a href="#cb26-56" tabindex="-1"></a>    fit_int_long <span class="ot">&lt;-</span> <span class="fu">analyzeRepeated</span>(middat, <span class="at">eval.time =</span> eval.time)</span>
+<span id="cb26-57"><a href="#cb26-57" tabindex="-1"></a>    <span class="do">## only using the completers by visit eval time (cross-sectional linear model)</span></span>
+<span id="cb26-58"><a href="#cb26-58" tabindex="-1"></a>    fit_int_compl <span class="ot">&lt;-</span> <span class="fu">analyzeCompleters</span>(middat, <span class="at">eval.time =</span> eval.time)</span>
+<span id="cb26-59"><a href="#cb26-59" tabindex="-1"></a>    <span class="do">## The covariance matrix anticipated for the estimates at EoS</span></span>
+<span id="cb26-60"><a href="#cb26-60" tabindex="-1"></a>    S_end <span class="ot">&lt;-</span> <span class="fu">diag</span>(fit_int_long<span class="sc">$</span>sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> n_final<span class="sc">$</span>n)</span>
+<span id="cb26-61"><a href="#cb26-61" tabindex="-1"></a></span>
+<span id="cb26-62"><a href="#cb26-62" tabindex="-1"></a>    <span class="co"># information fraction</span></span>
+<span id="cb26-63"><a href="#cb26-63" tabindex="-1"></a>    inf_long[ia] <span class="ot">&lt;-</span> <span class="fu">det</span>(<span class="fu">diag</span>(fit_int_long<span class="sc">$</span>sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> n_final<span class="sc">$</span>n))<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="fu">length</span>(doses)) <span class="sc">/</span></span>
+<span id="cb26-64"><a href="#cb26-64" tabindex="-1"></a>      <span class="fu">det</span>(fit_int_long<span class="sc">$</span>S0t)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="fu">length</span>(doses))</span>
+<span id="cb26-65"><a href="#cb26-65" tabindex="-1"></a>    inf_compl[ia] <span class="ot">&lt;-</span> <span class="fu">det</span>(<span class="fu">diag</span>(fit_int_compl<span class="sc">$</span>sigma<span class="sc">^</span><span class="dv">2</span> <span class="sc">/</span> n_final<span class="sc">$</span>n))<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="fu">length</span>(doses)) <span class="sc">/</span></span>
+<span id="cb26-66"><a href="#cb26-66" tabindex="-1"></a>      <span class="fu">det</span>(fit_int_compl<span class="sc">$</span>S0t)<span class="sc">^</span>(<span class="dv">1</span> <span class="sc">/</span> <span class="fu">length</span>(doses))</span>
+<span id="cb26-67"><a href="#cb26-67" tabindex="-1"></a></span>
+<span id="cb26-68"><a href="#cb26-68" tabindex="-1"></a>    mu_assumed <span class="ot">&lt;-</span> fit_int_long<span class="sc">$</span>mu0t[<span class="dv">1</span>] <span class="sc">+</span> delta_assumed <span class="co"># for conditional power use planned treatment effect</span></span>
+<span id="cb26-69"><a href="#cb26-69" tabindex="-1"></a>    pp_long[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-70"><a href="#cb26-70" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_long<span class="sc">$</span>S0t,</span>
+<span id="cb26-71"><a href="#cb26-71" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_long<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;predictive&quot;</span>, <span class="at">alpha =</span> alpha</span>
+<span id="cb26-72"><a href="#cb26-72" tabindex="-1"></a>    )</span>
+<span id="cb26-73"><a href="#cb26-73" tabindex="-1"></a>    cp_long[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-74"><a href="#cb26-74" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_long<span class="sc">$</span>S0t,</span>
+<span id="cb26-75"><a href="#cb26-75" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_long<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;conditional&quot;</span>, <span class="at">alpha =</span> alpha,</span>
+<span id="cb26-76"><a href="#cb26-76" tabindex="-1"></a>      <span class="at">mu_assumed =</span> mu_assumed</span>
+<span id="cb26-77"><a href="#cb26-77" tabindex="-1"></a>    )</span>
+<span id="cb26-78"><a href="#cb26-78" tabindex="-1"></a>    cp_long2[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-79"><a href="#cb26-79" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_long<span class="sc">$</span>S0t,</span>
+<span id="cb26-80"><a href="#cb26-80" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_long<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;conditional&quot;</span>, <span class="at">alpha =</span> alpha,</span>
+<span id="cb26-81"><a href="#cb26-81" tabindex="-1"></a>      <span class="at">mu_assumed =</span> fit_int_long<span class="sc">$</span>mu0t</span>
+<span id="cb26-82"><a href="#cb26-82" tabindex="-1"></a>    )</span>
+<span id="cb26-83"><a href="#cb26-83" tabindex="-1"></a>    pp_compl[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-84"><a href="#cb26-84" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_compl<span class="sc">$</span>S0t,</span>
+<span id="cb26-85"><a href="#cb26-85" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_compl<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;predictive&quot;</span>, <span class="at">alpha =</span> alpha</span>
+<span id="cb26-86"><a href="#cb26-86" tabindex="-1"></a>    )</span>
+<span id="cb26-87"><a href="#cb26-87" tabindex="-1"></a>    cp_compl[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-88"><a href="#cb26-88" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_compl<span class="sc">$</span>S0t,</span>
+<span id="cb26-89"><a href="#cb26-89" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_compl<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;conditional&quot;</span>, <span class="at">alpha =</span> alpha,</span>
+<span id="cb26-90"><a href="#cb26-90" tabindex="-1"></a>      <span class="at">mu_assumed =</span> mu_assumed</span>
+<span id="cb26-91"><a href="#cb26-91" tabindex="-1"></a>    )</span>
+<span id="cb26-92"><a href="#cb26-92" tabindex="-1"></a>    cp_compl2[ia] <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
+<span id="cb26-93"><a href="#cb26-93" tabindex="-1"></a>      <span class="at">contMat =</span> contMat, <span class="at">S_0t =</span> fit_int_compl<span class="sc">$</span>S0t,</span>
+<span id="cb26-94"><a href="#cb26-94" tabindex="-1"></a>      <span class="at">S_01 =</span> S_end, <span class="at">mu_0t =</span> fit_int_compl<span class="sc">$</span>mu0t, <span class="at">type =</span> <span class="st">&quot;conditional&quot;</span>, <span class="at">alpha =</span> alpha,</span>
+<span id="cb26-95"><a href="#cb26-95" tabindex="-1"></a>      <span class="at">mu_assumed =</span> fit_int_compl<span class="sc">$</span>mu0t</span>
+<span id="cb26-96"><a href="#cb26-96" tabindex="-1"></a>    )</span>
+<span id="cb26-97"><a href="#cb26-97" tabindex="-1"></a>  }</span>
+<span id="cb26-98"><a href="#cb26-98" tabindex="-1"></a>  <span class="fu">data.frame</span>(</span>
+<span id="cb26-99"><a href="#cb26-99" tabindex="-1"></a>    <span class="at">final_maxT =</span> maxT, <span class="at">final_cVal =</span> <span class="fu">as.numeric</span>(cVal),</span>
+<span id="cb26-100"><a href="#cb26-100" tabindex="-1"></a>    ia_timing, pp_long, cp_long, cp_long2, pp_compl, cp_compl, cp_compl2, inf_long, inf_compl</span>
+<span id="cb26-101"><a href="#cb26-101" tabindex="-1"></a>  )</span>
+<span id="cb26-102"><a href="#cb26-102" tabindex="-1"></a>}</span>
+<span id="cb26-103"><a href="#cb26-103" tabindex="-1"></a></span>
+<span id="cb26-104"><a href="#cb26-104" tabindex="-1"></a><span class="do">## Function to run one scenario (arguments described in previous function)</span></span>
+<span id="cb26-105"><a href="#cb26-105" tabindex="-1"></a>run_scen <span class="ot">&lt;-</span> <span class="cf">function</span>(n_sim, rho, maxEff,</span>
+<span id="cb26-106"><a href="#cb26-106" tabindex="-1"></a>                     LPFV.t, ia_timing, delta_assumed) {</span>
+<span id="cb26-107"><a href="#cb26-107" tabindex="-1"></a>  <span class="do">## fixed parameters</span></span>
+<span id="cb26-108"><a href="#cb26-108" tabindex="-1"></a>  doses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>) <span class="co"># doses</span></span>
+<span id="cb26-109"><a href="#cb26-109" tabindex="-1"></a>  alRatio <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>) <span class="co"># allocation ratio for doses</span></span>
+<span id="cb26-110"><a href="#cb26-110" tabindex="-1"></a>  alpha <span class="ot">&lt;-</span> <span class="fl">0.025</span></span>
+<span id="cb26-111"><a href="#cb26-111" tabindex="-1"></a>  times <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">12</span>)</span>
+<span id="cb26-112"><a href="#cb26-112" tabindex="-1"></a>  bslMean <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb26-113"><a href="#cb26-113" tabindex="-1"></a>  errSD <span class="ot">&lt;-</span> <span class="fl">0.56</span></span>
+<span id="cb26-114"><a href="#cb26-114" tabindex="-1"></a>  RecrDist <span class="ot">&lt;-</span> <span class="st">&quot;Quad&quot;</span></span>
+<span id="cb26-115"><a href="#cb26-115" tabindex="-1"></a></span>
+<span id="cb26-116"><a href="#cb26-116" tabindex="-1"></a>  <span class="cf">if</span> (rho <span class="sc">==</span> <span class="fl">0.6</span> <span class="sc">&amp;</span> LPFV.t <span class="sc">==</span> <span class="dv">50</span>) N <span class="ot">&lt;-</span> <span class="dv">820</span></span>
+<span id="cb26-117"><a href="#cb26-117" tabindex="-1"></a>  <span class="cf">if</span> (rho <span class="sc">==</span> <span class="fl">0.6</span> <span class="sc">&amp;</span> LPFV.t <span class="sc">==</span> <span class="dv">100</span>) N <span class="ot">&lt;-</span> <span class="dv">825</span></span>
+<span id="cb26-118"><a href="#cb26-118" tabindex="-1"></a>  <span class="cf">if</span> (rho <span class="sc">==</span> <span class="fl">0.9</span> <span class="sc">&amp;</span> LPFV.t <span class="sc">==</span> <span class="dv">50</span>) N <span class="ot">&lt;-</span> <span class="dv">248</span></span>
+<span id="cb26-119"><a href="#cb26-119" tabindex="-1"></a>  <span class="cf">if</span> (rho <span class="sc">==</span> <span class="fl">0.9</span> <span class="sc">&amp;</span> LPFV.t <span class="sc">==</span> <span class="dv">100</span>) N <span class="ot">&lt;-</span> <span class="dv">236</span></span>
+<span id="cb26-120"><a href="#cb26-120" tabindex="-1"></a></span>
+<span id="cb26-121"><a href="#cb26-121" tabindex="-1"></a>  models <span class="ot">&lt;-</span> <span class="fu">Mods</span>(</span>
+<span id="cb26-122"><a href="#cb26-122" tabindex="-1"></a>    <span class="at">emax =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>), <span class="at">sigEmax =</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>)),</span>
+<span id="cb26-123"><a href="#cb26-123" tabindex="-1"></a>    <span class="at">quadratic =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">doses =</span> doses</span>
+<span id="cb26-124"><a href="#cb26-124" tabindex="-1"></a>  )</span>
+<span id="cb26-125"><a href="#cb26-125" tabindex="-1"></a></span>
+<span id="cb26-126"><a href="#cb26-126" tabindex="-1"></a>  lst <span class="ot">&lt;-</span> <span class="fu">vector</span>(<span class="st">&quot;list&quot;</span>, n_sim)</span>
+<span id="cb26-127"><a href="#cb26-127" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n_sim) {</span>
+<span id="cb26-128"><a href="#cb26-128" tabindex="-1"></a>    res <span class="ot">&lt;-</span> <span class="fu">try</span>(<span class="fu">sim_one_trial</span>(</span>
+<span id="cb26-129"><a href="#cb26-129" tabindex="-1"></a>      <span class="at">times =</span> times, <span class="at">bslMean =</span> bslMean,</span>
+<span id="cb26-130"><a href="#cb26-130" tabindex="-1"></a>      <span class="at">errSD =</span> errSD, <span class="at">rho =</span> rho, <span class="at">maxEff =</span> maxEff, <span class="at">RecrDist =</span> RecrDist,</span>
+<span id="cb26-131"><a href="#cb26-131" tabindex="-1"></a>      <span class="at">LPFV.t =</span> LPFV.t, <span class="at">models =</span> models, <span class="at">ia_timing =</span> ia_timing, <span class="at">N =</span> N,</span>
+<span id="cb26-132"><a href="#cb26-132" tabindex="-1"></a>      <span class="at">doses =</span> doses, <span class="at">alRatio =</span> alRatio, <span class="at">delta_assumed =</span> delta_assumed,</span>
+<span id="cb26-133"><a href="#cb26-133" tabindex="-1"></a>      <span class="at">alpha =</span> alpha</span>
+<span id="cb26-134"><a href="#cb26-134" tabindex="-1"></a>    ), <span class="at">silent =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb26-135"><a href="#cb26-135" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">is.character</span>(res)) {</span>
+<span id="cb26-136"><a href="#cb26-136" tabindex="-1"></a>      lst[[i]] <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">sim =</span> i, res)</span>
+<span id="cb26-137"><a href="#cb26-137" tabindex="-1"></a>    }</span>
+<span id="cb26-138"><a href="#cb26-138" tabindex="-1"></a>  }</span>
+<span id="cb26-139"><a href="#cb26-139" tabindex="-1"></a></span>
+<span id="cb26-140"><a href="#cb26-140" tabindex="-1"></a>  out <span class="ot">&lt;-</span> <span class="fu">do.call</span>(<span class="st">&quot;rbind&quot;</span>, lst)</span>
+<span id="cb26-141"><a href="#cb26-141" tabindex="-1"></a>  out<span class="sc">$</span>rho <span class="ot">&lt;-</span> rho</span>
+<span id="cb26-142"><a href="#cb26-142" tabindex="-1"></a>  out<span class="sc">$</span>maxEff <span class="ot">&lt;-</span> maxEff</span>
+<span id="cb26-143"><a href="#cb26-143" tabindex="-1"></a>  out<span class="sc">$</span>RecrDist <span class="ot">&lt;-</span> RecrDist</span>
+<span id="cb26-144"><a href="#cb26-144" tabindex="-1"></a>  out<span class="sc">$</span>N <span class="ot">&lt;-</span> N</span>
+<span id="cb26-145"><a href="#cb26-145" tabindex="-1"></a>  out<span class="sc">$</span>LPFV.t <span class="ot">&lt;-</span> LPFV.t</span>
+<span id="cb26-146"><a href="#cb26-146" tabindex="-1"></a>  out</span>
+<span id="cb26-147"><a href="#cb26-147" tabindex="-1"></a>}</span></code></pre></div>
+<p>These functions can be used as follows:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>doses <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>) <span class="co"># doses</span></span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>alRatio <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>) <span class="co"># allocation ratio for doses</span></span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.025</span> <span class="co"># for MCTtest</span></span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>times <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">12</span>) <span class="co"># observation times (weeks)</span></span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a>bslMean <span class="ot">&lt;-</span> <span class="dv">0</span> <span class="co"># mean at baseline</span></span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a>errSD <span class="ot">&lt;-</span> <span class="fl">0.56</span> <span class="co"># SD for outcome on absolute scale</span></span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a>RecrDist <span class="ot">&lt;-</span> <span class="st">&quot;Quad&quot;</span> <span class="co"># recruitment distribution</span></span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a>rho <span class="ot">&lt;-</span> <span class="fl">0.9</span> <span class="co"># correlation across time for outcome on absolute scale</span></span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a>LPFV.t <span class="ot">&lt;-</span> <span class="dv">100</span> <span class="co"># time of last patient first visit</span></span>
+<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a>maxEff <span class="ot">&lt;-</span> <span class="fl">0.12</span> <span class="co"># effect assumed for the highest dose at the last time point</span></span>
+<span id="cb27-12"><a href="#cb27-12" tabindex="-1"></a>delta_assumed <span class="ot">&lt;-</span> <span class="fu">calcMean</span>(doses, times, maxEff)[, <span class="fu">length</span>(times)]</span>
+<span id="cb27-13"><a href="#cb27-13" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">236</span></span>
+<span id="cb27-14"><a href="#cb27-14" tabindex="-1"></a>ia_timing <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb27-15"><a href="#cb27-15" tabindex="-1"></a></span>
+<span id="cb27-16"><a href="#cb27-16" tabindex="-1"></a>models <span class="ot">&lt;-</span> <span class="fu">Mods</span>(</span>
+<span id="cb27-17"><a href="#cb27-17" tabindex="-1"></a>  <span class="at">emax =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>), <span class="at">sigEmax =</span> <span class="fu">rbind</span>(<span class="fu">c</span>(<span class="fl">0.5</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">4</span>, <span class="dv">3</span>)),</span>
+<span id="cb27-18"><a href="#cb27-18" tabindex="-1"></a>  <span class="at">quadratic =</span> <span class="sc">-</span><span class="fl">0.1</span>, <span class="at">doses =</span> doses</span>
+<span id="cb27-19"><a href="#cb27-19" tabindex="-1"></a>)</span>
+<span id="cb27-20"><a href="#cb27-20" tabindex="-1"></a></span>
+<span id="cb27-21"><a href="#cb27-21" tabindex="-1"></a>oneSim <span class="ot">&lt;-</span> <span class="fu">sim_one_trial</span>(</span>
+<span id="cb27-22"><a href="#cb27-22" tabindex="-1"></a>  <span class="at">times =</span> times, <span class="at">bslMean =</span> bslMean,</span>
+<span id="cb27-23"><a href="#cb27-23" tabindex="-1"></a>  <span class="at">errSD =</span> errSD, <span class="at">rho =</span> rho, <span class="at">maxEff =</span> maxEff, <span class="at">RecrDist =</span> RecrDist,</span>
+<span id="cb27-24"><a href="#cb27-24" tabindex="-1"></a>  <span class="at">LPFV.t =</span> LPFV.t, <span class="at">models =</span> models, <span class="at">ia_timing =</span> ia_timing, <span class="at">N =</span> N,</span>
+<span id="cb27-25"><a href="#cb27-25" tabindex="-1"></a>  <span class="at">doses =</span> doses, <span class="at">alRatio =</span> alRatio, <span class="at">delta_assumed =</span> delta_assumed,</span>
+<span id="cb27-26"><a href="#cb27-26" tabindex="-1"></a>  <span class="at">alpha =</span> alpha</span>
+<span id="cb27-27"><a href="#cb27-27" tabindex="-1"></a>)</span>
+<span id="cb27-28"><a href="#cb27-28" tabindex="-1"></a></span>
+<span id="cb27-29"><a href="#cb27-29" tabindex="-1"></a>scenRes <span class="ot">&lt;-</span> <span class="fu">run_scen</span>(</span>
+<span id="cb27-30"><a href="#cb27-30" tabindex="-1"></a>  <span class="at">n_sim =</span> <span class="dv">10</span>, <span class="at">rho =</span> <span class="fl">0.9</span>, <span class="at">maxEff =</span> <span class="fl">0.12</span>,</span>
+<span id="cb27-31"><a href="#cb27-31" tabindex="-1"></a>  <span class="at">LPFV.t =</span> <span class="dv">50</span>, <span class="at">ia_timing =</span> <span class="fu">seq</span>(<span class="fl">0.3</span>, <span class="fl">0.8</span>, <span class="fl">0.05</span>), <span class="at">delta_assumed =</span> delta_assumed</span>
+<span id="cb27-32"><a href="#cb27-32" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2 class="unnumbered">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-bornkamp2024" class="csl-entry">
+Bornkamp, B., Zhou, J., Xi, D., and Cao, W. (2024), <span>“<a href="https://arxiv.org/abs/2406.19965">Futility analyses for the
+MCP-mod methodology based on longitudinal models</a>.”</span>
+</div>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

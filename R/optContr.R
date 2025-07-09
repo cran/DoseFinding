@@ -14,7 +14,7 @@
 #' 
 #' Note that the directionality (i.e. whether in "increase" in the response
 #' variable is beneficial or a "decrease", is inferred from the specified
-#' \samp{models} object, see \code{\link{Mods}} for details).
+#' \samp{models} object, see [Mods()] for details).
 #' 
 #' Constrained contrasts (type = "constrained") add the additional constraint
 #' in the optimization that the sign of the contrast coefficient for control
@@ -51,14 +51,14 @@
 #' @return Object of class \samp{optContr}. A list containing entries contMat
 #' and muMat (i.e. contrast, mean and correlation matrix).
 #' @author Bjoern Bornkamp
-#' @seealso \code{\link{MCTtest}}
+#' @seealso [MCTtest()]
 #' @references Bretz, F., Pinheiro, J. C., and Branson, M. (2005), Combining
 #' multiple comparisons and modeling techniques in dose-response studies,
-#' \emph{Biometrics}, \bold{61}, 738--748
+#' *Biometrics*, **61**, 738--748
 #' 
 #' Pinheiro, J. C., Bornkamp, B., Glimm, E. and Bretz, F. (2014) Model-based
 #' dose finding under model uncertainty using general parametric models,
-#' \emph{Statistics in Medicine}, \bold{33}, 1646--1661
+#' *Statistics in Medicine*, **33**, 1646--1661
 #' @examples
 #' 
 #' doses <- c(0,10,25,50,100,150)
@@ -222,7 +222,6 @@ plot.optContr <- function (x, superpose = TRUE, xlab = "Dose",
 
 #' Plot optimal contrasts
 #'
-#' @inheritParams plot.optContr
 #' @param optContrObj For function \samp{plotContr} the \samp{optContrObj}
 #' should contain an object of class \samp{optContr}.
 #' 
@@ -242,7 +241,7 @@ plotContr <- function(optContrObj, xlab = "Dose", ylab = "Contrast coefficients"
                      model = factor(rep(mod_nams, each = nD), levels=mod_nams),
                      levels = dimnames(cM)[[2]])
   ggplot2::ggplot(cMtr, ggplot2::aes(.data$dose, .data$resp, col=.data$model))+
-    ggplot2::geom_line(size=1.2)+
+    ggplot2::geom_line(linewidth=1.2)+
     ggplot2::geom_point()+
     ggplot2::theme_bw()+
     ggplot2::geom_point(size=1.8)+

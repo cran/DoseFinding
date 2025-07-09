@@ -1,12 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# DoseFinding
+# DoseFinding <a href="https://openpharma.github.io/DoseFinding/"><img src="man/figures/logo.png" align="right" height="139" alt="DoseFinding website" /></a>
 
 <!-- badges: start -->
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/DoseFinding)](https://CRAN.R-project.org/package=DoseFinding)
+[![R-CMD-check](https://github.com/openpharma/DoseFinding/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/openpharma/DoseFinding/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The DoseFinding package provides functions for the design and analysis

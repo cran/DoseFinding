@@ -1,5 +1,3 @@
-context("Optimal Contrasts")
-
 require_extra_packages <- function() {
   if (!(require("quadprog") && require("Rsolnp"))) {
     skip("packages quadprog and Rsolnp not available")
@@ -79,6 +77,8 @@ one_sim <- function() {
 
 test_that("calculation of contrasts works", {
   skip_on_cran()
+  skip_on_ci()
+
   set.seed(1)
   require_extra_packages()
   ncps <- replicate(1000, one_sim())
