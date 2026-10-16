@@ -48,6 +48,7 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
@@ -148,6 +149,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; }
 div.csl-bib-body { }
 div.csl-entry {
 clear: both;
+margin-bottom: 0em;
 }
 .hanging div.csl-entry {
 margin-left:2em;
@@ -900,7 +902,7 @@ above:</p>
 <span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a></span>
 <span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co"># Predictive power:</span></span>
 <span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a>predPower <span class="ot">&lt;-</span> <span class="fu">powMCTInterim</span>(</span>
-<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="at">contMat =</span> contMat,,</span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a>  <span class="at">contMat =</span> contMat,</span>
 <span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a>  <span class="at">mu_0t =</span> resultRepeated<span class="sc">$</span>mu0t,</span>
 <span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a>  <span class="at">S_0t =</span> resultRepeated<span class="sc">$</span>S0t,</span>
 <span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a>  <span class="at">S_01 =</span> S01,</span>
@@ -1132,7 +1134,7 @@ in Section 4.1 of <span class="citation">Bornkamp et al. (<a href="#ref-bornkamp
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2 class="unnumbered">References</h2>
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-bornkamp2024" class="csl-entry">
 Bornkamp, B., Zhou, J., Xi, D., and Cao, W. (2024), <span>“<a href="https://arxiv.org/abs/2406.19965">Futility analyses for the
 MCP-mod methodology based on longitudinal models</a>.”</span>

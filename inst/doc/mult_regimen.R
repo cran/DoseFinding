@@ -39,8 +39,8 @@ plot_estimates <- function(est) {
   ggplot(df, aes(daily_dose, mu_hat)) + geom_point() +
     geom_errorbar(aes(ymin = lb, ymax = ub)) +
     facet_wrap(vars(regimen), labeller = label_both) +
-    xlab("daily dose") + ylab("percent body weight cange") +
-    labs(title = "ANOVA estimates with 95% confindence intervals")
+    xlab("daily dose") + ylab("percent body weight change") +
+    labs(title = "ANOVA estimates with 95% confidence intervals")
 }
 
 est <- example_estimates()
@@ -90,7 +90,6 @@ print(round(cont_mat, 2))
 mct_test <- function(cont_mat, est) {
   cont_cov <- t(cont_mat) %*% est$S_hat %*% cont_mat
   t_stat <- drop(est$mu_hat %*% cont_mat) / sqrt(diag(cont_cov))
-  # FIXME: calling non-exported function
   p <- MCTpval(contMat = cont_mat, corMat = cov2cor(cont_cov),
                df=Inf, tStat=t_stat, alternative = "one.sided")
   ord <- rev(order(t_stat))

@@ -15,7 +15,10 @@ of dose-finding experiments (for example pharmaceutical Phase II
 clinical trials). It provides functions for: multiple contrast tests,
 fitting non-linear dose-response models, a combination of testing and
 dose-response modelling and calculating optimal designs, both for normal
-and general response variable.
+and general response variable. In addition the package can be used to
+implement the MCP-Mod procedure, a combination of testing and
+dose-response modelling (Bretz et al. ([2005](#ref-bretz2005)), Pinheiro
+et al. ([2014](#ref-pinheiro2014))).
 
 ## Installation
 
@@ -24,7 +27,7 @@ You can install the development version of DoseFinding from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("bbnkmp/DoseFinding")
+devtools::install_github("openpharma/DoseFinding")
 ```
 
 ## Examples
@@ -46,7 +49,7 @@ models <- Mods(linear = NULL, emax = 0.2, quadratic = -0.17,
 plot(models)
 ```
 
-<img src="man/figures/README-example1-1.png" width="100%" />
+<img src="man/figures/README-example1-1.png" alt="" width="100%" />
 
 ``` r
 ## perform multiple contrast test
@@ -85,7 +88,7 @@ fitemax <- fitMod(dose, resp, data=IBScovars, model="emax",
 plot(fitemax, CI=TRUE, plotData="meansCI")
 ```
 
-<img src="man/figures/README-example2-1.png" width="100%" />
+<img src="man/figures/README-example2-1.png" alt="" width="100%" />
 
 ### Optimal designs for dose estimation
 
@@ -98,7 +101,7 @@ fmodels <- Mods(linear = NULL, emax = 25, exponential = 85,
 plot(fmodels, plotTD = TRUE, Delta = 0.2)
 ```
 
-<img src="man/figures/README-example3-1.png" width="100%" />
+<img src="man/figures/README-example3-1.png" alt="" width="100%" />
 
 ``` r
 weights <- rep(1/4, 4)
@@ -107,3 +110,56 @@ optDesign(fmodels, weights, Delta=0.2, designCrit="TD")
 #>       0      10      25      50     100     150 
 #> 0.34960 0.09252 0.00366 0.26760 0.13342 0.15319
 ```
+
+## Contributors
+
+This package was originally developed in 2010 and over the years has had
+many different contributors. Some of the work on this package predates
+its Github repository and we want to list here all contributors to the
+package and highlight their contributions in addition to the “official””
+package authors and maintainers as listed in the `DESCRIPTION` file.
+
+### Maintainers
+
+- Marius Thomas — current maintainer
+- Björn Bornkamp — former maintainer (until 2024)
+
+### Original core package authors
+
+- Björn Bornkamp
+- Jose Pinheiro
+- Frank Bretz
+
+### Other authors and substantial contributors
+
+- Ludger Sandig — Vignettes, testthat framework
+- Marius Thomas — Bayesian MCP-mod, various updates to code, docs, and
+  tests
+- Daniel Sabanes Bove — powMCTInterim implementation, longitudinal data
+  vignette
+- Carina Miller - Time-to-event vignette
+
+## References
+
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
+
+<div id="ref-bretz2005" class="csl-entry">
+
+Bretz, F., Pinheiro, J. C., and Branson, M. (2005), “Combining multiple
+comparisons and modeling techniques in dose-response studies,”
+*Biometrics*, Wiley Online Library, 61, 738–748.
+<https://doi.org/10.1111/j.1541-0420.2005.00344.x>.
+
+</div>
+
+<div id="ref-pinheiro2014" class="csl-entry">
+
+Pinheiro, J., Bornkamp, B., Glimm, E., and Bretz, F. (2014),
+“Model-based dose finding under model uncertainty using general
+parametric models,” *Statistics in Medicine*, 33, 1646–1661.
+<https://doi.org/10.1002/sim.6052>.
+
+</div>
+
+</div>

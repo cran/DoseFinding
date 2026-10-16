@@ -249,7 +249,7 @@ S01 <- diag(resultRepeated$sigma^2 / n_final)
 
 # Predictive power:
 predPower <- powMCTInterim(
-  contMat = contMat,,
+  contMat = contMat,
   mu_0t = resultRepeated$mu0t,
   S_0t = resultRepeated$S0t,
   S_01 = S01,
@@ -426,36 +426,36 @@ run_scen <- function(n_sim, rho, maxEff,
 }
 
 ## ----eval = FALSE-------------------------------------------------------------
-#  doses <- c(0, 0.5, 1, 2, 4, 8) # doses
-#  alRatio <- c(2, 1, 1, 1, 2, 2) # allocation ratio for doses
-#  alpha <- 0.025 # for MCTtest
-#  times <- c(0, 2, 4, 8, 12) # observation times (weeks)
-#  bslMean <- 0 # mean at baseline
-#  errSD <- 0.56 # SD for outcome on absolute scale
-#  RecrDist <- "Quad" # recruitment distribution
-#  
-#  rho <- 0.9 # correlation across time for outcome on absolute scale
-#  LPFV.t <- 100 # time of last patient first visit
-#  maxEff <- 0.12 # effect assumed for the highest dose at the last time point
-#  delta_assumed <- calcMean(doses, times, maxEff)[, length(times)]
-#  N <- 236
-#  ia_timing <- 0.5
-#  
-#  models <- Mods(
-#    emax = c(0.5, 1, 2, 4), sigEmax = rbind(c(0.5, 3), c(1, 3), c(2, 3), c(4, 3)),
-#    quadratic = -0.1, doses = doses
-#  )
-#  
-#  oneSim <- sim_one_trial(
-#    times = times, bslMean = bslMean,
-#    errSD = errSD, rho = rho, maxEff = maxEff, RecrDist = RecrDist,
-#    LPFV.t = LPFV.t, models = models, ia_timing = ia_timing, N = N,
-#    doses = doses, alRatio = alRatio, delta_assumed = delta_assumed,
-#    alpha = alpha
-#  )
-#  
-#  scenRes <- run_scen(
-#    n_sim = 10, rho = 0.9, maxEff = 0.12,
-#    LPFV.t = 50, ia_timing = seq(0.3, 0.8, 0.05), delta_assumed = delta_assumed
-#  )
+# doses <- c(0, 0.5, 1, 2, 4, 8) # doses
+# alRatio <- c(2, 1, 1, 1, 2, 2) # allocation ratio for doses
+# alpha <- 0.025 # for MCTtest
+# times <- c(0, 2, 4, 8, 12) # observation times (weeks)
+# bslMean <- 0 # mean at baseline
+# errSD <- 0.56 # SD for outcome on absolute scale
+# RecrDist <- "Quad" # recruitment distribution
+# 
+# rho <- 0.9 # correlation across time for outcome on absolute scale
+# LPFV.t <- 100 # time of last patient first visit
+# maxEff <- 0.12 # effect assumed for the highest dose at the last time point
+# delta_assumed <- calcMean(doses, times, maxEff)[, length(times)]
+# N <- 236
+# ia_timing <- 0.5
+# 
+# models <- Mods(
+#   emax = c(0.5, 1, 2, 4), sigEmax = rbind(c(0.5, 3), c(1, 3), c(2, 3), c(4, 3)),
+#   quadratic = -0.1, doses = doses
+# )
+# 
+# oneSim <- sim_one_trial(
+#   times = times, bslMean = bslMean,
+#   errSD = errSD, rho = rho, maxEff = maxEff, RecrDist = RecrDist,
+#   LPFV.t = LPFV.t, models = models, ia_timing = ia_timing, N = N,
+#   doses = doses, alRatio = alRatio, delta_assumed = delta_assumed,
+#   alpha = alpha
+# )
+# 
+# scenRes <- run_scen(
+#   n_sim = 10, rho = 0.9, maxEff = 0.12,
+#   LPFV.t = 50, ia_timing = seq(0.3, 0.8, 0.05), delta_assumed = delta_assumed
+# )
 

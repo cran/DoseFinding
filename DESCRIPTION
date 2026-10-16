@@ -1,8 +1,8 @@
 Package: DoseFinding
 Type: Package
 Title: Planning and Analyzing Dose Finding Experiments
-Version: 1.4-1
-Date: 2025-07-08
+Version: 1.4-2
+Date: 2026-10-14
 Authors@R: c(
    person("Bjoern", "Bornkamp", email = "bjoern.bornkamp@novartis.com", 
    comment = c(ORCID = "0000-0002-6294-8185"), role = c("aut")),
@@ -12,11 +12,12 @@ Authors@R: c(
    person("Marius", "Thomas", role = c("aut", "cre"), email = "marius.thomas@novartis.com"),
    person("Daniel", "Sabanes Bove", role = "aut", email = "daniel.sabanes_bove@rconis.com",
            comment = c(ORCID = "0000-0002-0176-9239")),
+   person("Carina", "Miller", role = "ctb"),
    person(given = "Novartis Pharma AG", role = c("cph", "fnd")))
-Imports: ggplot2, lattice, mvtnorm
+Imports: ggplot2, lattice, mvtnorm, Rdpack
 Suggests: emmeans, numDeriv, Rsolnp, quadprog, parallel, mmrm,
         multcomp, knitr, rmarkdown, MASS, testthat (>= 3.0.0), tibble,
-        RBesT, nlme, dplyr, tidyr
+        RBesT, nlme, survival, dplyr, tidyr
 Maintainer: Marius Thomas <marius.thomas@novartis.com>
 Description: The DoseFinding package provides functions for the design and analysis
 	     of dose-finding experiments (with focus on pharmaceutical Phase
@@ -34,8 +35,9 @@ URL: https://github.com/openpharma/DoseFinding,
         https://openpharma.github.io/DoseFinding/
 BugReports: https://github.com/openpharma/DoseFinding/issues
 Config/testthat/edition: 3
+RdMacros: Rdpack
 NeedsCompilation: yes
-Packaged: 2025-07-09 15:57:59 UTC; THOMAM1D
+Packaged: 2026-10-15 15:52:28 UTC; thomam1d
 Author: Bjoern Bornkamp [aut] (ORCID: <https://orcid.org/0000-0002-6294-8185>),
   Jose Pinheiro [aut],
   Frank Bretz [aut],
@@ -43,6 +45,7 @@ Author: Bjoern Bornkamp [aut] (ORCID: <https://orcid.org/0000-0002-6294-8185>),
   Marius Thomas [aut, cre],
   Daniel Sabanes Bove [aut] (ORCID:
     <https://orcid.org/0000-0002-0176-9239>),
+  Carina Miller [ctb],
   Novartis Pharma AG [cph, fnd]
 Repository: CRAN
-Date/Publication: 2025-07-09 18:00:06 UTC
+Date/Publication: 2026-10-16 09:10:15 UTC
